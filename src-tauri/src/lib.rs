@@ -1,3 +1,6 @@
+mod commands;
+mod database;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -9,8 +12,18 @@ pub fn run() {
             .build(),
         )?;
       }
+
+      // Initialize database asynchronously
+      let app_handle = app.handle().clone();
+      tokio::spawn(async move {
+        if let Err(e) = database::setup(&app_handle).await {
+          eprintln!("Failed to initialize database: {}", e);
+        }
+      });
+
       Ok(())
     })
+    .invoke_handler(app_commands!())
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

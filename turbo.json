@@ -1,0 +1,23 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "generate-types": {
+      "inputs": ["./src-tauri/src/"],
+      "outputs": ["src/generated"],
+      "outputLogs": "new-only"
+    },
+    "build": {
+      "dependsOn": ["generate-types"],
+      "inputs": ["src/"],
+      "outputs": ["dist/"],
+      "outputLogs": "new-only"
+    },
+    "lint": {
+      "dependsOn": ["generate-types"]
+    },
+    "check-types": {
+      "dependsOn": ["generate-types"]
+    }
+  }
+}

@@ -3,13 +3,22 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
+    "predev": "pnpm turbo generate-types",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "generate-types": "node scripts/generate-types.js",
+    "tauri:dev": "pnpm generate-types && pnpm tauri dev"
+  },
+  "packageManager": "pnpm@10.26.0",
+  "engines": {
+    "node": ">=24.12.0",
+    "pnpm": "10.26.0"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.9.1",
     "next": "16.1.4",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -17,12 +26,13 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@tauri-apps/cli": "^2.9.6",
-    "@types/node": "^20",
+    "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
     "tailwindcss": "^4",
+    "turbo": "^2.7.5",
     "typescript": "^5"
   }
 }
