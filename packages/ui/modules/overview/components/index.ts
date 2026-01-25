@@ -1,4 +1,6 @@
 export { TimeRangeTabs } from "./time-range-tabs";
+export { CostChart } from "./cost-chart";
 export { TokenChart } from "./token-chart";
-export { ModelDistribution } from "./model-distribution";
-export { RecentSessions } from "./recent-sessions";
+export { TokenBreakdown } from "./token-breakdown";
+export { ModelBreakdown } from "./model-breakdown";
+export { ProductivityMetrics } from "./productivity-metrics";

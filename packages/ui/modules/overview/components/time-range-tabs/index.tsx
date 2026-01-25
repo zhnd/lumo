@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { TimeRange } from "../types";
+import type { TimeRange } from "../../types";
 
 interface TimeRangeTabsProps {
   value: TimeRange;
@@ -20,9 +20,6 @@ export function TimeRangeTabs({ value, onChange }: TimeRangeTabsProps) {
         </TabsTrigger>
         <TabsTrigger value="month" className="px-3 text-xs">
           Month
-        </TabsTrigger>
-        <TabsTrigger value="all" className="px-3 text-xs">
-          All
         </TabsTrigger>
       </TabsList>
     </Tabs>
