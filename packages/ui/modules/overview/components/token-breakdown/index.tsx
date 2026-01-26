@@ -7,12 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { TokenByModel } from "../../types";
+import { CardLoading } from "@/components/card-loading";
+import { CardError } from "@/components/card-error";
+import { CardEmpty } from "@/components/card-empty";
+import { useService } from "./use-service";
+import type { TokenBreakdownProps } from "./types";
 import { formatTokens } from "../../libs";
-
-interface TokenBreakdownProps {
-  data: TokenByModel[];
-}
 
 const TOKEN_TYPES = [
   { key: "input" as const, label: "Input", color: "bg-chart-1" },
@@ -21,33 +21,40 @@ const TOKEN_TYPES = [
   { key: "cacheCreation" as const, label: "Cache Creation", color: "bg-chart-4" },
 ] as const;
 
-export function TokenBreakdown({ data }: TokenBreakdownProps) {
-  // Calculate totals
-  const totals = data.reduce(
-    (acc, model) => ({
-      input: acc.input + model.input,
-      output: acc.output + model.output,
-      cacheRead: acc.cacheRead + model.cacheRead,
-      cacheCreation: acc.cacheCreation + model.cacheCreation,
-    }),
-    { input: 0, output: 0, cacheRead: 0, cacheCreation: 0 }
-  );
+export function TokenBreakdown({ timeRange }: TokenBreakdownProps) {
+  const { data, totals, grandTotal, cachePercentage, isLoading, error, refetch } =
+    useService(timeRange);
 
-  const grandTotal = totals.input + totals.output + totals.cacheRead + totals.cacheCreation;
-  const cachePercentage = grandTotal > 0
-    ? ((totals.cacheRead / grandTotal) * 100).toFixed(0)
-    : 0;
+  if (isLoading) {
+    return <CardLoading showTitle />;
+  }
+
+  if (error) {
+    return (
+      <CardError
+        title="Token Counter"
+        message="Failed to load token data"
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <CardEmpty title="Token Counter" message="No token data available" />
+    );
+  }
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle>Token Counter</CardTitle>
         <CardDescription>
-          {formatTokens(grandTotal)} total · {cachePercentage}% cache read
+          {formatTokens(grandTotal)} total · {cachePercentage.toFixed(0)}% cache
+          read
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -66,12 +73,19 @@ export function TokenBreakdown({ data }: TokenBreakdownProps) {
             </thead>
             <tbody>
               {data.map((model) => {
-                const modelTotal = model.input + model.output + model.cacheRead + model.cacheCreation;
+                const modelTotal =
+                  model.input +
+                  model.output +
+                  model.cacheRead +
+                  model.cacheCreation;
                 return (
                   <tr key={model.model} className="border-b last:border-0">
                     <td className="py-2 font-medium">{model.displayName}</td>
                     {TOKEN_TYPES.map(({ key }) => (
-                      <td key={key} className="py-2 text-right text-muted-foreground tabular-nums">
+                      <td
+                        key={key}
+                        className="py-2 text-right tabular-nums text-muted-foreground"
+                      >
                         {model[key] > 0 ? formatTokens(model[key]) : "-"}
                       </td>
                     ))}

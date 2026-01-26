@@ -7,12 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { ModelUsage } from "../../types";
+import { CardLoading } from "@/components/card-loading";
+import { CardError } from "@/components/card-error";
+import { CardEmpty } from "@/components/card-empty";
+import { useService } from "./use-service";
+import type { ModelBreakdownProps } from "./types";
 import { formatCost } from "../../libs";
-
-interface ModelBreakdownProps {
-  data: ModelUsage[];
-}
 
 const MODEL_COLORS = [
   "bg-chart-1",
@@ -22,17 +22,41 @@ const MODEL_COLORS = [
   "bg-chart-5",
 ] as const;
 
-export function ModelBreakdown({ data }: ModelBreakdownProps) {
-  const totalCost = data.reduce((sum, m) => sum + m.cost, 0);
+export function ModelBreakdown({ timeRange }: ModelBreakdownProps) {
+  const { data, totalCost, isLoading, error, refetch } = useService(timeRange);
+
+  if (isLoading) {
+    return <CardLoading showTitle className="h-full" />;
+  }
+
+  if (error) {
+    return (
+      <CardError
+        title="Model Breakdown"
+        message="Failed to load model data"
+        onRetry={() => refetch()}
+        className="h-full"
+      />
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <CardEmpty
+        title="Model Breakdown"
+        message="No model data available"
+        className="h-full"
+      />
+    );
+  }
+
   const maxCost = Math.max(...data.map((m) => m.cost));
 
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
         <CardTitle>Model Breakdown</CardTitle>
-        <CardDescription>
-          Total: {formatCost(totalCost)}
-        </CardDescription>
+        <CardDescription>Total: {formatCost(totalCost)}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {data.map((model, index) => {

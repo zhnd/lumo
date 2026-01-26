@@ -16,7 +16,6 @@ serde.workspace = true
 serde_json.workspace = true
 
 # Types
-typeshare.workspace = true
 uuid.workspace = true
 chrono.workspace = true
 

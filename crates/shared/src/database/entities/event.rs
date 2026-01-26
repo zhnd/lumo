@@ -4,7 +4,6 @@
 
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use typeshare::typeshare;
 
 /// Database row representation of an event
 #[derive(Debug, Clone, FromRow)]
@@ -38,8 +37,7 @@ pub struct EventRow {
     pub received_at: String,
 }
 
-/// Event entity for API responses
-#[typeshare]
+/// Event entity for internal use
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Event {

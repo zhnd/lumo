@@ -5,10 +5,8 @@
 
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use typeshare::typeshare;
 
 /// Session entity (from the sessions view)
-#[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct Session {

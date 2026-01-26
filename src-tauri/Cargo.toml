@@ -27,6 +27,7 @@ tokio.workspace = true
 uuid.workspace = true
 typeshare.workspace = true
 anyhow.workspace = true
+chrono.workspace = true
 
 # Tauri-specific dependencies (not in workspace)
 tauri = { version = "2.9.5", features = [] }

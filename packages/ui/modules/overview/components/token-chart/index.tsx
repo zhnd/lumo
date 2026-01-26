@@ -11,17 +11,16 @@ import {
 import {
   ChartContainer,
   ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import type { UsageTrendPoint } from "../../types";
+import { CardLoading } from "@/components/card-loading";
+import { CardError } from "@/components/card-error";
+import { CardEmpty } from "@/components/card-empty";
+import { useService } from "./use-service";
+import type { TokenChartProps } from "./types";
 import { formatTokens } from "../../libs";
-
-interface TokenChartProps {
-  data: UsageTrendPoint[];
-}
 
 const chartConfig = {
   inputTokens: {
@@ -38,11 +37,34 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TokenChart({ data }: TokenChartProps) {
-  const totalTokens = data.reduce(
-    (sum, d) => sum + d.inputTokens + d.outputTokens + d.cacheReadTokens,
-    0
-  );
+export function TokenChart({ timeRange }: TokenChartProps) {
+  const { data, totalTokens, isLoading, error, refetch } =
+    useService(timeRange);
+
+  if (isLoading) {
+    return <CardLoading showTitle className="h-full" />;
+  }
+
+  if (error) {
+    return (
+      <CardError
+        title="Token Trends"
+        message="Failed to load token data"
+        onRetry={() => refetch()}
+        className="h-full"
+      />
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <CardEmpty
+        title="Token Trends"
+        message="No token data available"
+        className="h-full"
+      />
+    );
+  }
 
   return (
     <Card className="h-full">
@@ -123,13 +145,17 @@ export function TokenChart({ data }: TokenChartProps) {
               content={({ payload }) => (
                 <div className="flex justify-center gap-4 pt-2">
                   {payload?.map((entry) => (
-                    <div key={entry.value} className="flex items-center gap-1.5 text-xs">
+                    <div
+                      key={entry.value}
+                      className="flex items-center gap-1.5 text-xs"
+                    >
                       <span
                         className="size-2.5 rounded-full"
                         style={{ backgroundColor: entry.color }}
                       />
                       <span className="text-muted-foreground">
-                        {chartConfig[entry.value as keyof typeof chartConfig]?.label}
+                        {chartConfig[entry.value as keyof typeof chartConfig]
+                          ?.label}
                       </span>
                     </div>
                   ))}

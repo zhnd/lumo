@@ -1,8 +1,7 @@
 [general]
 target = "typescript"
 
-# Type mappings from Rust to TypeScript
-[type_mappings]
-Uuid = "string"
-DateTime = "string"
-Json = "string"
+# Type mappings for custom types
+[typescript.type_mappings]
+"Uuid" = "string"
+"DateTime" = "string"

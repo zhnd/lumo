@@ -7,7 +7,10 @@ const path = require('path')
 
 const config = {
   configPath: path.join(__dirname, '../../../src-tauri/typeshare.toml'),
-  rustSrcPath: path.join(__dirname, '../../../src-tauri/src'),
+  rustSrcPaths: [
+    path.join(__dirname, '../../../src-tauri/src'),
+    path.join(__dirname, '../../../crates/shared/src'),
+  ],
   outputDir: path.join(__dirname, '../src/generated'),
   outputFilename: 'typeshare-types.ts',
   runPrettier: true,
@@ -37,7 +40,8 @@ function runTypeshare() {
   console.log(`🔄 Generating TypeScript types from Rust code...`)
 
   try {
-    const command = `typeshare -c "${config.configPath}" --lang typescript --output-file "${outputPath}" "${config.rustSrcPath}"`
+    const srcPaths = config.rustSrcPaths.map(p => `"${p}"`).join(' ')
+    const command = `typeshare -c "${config.configPath}" --lang typescript --output-file "${outputPath}" ${srcPaths}`
     if (config.debug) {
       console.log(`Executing: ${command}`)
     }

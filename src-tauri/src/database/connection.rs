@@ -1,58 +1,25 @@
 use anyhow::Result;
-use sqlx::{
-    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
-    SqlitePool,
-};
-use std::str::FromStr;
+use shared::{create_pool, get_db_path, run_migrations};
+use sqlx::SqlitePool;
 use tauri::{AppHandle, Manager};
 
 /// Initialize the database connection and register it with Tauri app state
+///
+/// Uses the shared database path (~/.lumo/lumo.db) so both daemon and Tauri
+/// app access the same database.
 pub async fn initialize_db(app_handle: &AppHandle) -> Result<SqlitePool> {
-    // Get the app data directory
-    let app_data_dir = app_handle
-        .path()
-        .app_local_data_dir()
-        .expect("Failed to get app data dir");
+    // Get the shared database path (~/.lumo/lumo.db)
+    let db_path = get_db_path()?;
 
-    // Create the directory if it doesn't exist
-    if !app_data_dir.exists() {
-        std::fs::create_dir_all(&app_data_dir)?;
-    }
+    println!("Database path: {}", db_path.display());
 
-    // Construct the database file path
-    let db_path = app_data_dir.join("app.sqlite");
-    let db_url = format!("sqlite:{}", db_path.display());
-
-    println!("Database path: {}", db_url);
-
-    // Create connection options
-    let connection_options = SqliteConnectOptions::from_str(&db_url)?
-        .create_if_missing(true);
-
-    // Create the connection pool
-    let pool = SqlitePoolOptions::new()
-        .max_connections(5)
-        .connect_with(connection_options)
-        .await?;
-
-    println!("Database connection established");
+    // Create the connection pool using shared library
+    let pool = create_pool(&db_path).await?;
 
     // Register the pool with Tauri's app state
     app_handle.manage(pool.clone());
 
     Ok(pool)
-}
-
-/// Run database migrations
-pub async fn run_migrations(pool: &SqlitePool) -> Result<()> {
-    println!("Running database migrations...");
-
-    sqlx::migrate!("./migrations")
-        .run(pool)
-        .await?;
-
-    println!("Database migrations completed");
-    Ok(())
 }
 
 /// Setup function to initialize database and run migrations

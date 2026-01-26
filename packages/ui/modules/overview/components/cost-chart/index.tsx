@@ -14,12 +14,12 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import type { UsageTrendPoint } from "../../types";
+import { CardLoading } from "@/components/card-loading";
+import { CardError } from "@/components/card-error";
+import { CardEmpty } from "@/components/card-empty";
+import { useService } from "./use-service";
+import type { CostChartProps } from "./types";
 import { formatCost } from "../../libs";
-
-interface CostChartProps {
-  data: UsageTrendPoint[];
-}
 
 const chartConfig = {
   cost: {
@@ -28,8 +28,33 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function CostChart({ data }: CostChartProps) {
-  const totalCost = data.reduce((sum, d) => sum + d.cost, 0);
+export function CostChart({ timeRange }: CostChartProps) {
+  const { data, totalCost, isLoading, error, refetch } = useService(timeRange);
+
+  if (isLoading) {
+    return <CardLoading showTitle className="h-full" />;
+  }
+
+  if (error) {
+    return (
+      <CardError
+        title="Cost Trends"
+        message="Failed to load cost data"
+        onRetry={() => refetch()}
+        className="h-full"
+      />
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <CardEmpty
+        title="Cost Trends"
+        message="No cost data available"
+        className="h-full"
+      />
+    );
+  }
 
   return (
     <Card className="h-full">

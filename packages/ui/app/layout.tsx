@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarLayout } from "@/components/sidebar-layout";
 import { TitleBar } from "@/components/titlebar";
+import { QueryProvider } from "@/src/lib/query-client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,17 +37,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <div className="flex h-screen flex-col overflow-hidden">
-          <TitleBar />
-          <div className="flex min-h-0 flex-1">
-            <SidebarLayout className="flex flex-1">
-              <AppSidebar />
-              <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                {children}
-              </main>
-            </SidebarLayout>
+        <QueryProvider>
+          <div className="flex h-screen flex-col overflow-hidden">
+            <TitleBar />
+            <div className="flex min-h-0 flex-1">
+              <SidebarLayout className="flex flex-1">
+                <AppSidebar />
+                <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  {children}
+                </main>
+              </SidebarLayout>
+            </div>
           </div>
-        </div>
+        </QueryProvider>
       </body>
     </html>
   );

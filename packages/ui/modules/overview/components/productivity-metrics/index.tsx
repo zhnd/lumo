@@ -11,11 +11,11 @@ import {
   X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ProductivityMetrics as ProductivityMetricsType } from "../../types";
-
-interface ProductivityMetricsProps {
-  data: ProductivityMetricsType;
-}
+import { CardLoading } from "@/components/card-loading";
+import { CardError } from "@/components/card-error";
+import { CardEmpty } from "@/components/card-empty";
+import { useService } from "./use-service";
+import type { ProductivityMetricsProps } from "./types";
 
 interface MetricItemProps {
   icon: React.ReactNode;
@@ -37,7 +37,37 @@ function MetricItem({ icon, label, children }: MetricItemProps) {
   );
 }
 
-export function ProductivityMetrics({ data }: ProductivityMetricsProps) {
+export function ProductivityMetrics({ timeRange }: ProductivityMetricsProps) {
+  const { data, isLoading, error, refetch } = useService(timeRange);
+
+  if (isLoading) {
+    return <CardLoading showTitle />;
+  }
+
+  if (error) {
+    return (
+      <CardError
+        title="Productivity"
+        message="Failed to load productivity data"
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  const hasData =
+    data.linesAdded > 0 ||
+    data.linesRemoved > 0 ||
+    data.pullRequests > 0 ||
+    data.commits > 0 ||
+    data.codeEditsAccepted > 0 ||
+    data.codeEditsRejected > 0;
+
+  if (!hasData) {
+    return (
+      <CardEmpty title="Productivity" message="No productivity data available" />
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">
