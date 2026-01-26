@@ -12,7 +12,7 @@ import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
 import { useService } from "./use-service";
 import type { ModelBreakdownProps } from "./types";
-import { formatCost } from "../../libs";
+import { fmt } from "@/lib/format";
 
 const MODEL_COLORS = [
   "bg-chart-1",
@@ -53,12 +53,12 @@ export function ModelBreakdown({ timeRange }: ModelBreakdownProps) {
   const maxCost = Math.max(...data.map((m) => m.cost));
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
+    <Card className="h-full gap-3 py-4">
+      <CardHeader className="px-4">
         <CardTitle>Model Breakdown</CardTitle>
-        <CardDescription>Total: {formatCost(totalCost)}</CardDescription>
+        <CardDescription>Total: {fmt(totalCost, "currency")}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-4">
         {data.map((model, index) => {
           const percentage = maxCost > 0 ? (model.cost / maxCost) * 100 : 0;
           const colorClass = MODEL_COLORS[index % MODEL_COLORS.length];
@@ -68,7 +68,7 @@ export function ModelBreakdown({ timeRange }: ModelBreakdownProps) {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{model.displayName}</span>
                 <span className="text-sm font-semibold">
-                  {formatCost(model.cost)}
+                  {fmt(model.cost, "currency")}
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-muted">

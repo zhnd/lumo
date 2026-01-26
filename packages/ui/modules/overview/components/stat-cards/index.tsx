@@ -4,15 +4,9 @@ import { DollarSign, Zap, Clock, Boxes } from "lucide-react";
 import { StatCard } from "@/components/stat-card";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
+import { formatValue, formatDurationMixed } from "@/lib/format";
 import { useService } from "./use-service";
 import type { StatCardsProps } from "./types";
-import {
-  formatCost,
-  formatTokens,
-  formatActiveTime,
-  formatChange,
-  formatAverage,
-} from "../../libs";
 
 export function StatCards({ timeRange }: StatCardsProps) {
   const { stats, isLoading, error, refetch } = useService(timeRange);
@@ -39,30 +33,36 @@ export function StatCards({ timeRange }: StatCardsProps) {
     );
   }
 
+  const cost = formatValue(stats.totalCost, "currency");
+  const tokens = formatValue(stats.totalTokens, "number");
+  const changePercent = stats.costChangePercent !== 0
+    ? `${stats.costChangePercent >= 0 ? "+" : ""}${stats.costChangePercent.toFixed(0)}% vs last`
+    : undefined;
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Total Cost"
-        value={formatCost(stats.totalCost)}
-        description={
-          stats.costChangePercent !== 0
-            ? `${formatChange(stats.costChangePercent)} vs last period`
-            : undefined
-        }
+        value={cost.full}
+        description={changePercent}
         icon={<DollarSign className="size-4" />}
         color="emerald"
       />
       <StatCard
         title="Tokens"
-        value={formatTokens(stats.totalTokens)}
+        value={tokens.value}
+        unit={tokens.unit}
         description={`${stats.cachePercentage.toFixed(0)}% from cache`}
         icon={<Zap className="size-4" />}
         color="blue"
       />
       <StatCard
         title="Active Time"
-        value={formatActiveTime(stats.activeTimeSeconds)}
-        description={`~${formatAverage(stats.activeTimeSeconds, stats.totalSessions)}/session`}
+        value={formatDurationMixed(stats.activeTimeSeconds)}
+        description={stats.totalSessions > 0
+          ? `~${formatDurationMixed(Math.round(stats.activeTimeSeconds / stats.totalSessions))}/session`
+          : undefined
+        }
         icon={<Clock className="size-4" />}
         color="violet"
       />

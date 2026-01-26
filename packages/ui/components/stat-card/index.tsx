@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 interface StatCardProps {
   title: string;
   value: string;
+  unit?: string;
   description?: string;
   icon: React.ReactNode;
   color?: "emerald" | "blue" | "violet" | "amber";
@@ -32,13 +33,13 @@ const colorStyles = {
   },
 } as const;
 
-export function StatCard({ title, value, description, icon, color }: StatCardProps) {
+export function StatCard({ title, value, unit, description, icon, color }: StatCardProps) {
   const styles = color ? colorStyles[color] : null;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+    <Card className="gap-3 py-4">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div
           className={cn(
             "flex size-8 items-center justify-center rounded-lg",
@@ -50,10 +51,13 @@ export function StatCard({ title, value, description, icon, color }: StatCardPro
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className={cn("text-2xl font-bold", styles?.valueText)}>{value}</div>
+      <CardContent className="px-4">
+        <div className={cn("text-3xl font-bold tabular-nums tracking-tight", styles?.valueText)}>
+          {value}
+          {unit && <span className="ml-0.5 text-xl font-medium">{unit}</span>}
+        </div>
         {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         )}
       </CardContent>
     </Card>

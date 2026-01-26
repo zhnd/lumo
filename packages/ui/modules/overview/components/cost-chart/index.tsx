@@ -19,7 +19,7 @@ import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
 import { useService } from "./use-service";
 import type { CostChartProps } from "./types";
-import { formatCost } from "../../libs";
+import { fmt } from "@/lib/format";
 
 const chartConfig = {
   cost: {
@@ -57,12 +57,12 @@ export function CostChart({ timeRange }: CostChartProps) {
   }
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
+    <Card className="h-full gap-3 py-4">
+      <CardHeader className="px-4">
         <CardTitle>Cost Trends</CardTitle>
-        <CardDescription>Total: {formatCost(totalCost)}</CardDescription>
+        <CardDescription>Total: {fmt(totalCost, "currency")}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4">
         <ChartContainer config={chartConfig} className="h-[220px] w-full">
           <AreaChart
             data={data}
@@ -113,7 +113,7 @@ export function CostChart({ timeRange }: CostChartProps) {
                         {chartConfig[name as keyof typeof chartConfig]?.label}
                       </span>
                       <span className="ml-auto font-medium">
-                        {formatCost(value as number)}
+                        {fmt(value as number, "currency")}
                       </span>
                     </>
                   )}

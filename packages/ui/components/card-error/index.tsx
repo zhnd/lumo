@@ -3,6 +3,7 @@
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface CardErrorProps {
   title?: string;
@@ -18,13 +19,13 @@ export function CardError({
   className,
 }: CardErrorProps) {
   return (
-    <Card className={className}>
+    <Card className={cn("gap-3 py-4", className)}>
       {title && (
-        <CardHeader className="pb-2">
+        <CardHeader className="px-4">
           <CardTitle>{title}</CardTitle>
         </CardHeader>
       )}
-      <CardContent className="flex flex-col items-center justify-center gap-3 py-8">
+      <CardContent className="flex flex-col items-center justify-center gap-3 px-4 py-8">
         <AlertCircle className="size-8 text-destructive" />
         <p className="text-sm text-muted-foreground">{message}</p>
         {onRetry && (

@@ -20,7 +20,7 @@ import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
 import { useService } from "./use-service";
 import type { TokenChartProps } from "./types";
-import { formatTokens } from "../../libs";
+import { fmt } from "@/lib/format";
 
 const chartConfig = {
   inputTokens: {
@@ -67,12 +67,12 @@ export function TokenChart({ timeRange }: TokenChartProps) {
   }
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
+    <Card className="h-full gap-3 py-4">
+      <CardHeader className="px-4">
         <CardTitle>Token Trends</CardTitle>
-        <CardDescription>Total: {formatTokens(totalTokens)}</CardDescription>
+        <CardDescription>Total: {fmt(totalTokens)}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4">
         <ChartContainer config={chartConfig} className="h-[220px] w-full">
           <AreaChart
             data={data}

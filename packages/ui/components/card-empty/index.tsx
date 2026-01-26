@@ -2,6 +2,7 @@
 
 import { Inbox } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface CardEmptyProps {
   title?: string;
@@ -17,13 +18,13 @@ export function CardEmpty({
   className,
 }: CardEmptyProps) {
   return (
-    <Card className={className}>
+    <Card className={cn("gap-3 py-4", className)}>
       {title && (
-        <CardHeader className="pb-2">
+        <CardHeader className="px-4">
           <CardTitle>{title}</CardTitle>
         </CardHeader>
       )}
-      <CardContent className="flex flex-col items-center justify-center gap-2 py-8">
+      <CardContent className="flex flex-col items-center justify-center gap-2 px-4 py-8">
         {icon ?? <Inbox className="size-8 text-muted-foreground" />}
         <p className="text-sm text-muted-foreground">{message}</p>
       </CardContent>

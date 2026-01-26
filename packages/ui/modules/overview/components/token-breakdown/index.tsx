@@ -12,7 +12,7 @@ import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
 import { useService } from "./use-service";
 import type { TokenBreakdownProps } from "./types";
-import { formatTokens } from "../../libs";
+import { fmt } from "@/lib/format";
 
 const TOKEN_TYPES = [
   { key: "input" as const, label: "Input", color: "bg-chart-1" },
@@ -46,15 +46,15 @@ export function TokenBreakdown({ timeRange }: TokenBreakdownProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="gap-3 py-4">
+      <CardHeader className="px-4">
         <CardTitle>Token Counter</CardTitle>
         <CardDescription>
-          {formatTokens(grandTotal)} total · {cachePercentage.toFixed(0)}% cache
+          {fmt(grandTotal)} total · {cachePercentage.toFixed(0)}% cache
           read
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -86,11 +86,11 @@ export function TokenBreakdown({ timeRange }: TokenBreakdownProps) {
                         key={key}
                         className="py-2 text-right tabular-nums text-muted-foreground"
                       >
-                        {model[key] > 0 ? formatTokens(model[key]) : "-"}
+                        {model[key] > 0 ? fmt(model[key]) : "-"}
                       </td>
                     ))}
                     <td className="py-2 text-right font-medium tabular-nums">
-                      {formatTokens(modelTotal)}
+                      {fmt(modelTotal)}
                     </td>
                   </tr>
                 );
@@ -101,11 +101,11 @@ export function TokenBreakdown({ timeRange }: TokenBreakdownProps) {
                 <td className="pt-2">Total</td>
                 {TOKEN_TYPES.map(({ key }) => (
                   <td key={key} className="pt-2 text-right tabular-nums">
-                    {totals[key] > 0 ? formatTokens(totals[key]) : "-"}
+                    {totals[key] > 0 ? fmt(totals[key]) : "-"}
                   </td>
                 ))}
                 <td className="pt-2 text-right tabular-nums">
-                  {formatTokens(grandTotal)}
+                  {fmt(grandTotal)}
                 </td>
               </tr>
             </tfoot>

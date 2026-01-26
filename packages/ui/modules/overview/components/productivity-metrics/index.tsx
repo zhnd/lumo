@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
+import { fmt } from "@/lib/format";
 import { useService } from "./use-service";
 import type { ProductivityMetricsProps } from "./types";
 
@@ -69,25 +70,25 @@ export function ProductivityMetrics({ timeRange }: ProductivityMetricsProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="gap-3 py-4">
+      <CardHeader className="px-4">
         <CardTitle>Productivity</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {/* Lines of Code */}
           <MetricItem
             icon={<FileCode className="size-5 text-muted-foreground" />}
             label="Lines of Code"
           >
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 text-lg font-bold text-green-600 dark:text-green-500">
-                <Plus className="size-3.5" />
-                {data.linesAdded.toLocaleString()}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="flex items-center gap-1 text-lg font-bold tabular-nums text-green-600 dark:text-green-500">
+                <Plus className="size-3" />
+                {fmt(data.linesAdded)}
               </span>
-              <span className="flex items-center gap-1 text-lg font-bold text-red-600 dark:text-red-500">
-                <Minus className="size-3.5" />
-                {data.linesRemoved.toLocaleString()}
+              <span className="flex items-center gap-1 text-lg font-bold tabular-nums text-red-600 dark:text-red-500">
+                <Minus className="size-3" />
+                {fmt(data.linesRemoved)}
               </span>
             </div>
           </MetricItem>
@@ -97,7 +98,7 @@ export function ProductivityMetrics({ timeRange }: ProductivityMetricsProps) {
             icon={<GitPullRequest className="size-5 text-muted-foreground" />}
             label="Pull Requests"
           >
-            <p className="text-2xl font-bold">{data.pullRequests}</p>
+            <p className="text-lg font-bold tabular-nums">{fmt(data.pullRequests)}</p>
           </MetricItem>
 
           {/* Commits */}
@@ -105,7 +106,7 @@ export function ProductivityMetrics({ timeRange }: ProductivityMetricsProps) {
             icon={<GitCommit className="size-5 text-muted-foreground" />}
             label="Commits"
           >
-            <p className="text-2xl font-bold">{data.commits}</p>
+            <p className="text-lg font-bold tabular-nums">{fmt(data.commits)}</p>
           </MetricItem>
 
           {/* Code Edits */}
@@ -113,14 +114,14 @@ export function ProductivityMetrics({ timeRange }: ProductivityMetricsProps) {
             icon={<MousePointerClick className="size-5 text-muted-foreground" />}
             label="Code Edit Decisions"
           >
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1 text-lg font-bold text-green-600 dark:text-green-500">
-                <Check className="size-3.5" />
-                {data.codeEditsAccepted}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="flex items-center gap-1 text-lg font-bold tabular-nums text-green-600 dark:text-green-500">
+                <Check className="size-3" />
+                {fmt(data.codeEditsAccepted)}
               </span>
-              <span className="flex items-center gap-1 text-lg font-bold text-red-600 dark:text-red-500">
-                <X className="size-3.5" />
-                {data.codeEditsRejected}
+              <span className="flex items-center gap-1 text-lg font-bold tabular-nums text-red-600 dark:text-red-500">
+                <X className="size-3" />
+                {fmt(data.codeEditsRejected)}
               </span>
             </div>
           </MetricItem>
