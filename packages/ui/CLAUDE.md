@@ -189,11 +189,23 @@ text-muted-foreground         // Secondary text
 border-border, border-input   // Borders
 ```
 
-**shadcn/ui Components:**
-- Components in `components/ui/` are READ-ONLY
-- Trust their built-in variants - don't override colors/sizes
+**shadcn/ui Components (CRITICAL):**
+- **NEVER modify files in `components/ui/`** - These are shadcn/ui components and must remain untouched
+- Trust their built-in variants - don't override colors/sizes inline
 - Use `size="icon"` for icon-only buttons
 - Use `variant="ghost"` `variant="outline"` as designed
+- To customize shadcn/ui styles globally, use CSS custom properties in `app/globals.css`:
+  ```css
+  /* Override Card styles globally */
+  [data-slot="card"] {
+    --card-padding: 1rem;
+    padding: var(--card-padding);
+  }
+  [data-slot="card-header"] {
+    padding-inline: var(--card-padding);
+  }
+  ```
+- For component-specific overrides, pass `className` prop to shadcn components
 
 **Icons:**
 ```tsx
