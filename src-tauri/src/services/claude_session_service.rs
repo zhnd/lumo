@@ -7,8 +7,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::types::{
-    ClaudeMessage, ClaudeSession, ClaudeSessionDetail, ClaudeSessionIndex, ClaudeToolUse,
-    RawClaudeMessage,
+    ClaudeMessage, ClaudeSession, ClaudeSessionDetail, ClaudeSessionIndex, ClaudeSessionStats,
+    ClaudeToolUse, RawClaudeMessage,
 };
 
 /// Service for Claude Code session operations
@@ -162,9 +162,13 @@ impl ClaudeSessionService {
 
         // Read and parse messages
         let content = fs::read_to_string(&path)?;
-        let messages = Self::parse_session_messages(&content)?;
+        let (messages, stats) = Self::parse_session_messages_with_stats(&content)?;
 
-        Ok(ClaudeSessionDetail { session, messages })
+        Ok(ClaudeSessionDetail {
+            session,
+            messages,
+            stats,
+        })
     }
 
     /// Parse messages from a session JSONL file
@@ -233,6 +237,110 @@ impl ClaudeSessionService {
             .collect();
 
         Ok(messages)
+    }
+
+    /// Parse messages and compute stats from a session JSONL file
+    fn parse_session_messages_with_stats(
+        content: &str,
+    ) -> Result<(Vec<ClaudeMessage>, ClaudeSessionStats)> {
+        let mut total_input_tokens: i64 = 0;
+        let mut total_output_tokens: i64 = 0;
+        let mut total_cache_read_tokens: i64 = 0;
+        let mut total_cache_creation_tokens: i64 = 0;
+        let mut model_for_cost: Option<String> = None;
+
+        // First pass: collect raw messages for stats
+        let lines: Vec<&str> = content.lines().filter(|l| !l.trim().is_empty()).collect();
+        let mut raw_messages: Vec<RawClaudeMessage> = Vec::new();
+
+        for line in &lines {
+            if let Ok(raw) = serde_json::from_str::<RawClaudeMessage>(line) {
+                raw_messages.push(raw);
+            }
+        }
+
+        // Accumulate usage from all raw messages
+        for raw in &raw_messages {
+            if let Some(msg_data) = &raw.message {
+                if let Some(usage) = &msg_data.usage {
+                    total_input_tokens += usage.input_tokens.unwrap_or(0);
+                    total_output_tokens += usage.output_tokens.unwrap_or(0);
+                    total_cache_read_tokens += usage.cache_read_input_tokens.unwrap_or(0);
+                    total_cache_creation_tokens += usage.cache_creation_input_tokens.unwrap_or(0);
+                }
+                if model_for_cost.is_none() {
+                    if let Some(m) = &msg_data.model {
+                        model_for_cost = Some(m.clone());
+                    }
+                }
+            }
+        }
+
+        // Compute duration from first/last timestamp
+        let timestamps: Vec<&str> = raw_messages
+            .iter()
+            .filter_map(|r| r.timestamp.as_deref())
+            .collect();
+
+        let duration_seconds = if timestamps.len() >= 2 {
+            let first = chrono::DateTime::parse_from_rfc3339(timestamps[0]);
+            let last = chrono::DateTime::parse_from_rfc3339(timestamps[timestamps.len() - 1]);
+            match (first, last) {
+                (Ok(f), Ok(l)) => (l - f).num_seconds().max(0),
+                _ => 0,
+            }
+        } else {
+            0
+        };
+
+        // Estimate cost based on model
+        let estimated_cost_usd = Self::estimate_cost(
+            &model_for_cost.unwrap_or_default(),
+            total_input_tokens,
+            total_output_tokens,
+            total_cache_read_tokens,
+            total_cache_creation_tokens,
+        );
+
+        let messages = Self::parse_session_messages(content)?;
+
+        let stats = ClaudeSessionStats {
+            total_input_tokens: total_input_tokens as i32,
+            total_output_tokens: total_output_tokens as i32,
+            total_cache_read_tokens: total_cache_read_tokens as i32,
+            total_cache_creation_tokens: total_cache_creation_tokens as i32,
+            estimated_cost_usd,
+            duration_seconds: duration_seconds as i32,
+        };
+
+        Ok((messages, stats))
+    }
+
+    /// Estimate cost in USD based on model and token counts
+    fn estimate_cost(
+        model: &str,
+        input: i64,
+        output: i64,
+        cache_read: i64,
+        cache_creation: i64,
+    ) -> f64 {
+        // Per million token pricing
+        let (input_rate, output_rate, cache_read_rate, cache_creation_rate) =
+            if model.contains("opus") {
+                (15.0, 75.0, 1.875, 18.75)
+            } else if model.contains("haiku") {
+                (0.80, 4.0, 0.08, 1.0)
+            } else {
+                // Default to Sonnet pricing
+                (3.0, 15.0, 0.30, 3.75)
+            };
+
+        let per_m = 1_000_000.0;
+        (input as f64 * input_rate
+            + output as f64 * output_rate
+            + cache_read as f64 * cache_read_rate
+            + cache_creation as f64 * cache_creation_rate)
+            / per_m
     }
 
     /// Parse content value into text and tool uses

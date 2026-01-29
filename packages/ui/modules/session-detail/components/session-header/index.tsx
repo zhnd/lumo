@@ -7,15 +7,20 @@ import {
   Calendar,
   Clock,
   MessageSquare,
+  Coins,
+  Zap,
+  Timer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { fmt, formatDurationMixed } from "@/lib/format";
 import type { SessionHeaderProps } from "./types";
 import { formatDate, formatTimeAgo, getProjectName, getShortId } from "../../libs";
 
 export function SessionHeader({
   session,
   messageCount,
+  stats,
   onBack,
 }: SessionHeaderProps) {
   return (
@@ -75,6 +80,23 @@ export function SessionHeader({
           <MessageSquare className="size-3.5" />
           <span>{messageCount} messages</span>
         </div>
+
+        <div className="flex items-center gap-1.5">
+          <Coins className="size-3.5" />
+          <span>{fmt(stats.estimatedCostUsd, "currency")}</span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <Zap className="size-3.5" />
+          <span>{fmt(stats.totalInputTokens + stats.totalOutputTokens + stats.totalCacheReadTokens + stats.totalCacheCreationTokens)} tokens</span>
+        </div>
+
+        {stats.durationSeconds > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Timer className="size-3.5" />
+            <span>{formatDurationMixed(stats.durationSeconds)}</span>
+          </div>
+        )}
       </div>
     </div>
   );

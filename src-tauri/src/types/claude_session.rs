@@ -116,6 +116,19 @@ pub struct ClaudeToolUse {
     pub input: Option<String>,
 }
 
+/// Session statistics (tokens, cost, duration)
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaudeSessionStats {
+    pub total_input_tokens: i32,
+    pub total_output_tokens: i32,
+    pub total_cache_read_tokens: i32,
+    pub total_cache_creation_tokens: i32,
+    pub estimated_cost_usd: f64,
+    pub duration_seconds: i32,
+}
+
 /// Full session detail with messages
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -123,6 +136,7 @@ pub struct ClaudeToolUse {
 pub struct ClaudeSessionDetail {
     pub session: ClaudeSession,
     pub messages: Vec<ClaudeMessage>,
+    pub stats: ClaudeSessionStats,
 }
 
 /// Raw message from JSONL file (internal)

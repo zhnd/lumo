@@ -63,6 +63,7 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
       <SessionHeader
         session={session}
         messageCount={messages.length}
+        stats={sessionDetail.stats}
         onBack={handleBack}
       />
 
