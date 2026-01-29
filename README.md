@@ -61,6 +61,10 @@ An at-a-glance overview of your Claude Code usage:
 - Model usage breakdown
 - Productivity-oriented metrics such as code edit accept rate
 
+<p align="center">
+  <img src="docs/images/dashboard.jpg" width="800" />
+</p>
+
 ---
 
 ### Sessions
@@ -73,6 +77,10 @@ Browse all Claude Code sessions with full message history:
 - Clear separation of user, assistant, and tool messages
 
 Designed for long sessions with large code blocks.
+
+<p align="center">
+  <img src="docs/images/sessions.jpg" width="800" />
+</p>
 
 ---
 
@@ -97,6 +105,10 @@ Usage insights derived directly from your local data:
 
 - Weekly Summary
   This week vs last week across sessions, cost, and active time.
+
+<p align="center">
+  <img src="docs/images/analytics.jpg" width="800" />
+</p>
 
 ---
 
