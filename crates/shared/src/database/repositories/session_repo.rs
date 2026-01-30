@@ -70,12 +70,12 @@ impl SessionRepository {
         let sessions: Vec<Session> = sqlx::query_as(
             r#"
             SELECT * FROM sessions
-            WHERE start_time >= ? AND start_time <= ?
+            WHERE start_time <= ? AND end_time >= ?
             ORDER BY start_time DESC
             "#,
         )
-        .bind(start_time)
         .bind(end_time)
+        .bind(start_time)
         .fetch_all(pool)
         .await?;
 
