@@ -14,6 +14,7 @@ import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
 import { useService } from "./use-service";
 import type { CostChartProps } from "./types";
+import { TimeRange } from "@/src/generated/typeshare-types";
 import { fmt } from "@/lib/format";
 
 function shortenModel(model: string): string {
@@ -58,6 +59,7 @@ export function CostChart({ timeRange }: CostChartProps) {
   const option: EChartsOption = {
     tooltip: {
       trigger: "axis",
+      borderColor: "transparent",
       order: "valueDesc",
       formatter: (params: unknown) => {
         const items = params as Array<{
@@ -89,7 +91,9 @@ export function CostChart({ timeRange }: CostChartProps) {
     },
     xAxis: {
       type: "category",
-      data: dates.map((d) => d.slice(5)),
+      data: dates.map((d) =>
+        timeRange === TimeRange.Today ? d : d.slice(5),
+      ),
     },
     yAxis: {
       type: "value",
@@ -103,7 +107,8 @@ export function CostChart({ timeRange }: CostChartProps) {
         stack: "cost",
         data: dates.map((d) => dataMap.get(d) ?? 0),
         smooth: true,
-        showSymbol: false,
+        showSymbol: dates.length <= 3,
+        symbolSize: 6,
         lineStyle: { width: 1.5, color },
         itemStyle: { color },
         areaStyle: { opacity: 0.18 },

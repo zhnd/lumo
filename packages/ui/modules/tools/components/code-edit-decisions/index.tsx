@@ -32,7 +32,7 @@ export function CodeEditDecisions({ timeRange }: CodeEditDecisionsProps) {
     return <CardEmpty title="Code Edit Decisions" message="No data" />;
 
   const donutOption: EChartsOption = {
-    tooltip: { trigger: "item" },
+    tooltip: { trigger: "item", borderColor: "transparent" },
     series: [
       {
         type: "pie",

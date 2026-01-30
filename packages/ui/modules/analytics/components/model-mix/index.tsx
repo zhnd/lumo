@@ -40,6 +40,7 @@ export function ModelMix({ timeRange }: ModelMixProps) {
   const option: EChartsOption = {
     tooltip: {
       trigger: "item",
+      borderColor: "transparent",
     },
     series: [
       {

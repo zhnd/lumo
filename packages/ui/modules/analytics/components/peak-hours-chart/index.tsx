@@ -30,6 +30,7 @@ export function PeakHoursChart({ timeRange }: PeakHoursChartProps) {
   const option: EChartsOption = {
     tooltip: {
       trigger: "axis",
+      borderColor: "transparent",
     },
     grid: { top: 10, right: 10, bottom: 0, left: 0, outerBoundsMode: "same" },
     xAxis: {

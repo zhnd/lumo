@@ -153,10 +153,10 @@ impl AnalyticsService {
         let rows: Vec<ActivityDayRow> = sqlx::query_as(
             r#"
             SELECT
-                strftime('%Y-%m-%d', datetime(start_time / 1000, 'unixepoch', 'localtime')) as date,
-                COUNT(*) as count
-            FROM sessions
-            WHERE start_time >= ? AND start_time <= ?
+                strftime('%Y-%m-%d', datetime(timestamp / 1000, 'unixepoch', 'localtime')) as date,
+                COUNT(DISTINCT session_id) as count
+            FROM events
+            WHERE timestamp >= ? AND timestamp <= ?
             GROUP BY date
             ORDER BY date ASC
             "#,

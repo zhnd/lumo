@@ -49,6 +49,7 @@ export function ToolFrequencyBar({ timeRange }: ToolFrequencyBarProps) {
 
   const option: EChartsOption = {
     tooltip: {
+      borderColor: "transparent",
       formatter: (params: any) => {
         const item = data.find((d) => d.toolName === params.name);
         if (!item) return params.name;

@@ -32,6 +32,7 @@ export function ToolSuccessRate({ timeRange }: ToolSuccessRateProps) {
   const option: EChartsOption = {
     tooltip: {
       trigger: "axis",
+      borderColor: "transparent",
       axisPointer: { type: "shadow" },
     },
     legend: {

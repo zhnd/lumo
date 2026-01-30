@@ -89,7 +89,10 @@ export function ActivityHeatmap() {
     let row = 0;
 
     while (currentDate <= now) {
-      const dateStr = currentDate.toISOString().split("T")[0];
+      const y = currentDate.getFullYear();
+      const m = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const dd = String(currentDate.getDate()).padStart(2, "0");
+      const dateStr = `${y}-${m}-${dd}`;
       const count = map.get(dateStr) ?? 0;
       max = Math.max(max, count);
       total += count;

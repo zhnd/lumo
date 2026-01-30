@@ -34,6 +34,7 @@ export function TokenModelChart({ timeRange }: TokenModelChartProps) {
   const option: EChartsOption = {
     tooltip: {
       trigger: "axis",
+      borderColor: "transparent",
       axisPointer: { type: "shadow" },
       formatter: (params: any) => {
         const model = params[0]?.name ?? "";

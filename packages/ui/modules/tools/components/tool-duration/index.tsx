@@ -32,6 +32,7 @@ export function ToolDuration({ timeRange }: ToolDurationProps) {
   const option: EChartsOption = {
     tooltip: {
       trigger: "axis",
+      borderColor: "transparent",
       axisPointer: { type: "shadow" },
     },
     grid: { top: 10, right: 20, bottom: 0, left: 0, outerBoundsMode: "same" },

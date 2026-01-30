@@ -33,7 +33,15 @@ impl StatsService {
             .sum();
         let total_input_tokens: i64 = sessions.iter().map(|s| s.total_input_tokens).sum();
         let cache_tokens: i64 = sessions.iter().map(|s| s.total_cache_read_tokens).sum();
-        let active_time_seconds: i64 = sessions.iter().map(|s| s.duration_ms / 1000).sum();
+        // Clamp session duration to the queried time range for accurate active time
+        let active_time_seconds: i64 = sessions
+            .iter()
+            .map(|s| {
+                let clamped_start = s.start_time.max(start_time);
+                let clamped_end = s.end_time.min(end_time);
+                (clamped_end - clamped_start).max(0) / 1000
+            })
+            .sum();
 
         // Cache hit rate = cache_read / (cache_read + input)
         // input_tokens and cache_read_tokens are independent fields,

@@ -37,7 +37,7 @@ export function ToolTimeline({ timeRange }: ToolTimelineProps) {
     return <CardEmpty title="Tool Timeline" message="No data" />;
 
   const option: EChartsOption = {
-    tooltip: { trigger: "axis" },
+    tooltip: { trigger: "axis", borderColor: "transparent" },
     legend: {
       data: series.map((s) => s.name),
       bottom: 0,
