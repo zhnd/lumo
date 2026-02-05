@@ -30,7 +30,7 @@ pub fn get_db_path() -> Result<PathBuf> {
 ///
 /// # Arguments
 /// * `db_path` - Path to the SQLite database file
-pub async fn create_pool(db_path: &PathBuf) -> Result<SqlitePool> {
+pub async fn create_pool(db_path: &std::path::Path) -> Result<SqlitePool> {
     let db_url = format!("sqlite:{}?mode=rwc", db_path.display());
 
     info!("Connecting to database: {}", db_path.display());

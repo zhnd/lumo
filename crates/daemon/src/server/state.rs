@@ -11,6 +11,7 @@ pub struct AppState {
     /// Database connection pool
     pub db: SqlitePool,
     /// Application configuration
+    #[allow(dead_code)]
     pub config: Arc<Config>,
 }
 

@@ -24,7 +24,7 @@ impl UserRepository {
             .map(|row| row.try_into())
             .collect();
 
-        Ok(users?)
+        users
     }
 
     /// Get a user by ID

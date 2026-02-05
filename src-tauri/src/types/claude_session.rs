@@ -34,8 +34,10 @@ pub struct ClaudeSession {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClaudeSessionIndex {
+    #[allow(dead_code)]
     pub version: i32,
     pub entries: Vec<ClaudeSessionIndexEntry>,
+    #[allow(dead_code)]
     pub original_path: String,
 }
 
@@ -160,6 +162,7 @@ pub struct RawClaudeMessage {
 #[serde(rename_all = "camelCase")]
 pub struct RawMessageData {
     #[serde(default)]
+    #[allow(dead_code)]
     pub role: Option<String>,
     #[serde(default)]
     pub content: Option<serde_json::Value>,

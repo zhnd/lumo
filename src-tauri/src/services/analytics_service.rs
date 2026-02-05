@@ -38,8 +38,8 @@ impl AnalyticsService {
 
         // Fill all 24 hours
         let mut result = vec![HourlyActivity { hour: 0, count: 0 }; 24];
-        for i in 0..24 {
-            result[i].hour = i as i32;
+        for (i, item) in result.iter_mut().enumerate().take(24) {
+            item.hour = i as i32;
         }
         for r in rows {
             if (r.hour as usize) < 24 {

@@ -7,7 +7,6 @@ use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod config;
-mod error;
 mod handlers;
 mod routes;
 mod server;

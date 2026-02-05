@@ -394,6 +394,7 @@ struct DateRow {
 #[derive(Debug, sqlx::FromRow)]
 struct HourRow {
     hour: i64,
+    #[allow(dead_code)]
     count: i64,
 }
 

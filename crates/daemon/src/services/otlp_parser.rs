@@ -21,8 +21,7 @@ pub fn parse_metrics(request: &ExportMetricsServiceRequest) -> Vec<NewMetric> {
 
         let resource_json = resource_attrs
             .as_ref()
-            .map(|attrs| serde_json::to_string(attrs).ok())
-            .flatten();
+            .and_then(|attrs| serde_json::to_string(attrs).ok());
 
         for scope_metrics in &resource_metrics.scope_metrics {
             for metric in &scope_metrics.metrics {
@@ -114,8 +113,7 @@ pub fn parse_logs_to_events(request: &ExportLogsServiceRequest) -> Vec<NewEvent>
 
         let resource_json = resource_attrs
             .as_ref()
-            .map(|attrs| serde_json::to_string(attrs).ok())
-            .flatten();
+            .and_then(|attrs| serde_json::to_string(attrs).ok());
 
         for scope_logs in &resource_logs.scope_logs {
             for log_record in &scope_logs.log_records {
