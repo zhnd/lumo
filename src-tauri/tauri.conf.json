@@ -29,6 +29,7 @@
     "active": true,
     "targets": "all",
     "resources": ["../target/release/lumo-daemon"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -36,5 +37,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUyMjYwNzUwRTc3RDYzOTcKUldTWFkzM25VQWNtVXF0RU5ZYkIzSlZuQWNjQjhRVjNoRnZFZXNhbFJKb1VvNGwxWGszZ3ptMksK",
+      "endpoints": [
+        "https://github.com/zhnd/lumo/releases/latest/download/latest.json"
+      ]
+    }
   }
 }
