@@ -8,6 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { UpdateIndicator } from "@/components/update-indicator";
 import { useService } from "./use-service";
 import { NAV_ITEMS, SETTINGS_ITEM } from "./constants";
 
@@ -35,6 +36,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-2">
+        <UpdateIndicator />
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

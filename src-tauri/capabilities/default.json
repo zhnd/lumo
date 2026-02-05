@@ -16,6 +16,8 @@
     "core:window:allow-set-focus",
     "clipboard-manager:allow-write-image",
     "dialog:allow-save",
-    "dialog:default"
+    "dialog:default",
+    "updater:default",
+    "process:allow-restart"
   ]
 }
