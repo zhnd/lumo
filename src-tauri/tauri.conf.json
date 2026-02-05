@@ -7,7 +7,7 @@
     "frontendDist": "../packages/ui/out",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build"
+    "beforeBuildCommand": "cargo build -p lumo-daemon --release && pnpm build"
   },
   "app": {
     "windows": [
@@ -28,6 +28,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": ["../target/release/lumo-daemon"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

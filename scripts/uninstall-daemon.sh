@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 # Configuration
 DAEMON_NAME="lumo-daemon"
 PLIST_NAME="com.lumo.daemon.plist"
-INSTALL_DIR="/usr/local/bin"
+INSTALL_DIR="$HOME/.lumo/bin"
 LAUNCHAGENTS_DIR="$HOME/Library/LaunchAgents"
 LOG_DIR="$HOME/Library/Logs/com.lumo.daemon"
 
@@ -47,7 +47,7 @@ echo ""
 # Step 2: Remove binary
 if [ -f "$INSTALL_DIR/$DAEMON_NAME" ]; then
     echo -e "${YELLOW}[2/3]${NC} Removing binary..."
-    sudo rm "$INSTALL_DIR/$DAEMON_NAME"
+    rm "$INSTALL_DIR/$DAEMON_NAME"
     echo -e "${GREEN}✓${NC} Binary removed"
 else
     echo -e "${YELLOW}[2/3]${NC} Binary not found (skipping)"

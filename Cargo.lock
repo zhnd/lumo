@@ -100,6 +100,7 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-log",
  "tokio",
+ "toml 0.8.2",
  "typeshare",
  "uuid",
 ]

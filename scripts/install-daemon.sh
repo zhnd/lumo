@@ -10,7 +10,7 @@ NC='\033[0m' # No Color
 # Configuration
 DAEMON_NAME="lumo-daemon"
 PLIST_NAME="com.lumo.daemon.plist"
-INSTALL_DIR="/usr/local/bin"
+INSTALL_DIR="$HOME/.lumo/bin"
 LAUNCHAGENTS_DIR="$HOME/Library/LaunchAgents"
 LOG_DIR="$HOME/Library/Logs/com.lumo.daemon"
 
@@ -43,10 +43,11 @@ fi
 echo -e "${GREEN}✓${NC} Build complete"
 echo ""
 
-# Step 2: Copy binary to /usr/local/bin
+# Step 2: Copy binary to ~/.lumo/bin
 echo -e "${YELLOW}[2/6]${NC} Installing binary to $INSTALL_DIR..."
-sudo cp "target/release/$DAEMON_NAME" "$INSTALL_DIR/$DAEMON_NAME"
-sudo chmod +x "$INSTALL_DIR/$DAEMON_NAME"
+mkdir -p "$INSTALL_DIR"
+cp "target/release/$DAEMON_NAME" "$INSTALL_DIR/$DAEMON_NAME"
+chmod +x "$INSTALL_DIR/$DAEMON_NAME"
 echo -e "${GREEN}✓${NC} Binary installed: $INSTALL_DIR/$DAEMON_NAME"
 echo ""
 
@@ -67,7 +68,7 @@ echo -e "${YELLOW}[5/6]${NC} Generating launchd plist..."
 sed -e "s|{{DAEMON_PATH}}|$INSTALL_DIR/$DAEMON_NAME|g" \
     -e "s|{{LOG_DIR}}|$LOG_DIR|g" \
     -e "s|{{HOME}}|$HOME|g" \
-    "$PROJECT_ROOT/crates/daemon/com.lumo.daemon.plist.template" > "$LAUNCHAGENTS_DIR/$PLIST_NAME"
+    "$PROJECT_ROOT/src-tauri/resources/com.lumo.daemon.plist.template" > "$LAUNCHAGENTS_DIR/$PLIST_NAME"
 
 echo -e "${GREEN}✓${NC} Plist generated: $LAUNCHAGENTS_DIR/$PLIST_NAME"
 echo ""

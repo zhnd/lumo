@@ -2,56 +2,44 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- Service identifier -->
     <key>Label</key>
     <string>com.lumo.daemon</string>
 
-    <!-- Program to run -->
     <key>ProgramArguments</key>
     <array>
         <string>{{DAEMON_PATH}}</string>
     </array>
 
-    <!-- Environment variables -->
     <key>EnvironmentVariables</key>
     <dict>
-        <key>LUMO_SERVER_ADDRESS</key>
-        <string>127.0.0.1:4318</string>
-        <key>RUST_LOG</key>
-        <string>lumo_daemon=info,tower_http=info</string>
+        <key>HOME</key>
+        <string>{{HOME}}</string>
     </dict>
 
-    <!-- Start on load (boot/login) -->
     <key>RunAtLoad</key>
     <true/>
 
-    <!-- Keep the daemon alive - restart on crash -->
     <key>KeepAlive</key>
     <dict>
         <key>SuccessfulExit</key>
         <false/>
     </dict>
 
-    <!-- Logging -->
     <key>StandardOutPath</key>
     <string>{{LOG_DIR}}/stdout.log</string>
 
     <key>StandardErrorPath</key>
     <string>{{LOG_DIR}}/stderr.log</string>
 
-    <!-- Working directory -->
     <key>WorkingDirectory</key>
     <string>{{HOME}}</string>
 
-    <!-- Process type -->
     <key>ProcessType</key>
     <string>Background</string>
 
-    <!-- Nice level (lower priority) -->
     <key>Nice</key>
     <integer>5</integer>
 
-    <!-- Restart throttle (wait 10s before restart after crash) -->
     <key>ThrottleInterval</key>
     <integer>10</integer>
 </dict>

@@ -1,4 +1,5 @@
 mod commands;
+mod daemon;
 mod database;
 mod services;
 mod types;
@@ -17,11 +18,22 @@ pub fn run() {
         )?;
       }
 
-      // Initialize database asynchronously
+      // Initialize database, then ensure daemon is running.
+      // Sequential to guarantee tables exist before daemon starts writing.
       let app_handle = app.handle().clone();
       tokio::spawn(async move {
         if let Err(e) = database::setup(&app_handle).await {
-          eprintln!("Failed to initialize database: {}", e);
+          log::error!("Failed to initialize database: {}", e);
+          return;
+        }
+
+        match daemon::DaemonManager::new(&app_handle) {
+          Ok(manager) => {
+            if let Err(e) = manager.ensure_running().await {
+              log::warn!("Daemon setup warning: {}", e);
+            }
+          }
+          Err(e) => log::error!("Failed to init daemon manager: {}", e),
         }
       });
 
