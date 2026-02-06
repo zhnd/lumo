@@ -2,10 +2,12 @@
 //!
 //! Business logic for tool usage analysis.
 
+use std::collections::{HashMap, HashSet};
+
 use anyhow::Result;
-use chrono::{Datelike, Local, TimeZone};
 use sqlx::SqlitePool;
 
+use super::time_range::{generate_date_labels, get_time_range_bounds};
 use crate::types::{CodeEditLanguageStats, TimeRange, ToolTrend, ToolUsageStats};
 
 /// Service for tool analysis operations
@@ -17,7 +19,7 @@ impl ToolsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<ToolUsageStats>> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let rows: Vec<ToolUsageRow> = sqlx::query_as(
             r#"
@@ -57,7 +59,7 @@ impl ToolsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<CodeEditLanguageStats>> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let rows: Vec<CodeEditLangRow> = sqlx::query_as(
             r#"
@@ -92,7 +94,7 @@ impl ToolsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<ToolTrend>> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let rows: Vec<ToolTrendRow> = sqlx::query_as(
             r#"
@@ -123,39 +125,29 @@ impl ToolsService {
         .fetch_all(pool)
         .await?;
 
-        Ok(rows
-            .into_iter()
-            .map(|r| ToolTrend {
-                tool_name: r.tool_name,
-                date: r.date,
-                count: r.count as i32,
-            })
-            .collect())
-    }
+        let tools: HashSet<String> = rows.iter().map(|r| r.tool_name.clone()).collect();
+        let mut count_map: HashMap<(String, String), i32> = HashMap::new();
+        for r in rows {
+            count_map.insert((r.tool_name, r.date), r.count as i32);
+        }
 
-    fn get_time_range_bounds(time_range: TimeRange) -> (i64, i64) {
-        let now = Local::now();
-        let end_time = now.timestamp_millis();
-
-        let start = match time_range {
-            TimeRange::Today => now.date_naive().and_hms_opt(0, 0, 0).unwrap(),
-            TimeRange::Week => {
-                let days_since_monday = now.weekday().num_days_from_monday() as i64;
-                (now - chrono::Duration::days(days_since_monday))
-                    .date_naive()
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
+        let all_labels = generate_date_labels(time_range);
+        let mut result = Vec::new();
+        for label in &all_labels {
+            for tool in &tools {
+                let count = count_map
+                    .get(&(tool.clone(), label.clone()))
+                    .copied()
+                    .unwrap_or(0);
+                result.push(ToolTrend {
+                    tool_name: tool.clone(),
+                    date: label.clone(),
+                    count,
+                });
             }
-            TimeRange::Month => now
-                .date_naive()
-                .with_day(1)
-                .unwrap()
-                .and_hms_opt(0, 0, 0)
-                .unwrap(),
-        };
+        }
 
-        let start_time = Local.from_local_datetime(&start).unwrap().timestamp_millis();
-        (start_time, end_time)
+        Ok(result)
     }
 }
 

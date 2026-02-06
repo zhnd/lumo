@@ -90,6 +90,7 @@ dependencies = [
  "chrono",
  "dirs 5.0.1",
  "log",
+ "reqwest",
  "serde",
  "serde_json",
  "shared",

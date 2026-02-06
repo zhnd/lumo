@@ -1,10 +1,10 @@
 "use client";
 
-import { DollarSign, Zap, Clock, Boxes } from "lucide-react";
+import { DollarSign, Zap, Code, Boxes } from "lucide-react";
 import { StatCard } from "@/components/stat-card";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { formatValue, formatDurationMixed } from "@/lib/format";
+import { formatValue } from "@/lib/format";
 import { useService } from "./use-service";
 import type { StatCardsProps } from "./types";
 
@@ -39,12 +39,25 @@ export function StatCards({ timeRange }: StatCardsProps) {
     ? `${stats.costChangePercent >= 0 ? "+" : ""}${stats.costChangePercent.toFixed(0)}% vs last`
     : undefined;
 
+  // Cost projection for month view
+  let costDescription = changePercent;
+  if (timeRange === "month") {
+    const now = new Date();
+    const daysPassed = now.getDate();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const projectedCost = daysPassed > 0 ? (stats.totalCost / daysPassed) * daysInMonth : 0;
+    const projected = formatValue(projectedCost, "currency");
+    costDescription = changePercent
+      ? `${changePercent} · Projected: ${projected.full}`
+      : `Projected: ${projected.full}`;
+  }
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Total Cost"
         value={cost.full}
-        description={changePercent}
+        description={costDescription}
         icon={<DollarSign className="size-4" />}
         color="emerald"
       />
@@ -57,13 +70,10 @@ export function StatCards({ timeRange }: StatCardsProps) {
         color="blue"
       />
       <StatCard
-        title="Active Time"
-        value={formatDurationMixed(stats.activeTimeSeconds)}
-        description={stats.totalSessions > 0
-          ? `~${formatDurationMixed(Math.round(stats.activeTimeSeconds / stats.totalSessions))}/session`
-          : undefined
-        }
-        icon={<Clock className="size-4" />}
+        title="Lines Changed"
+        value={formatValue(stats.linesOfCodeAdded + stats.linesOfCodeRemoved, "number").full}
+        description={`+${formatValue(stats.linesOfCodeAdded, "number").full} / -${formatValue(stats.linesOfCodeRemoved, "number").full}`}
+        icon={<Code className="size-4" />}
         color="violet"
       />
       <StatCard

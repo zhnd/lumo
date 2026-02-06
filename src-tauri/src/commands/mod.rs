@@ -6,6 +6,7 @@ pub mod session_commands;
 pub mod stats_commands;
 pub mod tools_commands;
 pub mod trends_commands;
+pub mod usage_commands;
 pub mod user_commands;
 pub mod wrapped_commands;
 
@@ -17,6 +18,7 @@ pub use session_commands::*;
 pub use stats_commands::*;
 pub use tools_commands::*;
 pub use trends_commands::*;
+pub use usage_commands::*;
 pub use user_commands::*;
 pub use wrapped_commands::*;
 
@@ -41,6 +43,7 @@ macro_rules! app_commands {
             // Trends commands
             commands::get_usage_trends,
             commands::get_cost_by_model_trends,
+            commands::get_cost_efficiency_trend,
             // Claude session commands
             commands::get_claude_sessions,
             commands::get_claude_sessions_for_project,
@@ -53,6 +56,7 @@ macro_rules! app_commands {
             commands::get_hourly_activity,
             commands::get_session_length_distribution,
             commands::get_error_rate,
+            commands::get_cache_hit_trend,
             commands::get_activity_heatmap,
             // Wrapped commands
             commands::get_wrapped_data,
@@ -60,6 +64,11 @@ macro_rules! app_commands {
             commands::save_image_to_path,
             // Daemon commands
             commands::get_daemon_status,
+            // Usage commands
+            commands::get_usage_limits,
+            commands::save_api_key,
+            commands::has_api_key,
+            commands::delete_api_key,
         ]
     };
 }

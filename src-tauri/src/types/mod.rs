@@ -8,6 +8,7 @@ mod entities;
 mod stats;
 mod tools;
 mod trends;
+mod usage;
 mod wrapped;
 
 pub use analytics::*;
@@ -16,4 +17,5 @@ pub use entities::*;
 pub use stats::*;
 pub use tools::*;
 pub use trends::*;
+pub use usage::*;
 pub use wrapped::*;

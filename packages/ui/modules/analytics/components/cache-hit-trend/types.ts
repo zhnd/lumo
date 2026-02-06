@@ -1,5 +1,5 @@
 import type { TimeRange } from "@/src/generated/typeshare-types";
 
-export interface TokenBreakdownProps {
+export interface CacheHitTrendProps {
   timeRange: TimeRange;
 }

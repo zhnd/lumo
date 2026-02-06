@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UpdateIndicator } from "@/components/update-indicator";
 import { useService } from "./use-service";
-import { NAV_ITEMS, SETTINGS_ITEM } from "./constants";
+import { NAV_ITEMS } from "./constants";
 
 export function AppSidebar() {
   const { activeItem, onNavItemClick } = useService();
@@ -37,19 +37,7 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-2">
         <UpdateIndicator />
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={activeItem === SETTINGS_ITEM.id}
-              tooltip={SETTINGS_ITEM.label}
-              className="h-9"
-              onClick={() => onNavItemClick(SETTINGS_ITEM.id)}
-            >
-              <SETTINGS_ITEM.icon className="size-4" />
-              <span>{SETTINGS_ITEM.label}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        {/* <UsageLimits /> */}
       </SidebarFooter>
     </Sidebar>
   );

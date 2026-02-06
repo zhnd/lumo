@@ -4,7 +4,6 @@ import {
   Wrench,
   BarChart3,
   Sparkles,
-  Settings,
 } from "lucide-react";
 import type { NavItem } from "./types";
 
@@ -35,9 +34,3 @@ export const NAV_ITEMS = [
     icon: Sparkles,
   },
 ] as const satisfies readonly NavItem[];
-
-export const SETTINGS_ITEM = {
-  id: "settings",
-  label: "Settings",
-  icon: Settings,
-} as const satisfies NavItem;

@@ -4,6 +4,7 @@ import type {
   SessionBucket,
   ErrorRateStats,
   ActivityDay,
+  CacheHitTrend,
   TimeRange,
 } from "../generated/typeshare-types";
 
@@ -27,6 +28,12 @@ export class AnalyticsBridge {
 
   static async getErrorRate(timeRange: TimeRange): Promise<ErrorRateStats> {
     return invoke<ErrorRateStats>("get_error_rate", { timeRange });
+  }
+
+  static async getCacheHitTrend(
+    timeRange: TimeRange,
+  ): Promise<CacheHitTrend[]> {
+    return invoke<CacheHitTrend[]>("get_cache_hit_trend", { timeRange });
   }
 
   static async getActivityHeatmap(): Promise<ActivityDay[]> {

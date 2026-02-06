@@ -41,6 +41,15 @@ export function ModelMix({ timeRange }: ModelMixProps) {
     tooltip: {
       trigger: "item",
       borderColor: "transparent",
+      formatter: (params: unknown) => {
+        const item = params as {
+          name: string;
+          value: number;
+          percent: number;
+          color: string;
+        };
+        return `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${item.color};margin-right:6px;"></span>${item.name}<br/><b>$${item.value.toFixed(2)}</b> · ${item.percent}%`;
+      },
     },
     series: [
       {
@@ -64,7 +73,7 @@ export function ModelMix({ timeRange }: ModelMixProps) {
   };
 
   return (
-    <Card className="gap-3 py-4">
+    <Card className="h-full gap-3 py-4">
       <CardHeader className="px-4">
         <CardTitle>Model Mix</CardTitle>
       </CardHeader>

@@ -6,8 +6,8 @@ import type { TimeRange } from "@/src/generated/typeshare-types";
 
 export function useService(timeRange: TimeRange) {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["session-length-distribution", timeRange],
-    queryFn: () => AnalyticsBridge.getSessionLengthDistribution(timeRange),
+    queryKey: ["cache-hit-trend", timeRange],
+    queryFn: () => AnalyticsBridge.getCacheHitTrend(timeRange),
   });
 
   return {

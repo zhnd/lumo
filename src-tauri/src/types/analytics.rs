@@ -41,3 +41,12 @@ pub struct ActivityDay {
     pub date: String,
     pub count: i32,
 }
+
+/// Cache hit rate trend data point
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CacheHitTrend {
+    pub date: String,
+    pub rate: f32,
+}

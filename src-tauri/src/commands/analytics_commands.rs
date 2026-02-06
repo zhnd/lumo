@@ -6,7 +6,9 @@ use sqlx::SqlitePool;
 use tauri::{command, AppHandle, Manager};
 
 use crate::services::AnalyticsService;
-use crate::types::{ActivityDay, ErrorRateStats, HourlyActivity, SessionBucket, TimeRange};
+use crate::types::{
+    ActivityDay, CacheHitTrend, ErrorRateStats, HourlyActivity, SessionBucket, TimeRange,
+};
 
 /// Get hourly activity distribution
 #[command]
@@ -40,6 +42,18 @@ pub async fn get_error_rate(
 ) -> Result<ErrorRateStats, String> {
     let pool = app_handle.state::<SqlitePool>();
     AnalyticsService::get_error_rate(&pool, time_range)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Get cache hit rate trend over time
+#[command]
+pub async fn get_cache_hit_trend(
+    app_handle: AppHandle,
+    time_range: TimeRange,
+) -> Result<Vec<CacheHitTrend>, String> {
+    let pool = app_handle.state::<SqlitePool>();
+    AnalyticsService::get_cache_hit_trend(&pool, time_range)
         .await
         .map_err(|e| e.to_string())
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { NAV_ITEMS, SETTINGS_ITEM } from "./constants";
+import { NAV_ITEMS } from "./constants";
 import type { UseServiceReturn } from "./types";
 
 const ROUTE_MAP: Record<string, string> = {
@@ -10,7 +10,6 @@ const ROUTE_MAP: Record<string, string> = {
   tools: "/tools",
   analytics: "/analytics",
   wrapped: "/wrapped",
-  settings: "/settings",
 } as const;
 
 const NAV_ROUTES = [
@@ -18,7 +17,6 @@ const NAV_ROUTES = [
   { prefix: "/tools", id: "tools" },
   { prefix: "/analytics", id: "analytics" },
   { prefix: "/wrapped", id: "wrapped" },
-  { prefix: "/settings", id: "settings" },
 ] as const;
 
 function resolveActiveItem(pathname: string): string {
@@ -45,7 +43,7 @@ export function useService(): UseServiceReturn {
   };
 
   return {
-    navItems: [...NAV_ITEMS, SETTINGS_ITEM],
+    navItems: [...NAV_ITEMS],
     activeItem,
     onNavItemClick: handleNavItemClick,
   };

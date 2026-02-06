@@ -2,11 +2,16 @@
 //!
 //! Business logic for analytics insights and deep analysis.
 
+use std::collections::HashMap;
+
 use anyhow::Result;
-use chrono::{Datelike, Local, TimeZone};
+use chrono::{Local, TimeZone};
 use sqlx::SqlitePool;
 
-use crate::types::{ActivityDay, ErrorRateStats, HourlyActivity, SessionBucket, TimeRange};
+use super::time_range::{generate_date_labels, get_time_range_bounds};
+use crate::types::{
+    ActivityDay, CacheHitTrend, ErrorRateStats, HourlyActivity, SessionBucket, TimeRange,
+};
 
 /// Service for analytics operations
 pub struct AnalyticsService;
@@ -17,7 +22,7 @@ impl AnalyticsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<HourlyActivity>> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let rows: Vec<HourlyRow> = sqlx::query_as(
             r#"
@@ -55,7 +60,7 @@ impl AnalyticsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<SessionBucket>> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let rows: Vec<BucketRow> = sqlx::query_as(
             r#"
@@ -103,7 +108,7 @@ impl AnalyticsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<ErrorRateStats> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let row: Option<ErrorRateRow> = sqlx::query_as(
             r#"
@@ -135,6 +140,62 @@ impl AnalyticsService {
             total_errors,
             error_rate,
         })
+    }
+
+    /// Get cache hit rate trend over time
+    pub async fn get_cache_hit_trend(
+        pool: &SqlitePool,
+        time_range: TimeRange,
+    ) -> Result<Vec<CacheHitTrend>> {
+        let (start_time, end_time) = get_time_range_bounds(time_range);
+
+        let (format_str, group_expr) = match time_range {
+            TimeRange::Today => (
+                "%H:00",
+                "strftime('%Y-%m-%d %H', datetime(timestamp / 1000, 'unixepoch', 'localtime'))",
+            ),
+            TimeRange::Week | TimeRange::Month => (
+                "%Y-%m-%d",
+                "strftime('%Y-%m-%d', datetime(timestamp / 1000, 'unixepoch', 'localtime'))",
+            ),
+        };
+
+        let query = format!(
+            r#"
+            SELECT
+                strftime('{}', datetime(timestamp / 1000, 'unixepoch', 'localtime')) as date,
+                COALESCE(
+                    SUM(cache_read_tokens) * 100.0 / NULLIF(SUM(input_tokens + cache_read_tokens), 0),
+                    0.0
+                ) as rate
+            FROM events
+            WHERE timestamp >= ? AND timestamp <= ?
+                AND name = 'claude_code.api_request'
+            GROUP BY {}
+            ORDER BY MIN(timestamp) ASC
+            "#,
+            format_str, group_expr
+        );
+
+        let rows: Vec<CacheHitRow> = sqlx::query_as(&query)
+            .bind(start_time)
+            .bind(end_time)
+            .fetch_all(pool)
+            .await?;
+
+        let mut trend_map: HashMap<String, f32> = HashMap::new();
+        for r in rows {
+            trend_map.insert(r.date, r.rate as f32);
+        }
+
+        let all_labels = generate_date_labels(time_range);
+        Ok(all_labels
+            .into_iter()
+            .map(|label| {
+                let rate = trend_map.remove(&label).unwrap_or(0.0);
+                CacheHitTrend { date: label, rate }
+            })
+            .collect())
     }
 
     /// Get activity heatmap data (last 365 days, daily session counts)
@@ -175,30 +236,6 @@ impl AnalyticsService {
             .collect())
     }
 
-    fn get_time_range_bounds(time_range: TimeRange) -> (i64, i64) {
-        let now = Local::now();
-        let end_time = now.timestamp_millis();
-
-        let start = match time_range {
-            TimeRange::Today => now.date_naive().and_hms_opt(0, 0, 0).unwrap(),
-            TimeRange::Week => {
-                let days_since_monday = now.weekday().num_days_from_monday() as i64;
-                (now - chrono::Duration::days(days_since_monday))
-                    .date_naive()
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-            }
-            TimeRange::Month => now
-                .date_naive()
-                .with_day(1)
-                .unwrap()
-                .and_hms_opt(0, 0, 0)
-                .unwrap(),
-        };
-
-        let start_time = Local.from_local_datetime(&start).unwrap().timestamp_millis();
-        (start_time, end_time)
-    }
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -223,4 +260,10 @@ struct ErrorRateRow {
 struct ActivityDayRow {
     date: String,
     count: i64,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+struct CacheHitRow {
+    date: String,
+    rate: f64,
 }

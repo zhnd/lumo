@@ -27,3 +27,13 @@ pub struct CostByModelTrend {
     pub model: String,
     pub cost: f32,
 }
+
+/// Cost efficiency trend data point (cost per session over time)
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CostEfficiencyTrend {
+    pub date: String,
+    pub cost_per_session: f32,
+    pub session_count: i32,
+}

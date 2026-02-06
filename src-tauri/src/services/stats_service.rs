@@ -3,10 +3,11 @@
 //! Business logic for statistics calculations and aggregations.
 
 use anyhow::Result;
-use chrono::{Datelike, Local, TimeZone};
+use chrono::{Local, TimeZone};
 use shared::SessionRepository;
 use sqlx::SqlitePool;
 
+use super::time_range::get_time_range_bounds;
 use crate::types::{format_model_display_name, ModelStats, SummaryStats, TimeRange, TokenStats};
 
 /// Service for statistics operations
@@ -15,56 +16,54 @@ pub struct StatsService;
 impl StatsService {
     /// Get summary statistics for a time range
     pub async fn get_summary(pool: &SqlitePool, time_range: TimeRange) -> Result<SummaryStats> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
         let today_start = Self::get_today_start();
 
-        // Get sessions in time range
-        let sessions = SessionRepository::find_by_time_range(pool, start_time, end_time).await?;
+        // Query cost and token totals from events table (not sessions)
+        // to ensure consistency with Cost Trends chart
+        let totals: EventTotalsRow = sqlx::query_as(
+            r#"
+            SELECT
+                COALESCE(SUM(cost_usd), 0) as total_cost,
+                COALESCE(SUM(input_tokens + output_tokens), 0) as total_tokens,
+                COALESCE(SUM(input_tokens), 0) as total_input_tokens,
+                COALESCE(SUM(cache_read_tokens), 0) as cache_tokens
+            FROM events
+            WHERE timestamp >= ? AND timestamp <= ?
+                AND name = 'claude_code.api_request'
+            "#,
+        )
+        .bind(start_time)
+        .bind(end_time)
+        .fetch_one(pool)
+        .await?;
 
-        // Get today's sessions
+        // Session counts still come from the sessions view
+        let sessions = SessionRepository::find_by_time_range(pool, start_time, end_time).await?;
         let today_sessions =
             SessionRepository::find_by_time_range(pool, today_start, end_time).await?;
 
-        // Calculate totals
-        let total_cost: f64 = sessions.iter().map(|s| s.total_cost_usd).sum();
-        let total_tokens: i64 = sessions
-            .iter()
-            .map(|s| s.total_input_tokens + s.total_output_tokens)
-            .sum();
-        let total_input_tokens: i64 = sessions.iter().map(|s| s.total_input_tokens).sum();
-        let cache_tokens: i64 = sessions.iter().map(|s| s.total_cache_read_tokens).sum();
-        // Clamp session duration to the queried time range for accurate active time
-        let active_time_seconds: i64 = sessions
-            .iter()
-            .map(|s| {
-                let clamped_start = s.start_time.max(start_time);
-                let clamped_end = s.end_time.min(end_time);
-                (clamped_end - clamped_start).max(0) / 1000
-            })
-            .sum();
-
         // Cache hit rate = cache_read / (cache_read + input)
-        // input_tokens and cache_read_tokens are independent fields,
-        // so total effective input = cache_read + input
-        let cache_denominator = cache_tokens + total_input_tokens;
+        let cache_denominator = totals.cache_tokens + totals.total_input_tokens;
         let cache_percentage = if cache_denominator > 0 {
-            (cache_tokens as f64 / cache_denominator as f64) * 100.0
+            (totals.cache_tokens as f64 / cache_denominator as f64) * 100.0
         } else {
             0.0
         };
 
         // Calculate cost change vs previous period
-        let cost_change_percent = Self::calculate_cost_change(pool, time_range, total_cost).await?;
+        let cost_change_percent =
+            Self::calculate_cost_change(pool, time_range, totals.total_cost).await?;
 
         // Get metric counters
         let metric_counters = Self::get_metric_counters(pool, start_time, end_time).await?;
 
         Ok(SummaryStats {
-            total_cost: total_cost as f32,
-            total_tokens: total_tokens as i32,
-            cache_tokens: cache_tokens as i32,
+            total_cost: totals.total_cost as f32,
+            total_tokens: totals.total_tokens as i32,
+            cache_tokens: totals.cache_tokens as i32,
             cache_percentage: cache_percentage as f32,
-            active_time_seconds: active_time_seconds as i32,
+            active_time_seconds: 0,
             total_sessions: sessions.len() as i32,
             today_sessions: today_sessions.len() as i32,
             cost_change_percent: cost_change_percent as f32,
@@ -82,7 +81,7 @@ impl StatsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<ModelStats>> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         // Query model stats from events
         let rows: Vec<ModelStatsRow> = sqlx::query_as(
@@ -122,7 +121,7 @@ impl StatsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<TokenStats>> {
-        let (start_time, end_time) = Self::get_time_range_bounds(time_range);
+        let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let rows: Vec<TokenStatsRow> = sqlx::query_as(
             r#"
@@ -156,32 +155,6 @@ impl StatsService {
                 cache_creation: r.cache_creation as i32,
             })
             .collect())
-    }
-
-    /// Get time range start and end timestamps (in milliseconds)
-    fn get_time_range_bounds(time_range: TimeRange) -> (i64, i64) {
-        let now = Local::now();
-        let end_time = now.timestamp_millis();
-
-        let start = match time_range {
-            TimeRange::Today => now.date_naive().and_hms_opt(0, 0, 0).unwrap(),
-            TimeRange::Week => {
-                let days_since_monday = now.weekday().num_days_from_monday() as i64;
-                (now - chrono::Duration::days(days_since_monday))
-                    .date_naive()
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-            }
-            TimeRange::Month => now
-                .date_naive()
-                .with_day(1)
-                .unwrap()
-                .and_hms_opt(0, 0, 0)
-                .unwrap(),
-        };
-
-        let start_time = Local.from_local_datetime(&start).unwrap().timestamp_millis();
-        (start_time, end_time)
     }
 
     /// Get today's start timestamp
@@ -273,27 +246,49 @@ impl StatsService {
         time_range: TimeRange,
         current_cost: f64,
     ) -> Result<f64> {
-        let (start_time, _) = Self::get_time_range_bounds(time_range);
+        let (start_time, _) = get_time_range_bounds(time_range);
 
         // Calculate previous period bounds
         let duration_ms = match time_range {
-            TimeRange::Today => 24 * 60 * 60 * 1000,
+            TimeRange::Today => 24 * 60 * 60 * 1000_i64,
             TimeRange::Week => 7 * 24 * 60 * 60 * 1000,
             TimeRange::Month => 30 * 24 * 60 * 60 * 1000,
         };
         let prev_start = start_time - duration_ms;
         let prev_end = start_time;
 
-        let prev_sessions =
-            SessionRepository::find_by_time_range(pool, prev_start, prev_end).await?;
-        let prev_cost: f64 = prev_sessions.iter().map(|s| s.total_cost_usd).sum();
+        let row: CostRow = sqlx::query_as(
+            r#"
+            SELECT COALESCE(SUM(cost_usd), 0) as cost
+            FROM events
+            WHERE timestamp >= ? AND timestamp <= ?
+                AND name = 'claude_code.api_request'
+            "#,
+        )
+        .bind(prev_start)
+        .bind(prev_end)
+        .fetch_one(pool)
+        .await?;
 
-        if prev_cost > 0.0 {
-            Ok(((current_cost - prev_cost) / prev_cost) * 100.0)
+        if row.cost > 0.0 {
+            Ok(((current_cost - row.cost) / row.cost) * 100.0)
         } else {
             Ok(0.0)
         }
     }
+}
+
+#[derive(Debug, sqlx::FromRow)]
+struct EventTotalsRow {
+    total_cost: f64,
+    total_tokens: i64,
+    total_input_tokens: i64,
+    cache_tokens: i64,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+struct CostRow {
+    cost: f64,
 }
 
 #[derive(Debug, sqlx::FromRow)]

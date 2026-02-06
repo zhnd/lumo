@@ -1,19 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { AnalyticsBridge } from "@/src/bridges/analytics-bridge";
+import { TrendsBridge } from "@/src/bridges/trends-bridge";
 import type { TimeRange } from "@/src/generated/typeshare-types";
 
 export function useService(timeRange: TimeRange) {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["error-rate", timeRange],
-    queryFn: () => AnalyticsBridge.getErrorRate(timeRange),
+    queryKey: ["cost-efficiency-trend", timeRange],
+    queryFn: () => TrendsBridge.getCostEfficiencyTrend(timeRange),
   });
 
   return {
-    errorRate: data?.errorRate ?? 0,
-    totalErrors: data?.totalErrors ?? 0,
-    totalRequests: data?.totalRequests ?? 0,
+    data: data ?? [],
     isLoading,
     error: error as Error | null,
     refetch,
