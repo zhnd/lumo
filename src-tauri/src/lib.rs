@@ -37,6 +37,11 @@ pub fn run() {
           }
           Err(e) => log::error!("Failed to init daemon manager: {}", e),
         }
+
+        // Configure Claude Code to export OTEL data to the Lumo daemon.
+        if let Err(e) = services::ClaudeConfigService::ensure_otel_config() {
+          log::warn!("Failed to configure Claude Code OTEL: {}", e);
+        }
       });
 
       Ok(())
