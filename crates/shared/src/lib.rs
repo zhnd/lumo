@@ -8,9 +8,12 @@ pub mod error;
 
 // Re-export commonly used types
 pub use database::connection::{create_pool, get_db_path, run_migrations};
-pub use database::entities::{Event, EventRow, Metric, MetricRow, NewEvent, NewMetric, Session};
+pub use database::entities::{
+    Event, EventRow, Metric, MetricRow, NewEvent, NewMetric, NewNotification, Notification,
+    NotificationRow, Session,
+};
 pub use database::repositories::{
-    EventRepository, MetricRepository, SessionRepository, SessionsSummary, TokenUsageByModel,
-    TotalTokens,
+    EventRepository, MetricRepository, NotificationRepository, SessionRepository, SessionsSummary,
+    TokenUsageByModel, TotalTokens,
 };
 pub use error::{Error, Result};

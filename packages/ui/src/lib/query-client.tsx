@@ -1,9 +1,19 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  isPermissionGranted,
+  requestPermission,
+} from "@tauri-apps/plugin-notification";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    isPermissionGranted().then((granted) => {
+      if (!granted) requestPermission();
+    });
+  }, []);
+
   const [queryClient] = useState(
     () =>
       new QueryClient({

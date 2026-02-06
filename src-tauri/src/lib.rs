@@ -11,6 +11,7 @@ pub fn run() {
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_updater::Builder::new().build())
     .plugin(tauri_plugin_process::init())
+    .plugin(tauri_plugin_notification::init())
     .setup(|app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
@@ -42,6 +43,14 @@ pub fn run() {
         if let Err(e) = services::ClaudeConfigService::ensure_otel_config() {
           log::warn!("Failed to configure Claude Code OTEL: {}", e);
         }
+
+        // Configure Claude Code hooks to forward events to the Lumo daemon.
+        if let Err(e) = services::ClaudeConfigService::ensure_hooks_config() {
+          log::warn!("Failed to configure Claude Code hooks: {}", e);
+        }
+
+        // Start background notification poller.
+        services::notification_poller::start(app_handle);
       });
 
       Ok(())
