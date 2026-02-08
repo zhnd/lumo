@@ -1,4 +1,5 @@
 {
+  "identifier": "com.tauri.dev",
   "build": {
     "beforeBuildCommand": "pnpm build"
   }
