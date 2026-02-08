@@ -11,6 +11,7 @@ import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
+import { TimeRange } from "@/src/generated/typeshare-types";
 import { useService } from "./use-service";
 import type { ToolTimelineProps } from "./types";
 
@@ -46,7 +47,7 @@ export function ToolTimeline({ timeRange }: ToolTimelineProps) {
     grid: { top: 10, right: 10, bottom: 30, left: 0, outerBoundsMode: "same" },
     xAxis: {
       type: "category",
-      data: dates.map((d) => d.slice(5)), // MM-DD
+      data: dates.map((d) => (timeRange === TimeRange.Today ? d : d.slice(5))), // HH:00 or MM-DD
       axisLine: { show: false },
       axisTick: { show: false },
     },

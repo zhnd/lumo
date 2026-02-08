@@ -16,6 +16,7 @@ impl SessionRepository {
         let sessions: Vec<Session> = sqlx::query_as(
             r#"
             SELECT * FROM sessions
+            WHERE id != 'unknown'
             ORDER BY start_time DESC
             "#,
         )
@@ -34,6 +35,7 @@ impl SessionRepository {
         let sessions: Vec<Session> = sqlx::query_as(
             r#"
             SELECT * FROM sessions
+            WHERE id != 'unknown'
             ORDER BY start_time DESC
             LIMIT ? OFFSET ?
             "#,
@@ -71,6 +73,7 @@ impl SessionRepository {
             r#"
             SELECT * FROM sessions
             WHERE start_time <= ? AND end_time >= ?
+              AND id != 'unknown'
             ORDER BY start_time DESC
             "#,
         )
@@ -87,6 +90,7 @@ impl SessionRepository {
         let (count,): (i64,) = sqlx::query_as(
             r#"
             SELECT COUNT(*) FROM sessions
+            WHERE id != 'unknown'
             "#,
         )
         .fetch_one(pool)
@@ -100,6 +104,7 @@ impl SessionRepository {
         let (total,): (f64,) = sqlx::query_as(
             r#"
             SELECT COALESCE(SUM(total_cost_usd), 0) FROM sessions
+            WHERE id != 'unknown'
             "#,
         )
         .fetch_one(pool)
@@ -117,6 +122,7 @@ impl SessionRepository {
                 COALESCE(SUM(total_output_tokens), 0) as output_tokens,
                 COALESCE(SUM(total_cache_read_tokens), 0) as cache_read_tokens
             FROM sessions
+            WHERE id != 'unknown'
             "#,
         )
         .fetch_one(pool)
@@ -138,6 +144,7 @@ impl SessionRepository {
                 COALESCE(SUM(error_count), 0) as total_errors,
                 COALESCE(SUM(tool_use_count), 0) as total_tool_uses
             FROM sessions
+            WHERE id != 'unknown'
             "#,
         )
         .fetch_one(pool)

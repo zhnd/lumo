@@ -95,12 +95,22 @@ impl ToolsService {
         time_range: TimeRange,
     ) -> Result<Vec<ToolTrend>> {
         let (start_time, end_time) = get_time_range_bounds(time_range);
+        let (format_str, group_expr) = match time_range {
+            TimeRange::Today => (
+                "%H:00",
+                "strftime('%Y-%m-%d %H', datetime(timestamp / 1000, 'unixepoch', 'localtime'))",
+            ),
+            TimeRange::Week | TimeRange::Month => (
+                "%Y-%m-%d",
+                "strftime('%Y-%m-%d', datetime(timestamp / 1000, 'unixepoch', 'localtime'))",
+            ),
+        };
 
-        let rows: Vec<ToolTrendRow> = sqlx::query_as(
+        let query = format!(
             r#"
             SELECT
                 COALESCE(tool_name, 'unknown') as tool_name,
-                strftime('%Y-%m-%d', datetime(timestamp / 1000, 'unixepoch', 'localtime')) as date,
+                strftime('{}', datetime(timestamp / 1000, 'unixepoch', 'localtime')) as date,
                 COUNT(*) as count
             FROM events
             WHERE timestamp >= ? AND timestamp <= ?
@@ -114,10 +124,13 @@ impl ToolsService {
                     ORDER BY COUNT(*) DESC
                     LIMIT 5
                 )
-            GROUP BY tool_name, date
+            GROUP BY tool_name, {}
             ORDER BY date ASC, count DESC
             "#,
-        )
+            format_str, group_expr
+        );
+
+        let rows: Vec<ToolTrendRow> = sqlx::query_as(&query)
         .bind(start_time)
         .bind(end_time)
         .bind(start_time)
@@ -126,6 +139,8 @@ impl ToolsService {
         .await?;
 
         let tools: HashSet<String> = rows.iter().map(|r| r.tool_name.clone()).collect();
+        let mut tools: Vec<String> = tools.into_iter().collect();
+        tools.sort();
         let mut count_map: HashMap<(String, String), i32> = HashMap::new();
         for r in rows {
             count_map.insert((r.tool_name, r.date), r.count as i32);

@@ -131,6 +131,8 @@ impl TrendsService {
             .await?;
 
         let models: HashSet<String> = rows.iter().map(|r| r.model.clone()).collect();
+        let mut models: Vec<String> = models.into_iter().collect();
+        models.sort();
         let mut cost_map: HashMap<(String, String), f32> = HashMap::new();
         for r in rows {
             cost_map.insert((r.date, r.model), r.cost as f32);
@@ -181,6 +183,7 @@ impl TrendsService {
                 COUNT(*) as session_count
             FROM sessions
             WHERE start_time >= ? AND start_time <= ?
+                AND id != 'unknown'
             GROUP BY {}
             ORDER BY MIN(start_time) ASC
             "#,

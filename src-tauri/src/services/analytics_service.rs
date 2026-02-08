@@ -75,6 +75,7 @@ impl AnalyticsService {
                 COUNT(*) as count
             FROM sessions
             WHERE start_time >= ? AND start_time <= ?
+                AND id != 'unknown'
             GROUP BY bucket
             ORDER BY MIN(duration_ms) ASC
             "#,
@@ -218,6 +219,7 @@ impl AnalyticsService {
                 COUNT(DISTINCT session_id) as count
             FROM events
             WHERE timestamp >= ? AND timestamp <= ?
+                AND session_id != 'unknown'
             GROUP BY date
             ORDER BY date ASC
             "#,
