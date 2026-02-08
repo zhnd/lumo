@@ -18,13 +18,16 @@ impl StatsService {
     pub async fn get_summary(pool: &SqlitePool, time_range: TimeRange) -> Result<SummaryStats> {
         let (start_time, end_time) = get_time_range_bounds(time_range);
         let today_start = Self::get_today_start();
+        let has_events = Self::source_exists(pool, "events").await?;
+        let has_sessions = Self::source_exists(pool, "sessions").await?;
 
         // Query cost and token totals from events table (not sessions)
         // to ensure consistency with Cost Trends chart
-        let totals: EventTotalsRow = sqlx::query_as(
-            r#"
+        let totals: EventTotalsRow = if has_events {
+            sqlx::query_as(
+                r#"
             SELECT
-                COALESCE(SUM(cost_usd), 0) as total_cost,
+                CAST(COALESCE(SUM(cost_usd), 0.0) AS REAL) as total_cost,
                 COALESCE(SUM(input_tokens + output_tokens), 0) as total_tokens,
                 COALESCE(SUM(input_tokens), 0) as total_input_tokens,
                 COALESCE(SUM(cache_read_tokens), 0) as cache_tokens
@@ -32,16 +35,26 @@ impl StatsService {
             WHERE timestamp >= ? AND timestamp <= ?
                 AND name = 'claude_code.api_request'
             "#,
-        )
-        .bind(start_time)
-        .bind(end_time)
-        .fetch_one(pool)
-        .await?;
+            )
+            .bind(start_time)
+            .bind(end_time)
+            .fetch_one(pool)
+            .await?
+        } else {
+            EventTotalsRow::default()
+        };
 
         // Session counts still come from the sessions view
-        let sessions = SessionRepository::find_by_time_range(pool, start_time, end_time).await?;
-        let today_sessions =
-            SessionRepository::find_by_time_range(pool, today_start, end_time).await?;
+        let sessions = if has_sessions {
+            SessionRepository::find_by_time_range(pool, start_time, end_time).await?
+        } else {
+            vec![]
+        };
+        let today_sessions = if has_sessions {
+            SessionRepository::find_by_time_range(pool, today_start, end_time).await?
+        } else {
+            vec![]
+        };
 
         // Cache hit rate = cache_read / (cache_read + input)
         let cache_denominator = totals.cache_tokens + totals.total_input_tokens;
@@ -52,8 +65,11 @@ impl StatsService {
         };
 
         // Calculate cost change vs previous period
-        let cost_change_percent =
-            Self::calculate_cost_change(pool, time_range, totals.total_cost).await?;
+        let cost_change_percent = if has_events {
+            Self::calculate_cost_change(pool, time_range, totals.total_cost).await?
+        } else {
+            0.0
+        };
 
         // Get metric counters
         let metric_counters = Self::get_metric_counters(pool, start_time, end_time).await?;
@@ -81,6 +97,10 @@ impl StatsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<ModelStats>> {
+        if !Self::source_exists(pool, "events").await? {
+            return Ok(vec![]);
+        }
+
         let (start_time, end_time) = get_time_range_bounds(time_range);
 
         // Query model stats from events
@@ -88,7 +108,7 @@ impl StatsService {
             r#"
             SELECT
                 COALESCE(model, 'unknown') as model,
-                COALESCE(SUM(cost_usd), 0) as cost,
+                CAST(COALESCE(SUM(cost_usd), 0.0) AS REAL) as cost,
                 COUNT(*) as requests,
                 COALESCE(SUM(input_tokens + output_tokens), 0) as tokens
             FROM events
@@ -121,6 +141,10 @@ impl StatsService {
         pool: &SqlitePool,
         time_range: TimeRange,
     ) -> Result<Vec<TokenStats>> {
+        if !Self::source_exists(pool, "events").await? {
+            return Ok(vec![]);
+        }
+
         let (start_time, end_time) = get_time_range_bounds(time_range);
 
         let rows: Vec<TokenStatsRow> = sqlx::query_as(
@@ -170,6 +194,10 @@ impl StatsService {
         start_time: i64,
         end_time: i64,
     ) -> Result<MetricCounters> {
+        if !Self::source_exists(pool, "metrics").await? {
+            return Ok(MetricCounters::default());
+        }
+
         // Query lines of code
         let lines_row: Option<LinesOfCodeRow> = sqlx::query_as(
             r#"
@@ -240,6 +268,22 @@ impl StatsService {
         })
     }
 
+    async fn source_exists(pool: &SqlitePool, name: &str) -> Result<bool> {
+        let row: Option<i64> = sqlx::query_scalar(
+            r#"
+            SELECT 1
+            FROM sqlite_master
+            WHERE name = ?
+              AND type IN ('table', 'view')
+            LIMIT 1
+            "#,
+        )
+        .bind(name)
+        .fetch_optional(pool)
+        .await?;
+        Ok(row.is_some())
+    }
+
     /// Calculate cost change percentage vs previous period
     async fn calculate_cost_change(
         pool: &SqlitePool,
@@ -259,7 +303,7 @@ impl StatsService {
 
         let row: CostRow = sqlx::query_as(
             r#"
-            SELECT COALESCE(SUM(cost_usd), 0) as cost
+            SELECT CAST(COALESCE(SUM(cost_usd), 0.0) AS REAL) as cost
             FROM events
             WHERE timestamp >= ? AND timestamp <= ?
                 AND name = 'claude_code.api_request'
@@ -284,6 +328,17 @@ struct EventTotalsRow {
     total_tokens: i64,
     total_input_tokens: i64,
     cache_tokens: i64,
+}
+
+impl Default for EventTotalsRow {
+    fn default() -> Self {
+        Self {
+            total_cost: 0.0,
+            total_tokens: 0,
+            total_input_tokens: 0,
+            cache_tokens: 0,
+        }
+    }
 }
 
 #[derive(Debug, sqlx::FromRow)]

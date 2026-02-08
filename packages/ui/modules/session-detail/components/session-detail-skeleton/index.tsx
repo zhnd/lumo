@@ -4,7 +4,7 @@ export function SessionDetailSkeleton() {
   return (
     <div className="flex h-full flex-col">
       {/* Header skeleton */}
-      <div className="border-b">
+      <div className="bg-muted/10">
         {/* Top bar */}
         <div className="flex items-center gap-3 px-4 py-3">
           <Skeleton className="size-8 rounded-md" />
@@ -16,7 +16,7 @@ export function SessionDetailSkeleton() {
         </div>
 
         {/* Meta bar */}
-        <div className="flex items-center gap-4 border-t px-4 py-2">
+        <div className="flex items-center gap-4 px-4 pb-2">
           <Skeleton className="h-3 w-20" />
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-3 w-24" />
@@ -81,12 +81,12 @@ function MessageSkeleton({
 function ToolUseSkeleton() {
   return (
     <div className="ml-7 space-y-2">
-      <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-1.5">
+      <div className="flex items-center gap-2 rounded-lg bg-muted/20 px-3 py-1.5">
         <Skeleton className="size-3.5" />
         <Skeleton className="h-3 w-10" />
         <Skeleton className="h-3 w-48" />
       </div>
-      <div className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-1.5">
+      <div className="flex items-center gap-2 rounded-lg bg-muted/20 px-3 py-1.5">
         <Skeleton className="size-3.5" />
         <Skeleton className="h-3 w-8" />
         <Skeleton className="h-3 w-36" />

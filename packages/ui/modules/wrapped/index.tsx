@@ -16,7 +16,6 @@ import { WrappedPeriod } from "@/src/generated/typeshare-types";
 import {
   HeroStat,
   TopModel,
-  TokensConsumed,
   FavoriteTool,
   CostCard,
   CodingStreak,
@@ -27,7 +26,15 @@ import {
 import { useService } from "./use-service";
 
 export function Wrapped() {
-  const { period, setPeriod, data, isLoading, error, refetch } = useService();
+  const {
+    period,
+    setPeriod,
+    data,
+    hasMeaningfulData,
+    isLoading,
+    error,
+    refetch,
+  } = useService();
   const cardRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -48,7 +55,7 @@ export function Wrapped() {
               <SelectItem value={WrappedPeriod.All}>All Time</SelectItem>
             </SelectContent>
           </Select>
-          {data && <ShareButton targetRef={cardRef} />}
+          {data && hasMeaningfulData && <ShareButton targetRef={cardRef} />}
         </div>
       </PageHeader>
 
@@ -108,7 +115,7 @@ export function Wrapped() {
               onRetry={() => refetch()}
             />
           )}
-          {data && (
+          {data && hasMeaningfulData && (
             <div ref={cardRef} className="bg-muted p-10">
               <div className="w-full max-w-md rounded-xl border border-border bg-card py-6">
                 <div className="px-6 pb-2">
@@ -123,11 +130,8 @@ export function Wrapped() {
 
                   <div className="space-y-4 py-4">
                     <TopModel data={data} />
-                    <TokensConsumed data={data} />
                     <FavoriteTool data={data} />
                     <CostCard data={data} />
-                    <CodingStreak data={data} />
-                    <PeakHour data={data} />
                   </div>
 
                   <Separator />
@@ -135,8 +139,24 @@ export function Wrapped() {
                   <div className="pt-4">
                     <TokenBreakdownChart data={data} />
                   </div>
+
+                  <Separator />
+
+                  <div className="space-y-4 py-4">
+                    <CodingStreak data={data} />
+                    <PeakHour data={data} />
+                  </div>
                 </div>
               </div>
+            </div>
+          )}
+          {data && !hasMeaningfulData && (
+            <div className="w-full max-w-md rounded-xl border border-border bg-card p-6">
+              <p className="text-center text-sm font-medium">No wrapped data yet</p>
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                Run more Claude Code sessions in this period, then come back to
+                see your summary.
+              </p>
             </div>
           )}
         </div>

@@ -47,6 +47,7 @@ macro_rules! app_commands {
             commands::get_cost_by_model_trends,
             commands::get_cost_efficiency_trend,
             // Claude session commands
+            commands::get_claude_projects,
             commands::get_claude_sessions,
             commands::get_claude_sessions_for_project,
             commands::get_claude_session_detail,

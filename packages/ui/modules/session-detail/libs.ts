@@ -1,3 +1,5 @@
+import type { ClaudeContentBlock, ClaudeMessage } from "@/src/generated/typeshare-types";
+
 /**
  * Format date for display
  */
@@ -81,4 +83,77 @@ export function getModelDisplayName(model: string | undefined): string {
   }
 
   return model;
+}
+
+export function isRenderableMessage(message: ClaudeMessage): boolean {
+  const hasText = !!message.text?.trim();
+  const hasTools = !!message.toolUses?.length;
+  const hasBlocks = !!message.blocks?.some(isRenderableBlock);
+  return hasText || hasTools || hasBlocks;
+}
+
+export function isEssentialMessage(message: ClaudeMessage): boolean {
+  const blocks = message.blocks ?? [];
+  const hasToolUse = blocks.some((b) => b.type === "tool_use" && !!b.name?.trim());
+  const hasToolResult = blocks.some(
+    (b) => b.type === "tool_result" && (!!b.output?.trim() || !!b.fileContent?.trim() || !!b.rawJson?.trim()),
+  );
+  const hasVisibleText = blocks.some((b) => b.type === "text" && !!b.text?.trim()) || !!message.text?.trim();
+
+  // Keep user/assistant turns, tool interactions; drop pure thinking/system noise in essential mode.
+  if (message.type === "system") return false;
+  if (hasToolUse || hasToolResult) return true;
+  return hasVisibleText;
+}
+
+export function filterSessionMessages(
+  messages: ClaudeMessage[],
+  showEssentialOnly: boolean,
+): ClaudeMessage[] {
+  const renderable = messages.filter(isRenderableMessage);
+  if (!showEssentialOnly) return renderable;
+  return renderable.filter(isEssentialMessage);
+}
+
+export interface SessionHighlights {
+  toolCalls: number;
+  toolResults: number;
+  failureCount: number;
+  touchedFiles: number;
+}
+
+export function buildSessionHighlights(messages: ClaudeMessage[]): SessionHighlights {
+  const files = new Set<string>();
+  let toolCalls = 0;
+  let toolResults = 0;
+  let failureCount = 0;
+
+  for (const message of messages) {
+    for (const block of message.blocks ?? []) {
+      if (block.type === "tool_use") toolCalls += 1;
+      if (block.type === "tool_result") {
+        toolResults += 1;
+        if (block.isError) failureCount += 1;
+        if (block.filePath?.trim()) files.add(block.filePath.trim());
+      }
+    }
+  }
+
+  return {
+    toolCalls,
+    toolResults,
+    failureCount,
+    touchedFiles: files.size,
+  };
+}
+
+function isRenderableBlock(block: ClaudeContentBlock): boolean {
+  if (block.type === "text" || block.type === "thinking" || block.type === "redacted_thinking") {
+    return !!block.text?.trim();
+  }
+  if (block.type === "tool_use") return !!block.name?.trim();
+  if (block.type === "tool_result") {
+    return !!block.output?.trim() || !!block.fileContent?.trim() || !!block.rawJson?.trim();
+  }
+  return false;
 }

@@ -1,4 +1,5 @@
 import type { Components } from "react-markdown";
+import { MermaidDiagram } from "./mermaid-diagram";
 
 export const markdownComponents: Partial<Components> = {
   p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
@@ -8,6 +9,15 @@ export const markdownComponents: Partial<Components> = {
     </pre>
   ),
   code: ({ children, className }) => {
+    const content = String(children ?? "").trim();
+    const isMermaid =
+      className?.includes("language-mermaid") ||
+      className?.includes("lang-mermaid");
+
+    if (isMermaid) {
+      return <MermaidDiagram chart={content} />;
+    }
+
     if (className?.startsWith("hljs") || className?.includes("language-"))
       return <code className={className}>{children}</code>;
     return (

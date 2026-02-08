@@ -26,14 +26,14 @@ export function SessionList({ sessions, onSelectSession }: SessionListProps) {
 
   return (
     <ScrollArea className="h-full">
-      <div className="space-y-2 p-4">
+      <div className="space-y-2 p-3 md:p-4">
         {sessions.map((session) => (
           <Card
             key={session.sessionId}
             className="cursor-pointer gap-2 py-3 transition-colors hover:bg-accent/50"
             onClick={() => onSelectSession(session)}
           >
-            <CardContent className="px-4 py-0">
+            <CardContent className="px-3 py-0 md:px-4">
               {/* Summary or First Prompt */}
               <div className="mb-2">
                 <p className="line-clamp-2 text-sm font-medium">
@@ -47,14 +47,14 @@ export function SessionList({ sessions, onSelectSession }: SessionListProps) {
                 {/* Project */}
                 <div className="flex items-center gap-1">
                   <FolderOpen className="size-3" />
-                  <span>{getProjectName(session.projectPath)}</span>
+                  <span className="max-w-40 truncate">{getProjectName(session.projectPath)}</span>
                 </div>
 
                 {/* Git Branch */}
                 {session.gitBranch && (
                   <div className="flex items-center gap-1">
                     <GitBranch className="size-3" />
-                    <span>{session.gitBranch}</span>
+                    <span className="max-w-32 truncate">{session.gitBranch}</span>
                   </div>
                 )}
 

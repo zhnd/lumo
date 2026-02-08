@@ -34,17 +34,20 @@ export function ToolResultDiff({ toolName, input }: ToolResultDiffProps) {
   const [expanded, setExpanded] = useState(false);
   const isWrite = toolName === "Write";
 
-  let parsed: EditInput | WriteInput;
-  try {
-    parsed = JSON.parse(input);
-  } catch {
-    return null;
-  }
+  const parsed = useMemo<EditInput | WriteInput | null>(() => {
+    try {
+      return JSON.parse(input) as EditInput | WriteInput;
+    } catch {
+      return null;
+    }
+  }, [input]);
 
-  const { oldValue, newValue } = getDiffValues(parsed, toolName);
-  if (oldValue === null && newValue === null) return null;
+  const { oldValue, newValue } = useMemo(() => {
+    if (!parsed) return { oldValue: null, newValue: null };
+    return getDiffValues(parsed, toolName);
+  }, [parsed, toolName]);
 
-  const filePath = parsed.file_path;
+  const filePath = parsed?.file_path;
   const fileName = filePath?.split("/").pop() ?? "file";
   const lang = inferLang(filePath);
 
@@ -55,6 +58,7 @@ export function ToolResultDiff({ toolName, input }: ToolResultDiffProps) {
   }, [highlighter]);
 
   const diffFile = useMemo<DiffFile | undefined>(() => {
+    if (oldValue === null && newValue === null) return undefined;
     const file = generateDiffFile(
       fileName,
       oldValue ?? "",
@@ -73,10 +77,12 @@ export function ToolResultDiff({ toolName, input }: ToolResultDiffProps) {
     return file;
   }, [oldValue, newValue, fileName, lang, highlighter]);
 
+  if (!parsed) return null;
+  if (oldValue === null && newValue === null) return null;
   if (!diffFile) return null;
 
   return (
-    <div className="border-t text-[11px]">
+    <div className="overflow-hidden border-t text-[11px]">
       <div
         className="overflow-x-auto"
         style={

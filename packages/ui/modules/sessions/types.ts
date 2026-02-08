@@ -1,21 +1,23 @@
 import type {
+  ClaudeProjectSummary,
   ClaudeSession,
-  ClaudeSessionDetail,
-  ClaudeMessage,
 } from "@/src/generated/typeshare-types";
 
-export type { ClaudeSession, ClaudeSessionDetail, ClaudeMessage };
-
-export interface SessionsModuleProps {
-  // Module props if needed
-}
+export type { ClaudeSession };
 
 export interface UseServiceReturn {
   sessions: ClaudeSession[];
-  selectedSession: ClaudeSessionDetail | null;
+  filteredSessions: ClaudeSession[];
+  projects: ClaudeProjectSummary[];
+  selectedProjectPath: string | null;
+  setSelectedProjectPath: (projectPath: string | null) => void;
+  totalSessions: number;
+  selectedProjectName: string;
   isLoading: boolean;
-  isLoadingDetail: boolean;
   error: Error | null;
   refetch: () => void;
-  selectSession: (session: ClaudeSession | null) => void;
+}
+
+export interface SessionsModuleProps {
+  sessions: ClaudeSession[];
 }

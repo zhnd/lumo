@@ -4,5 +4,6 @@ export interface SessionHeaderProps {
   session: ClaudeSession;
   messageCount: number;
   stats: ClaudeSessionStats;
+  collapsed?: boolean;
   onBack: () => void;
 }

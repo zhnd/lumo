@@ -3,12 +3,18 @@
 //! Tauri commands for accessing Claude Code session data.
 
 use crate::services::ClaudeSessionService;
-use crate::types::{ClaudeSession, ClaudeSessionDetail};
+use crate::types::{ClaudeProjectSummary, ClaudeSession, ClaudeSessionDetail};
 
 /// Get all Claude Code sessions
 #[tauri::command]
 pub fn get_claude_sessions() -> Result<Vec<ClaudeSession>, String> {
     ClaudeSessionService::get_all_sessions().map_err(|e| e.to_string())
+}
+
+/// Get Claude projects summary
+#[tauri::command]
+pub fn get_claude_projects() -> Result<Vec<ClaudeProjectSummary>, String> {
+    ClaudeSessionService::get_projects_summary().map_err(|e| e.to_string())
 }
 
 /// Get Claude Code sessions for a specific project

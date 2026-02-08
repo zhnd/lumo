@@ -30,6 +30,17 @@ pub struct ClaudeSession {
     pub is_sidechain: bool,
 }
 
+/// Claude project summary (aggregated from sessions-index.json)
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaudeProjectSummary {
+    pub project_path: String,
+    pub project_name: String,
+    pub session_count: i32,
+    pub last_updated: String,
+}
+
 /// Claude Code session index file structure (internal, not exported)
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -101,9 +112,44 @@ pub struct ClaudeMessage {
     /// Tool use blocks in this message (for assistant messages)
     #[serde(default)]
     pub tool_uses: Vec<ClaudeToolUse>,
+    /// Structured content blocks in source order
+    #[serde(default)]
+    pub blocks: Vec<ClaudeContentBlock>,
     /// Model used for this message (for assistant messages)
     #[serde(default)]
     pub model: Option<String>,
+}
+
+/// Structured content block extracted from message content
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaudeContentBlock {
+    #[serde(rename = "type")]
+    pub block_type: String,
+    #[serde(default)]
+    pub text: Option<String>,
+    #[serde(default)]
+    pub tool_use_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    /// JSON string for tool input
+    #[serde(default)]
+    pub input: Option<String>,
+    /// JSON string for tool result/output
+    #[serde(default)]
+    pub output: Option<String>,
+    /// Full raw JSON object for this block or related tool result payload
+    #[serde(default)]
+    pub raw_json: Option<String>,
+    /// File path when tool result contains file payload
+    #[serde(default)]
+    pub file_path: Option<String>,
+    /// File content when tool result contains file payload
+    #[serde(default)]
+    pub file_content: Option<String>,
+    #[serde(default)]
+    pub is_error: Option<bool>,
 }
 
 /// Tool use information
@@ -155,6 +201,8 @@ pub struct RawClaudeMessage {
     pub message: Option<RawMessageData>,
     #[serde(default)]
     pub content: Option<String>,
+    #[serde(default)]
+    pub tool_use_result: Option<serde_json::Value>,
 }
 
 /// Raw message data structure (internal)

@@ -5,13 +5,28 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { CardError } from "@/components/card-error";
-import { SessionList, SessionListSkeleton } from "./components";
+import {
+  SessionList,
+  SessionListSkeleton,
+  ProjectList,
+  ProjectListSkeleton,
+} from "./components";
 import { useService } from "./use-service";
 import type { ClaudeSession } from "./types";
 
 export function Sessions() {
   const router = useRouter();
-  const { sessions, isLoading, error, refetch } = useService();
+  const {
+    filteredSessions,
+    projects,
+    selectedProjectPath,
+    setSelectedProjectPath,
+    selectedProjectName,
+    totalSessions,
+    isLoading,
+    error,
+    refetch,
+  } = useService();
 
   const handleSelectSession = (session: ClaudeSession) => {
     // Use query parameter for session path
@@ -21,7 +36,7 @@ export function Sessions() {
 
   return (
     <>
-      <PageHeader title={`Sessions (${sessions.length})`}>
+      <PageHeader title={`${selectedProjectName} (${filteredSessions.length}/${totalSessions})`}>
         <Button
           variant="ghost"
           size="icon"
@@ -33,9 +48,14 @@ export function Sessions() {
         </Button>
       </PageHeader>
 
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         {isLoading ? (
-          <SessionListSkeleton />
+          <>
+            <ProjectListSkeleton />
+            <div className="min-h-0 flex-1">
+              <SessionListSkeleton />
+            </div>
+          </>
         ) : error ? (
           <CardError
             message="Failed to load sessions"
@@ -43,10 +63,20 @@ export function Sessions() {
             className="m-4 w-full"
           />
         ) : (
-          <SessionList
-            sessions={sessions}
-            onSelectSession={handleSelectSession}
-          />
+          <>
+            <ProjectList
+              projects={projects}
+              selectedProjectPath={selectedProjectPath}
+              totalSessions={totalSessions}
+              onSelectProject={setSelectedProjectPath}
+            />
+            <div className="min-h-0 min-w-0 flex-1">
+              <SessionList
+                sessions={filteredSessions}
+                onSelectSession={handleSelectSession}
+              />
+            </div>
+          </>
         )}
       </div>
     </>

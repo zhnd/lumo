@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  ClaudeProjectSummary,
   ClaudeSession,
   ClaudeSessionDetail,
 } from "../generated/typeshare-types";
@@ -8,6 +9,13 @@ import type {
  * Claude Session Bridge - Frontend interface for Claude Code session operations
  */
 export class ClaudeSessionBridge {
+  /**
+   * Get Claude projects summary
+   */
+  static async getProjects(): Promise<ClaudeProjectSummary[]> {
+    return invoke<ClaudeProjectSummary[]>("get_claude_projects");
+  }
+
   /**
    * Get all Claude Code sessions across all projects
    */

@@ -9,6 +9,8 @@ interface UseScrollToBottomOptions {
   itemCount: number;
   /** Function to call when scrolling to bottom */
   onScrollToBottom: () => void;
+  /** Whether to auto-scroll once on initial load */
+  autoScrollOnInitialLoad?: boolean;
 }
 
 interface UseScrollToBottomReturn {
@@ -20,19 +22,21 @@ export function useScrollToBottom({
   scrollRef,
   itemCount,
   onScrollToBottom,
+  autoScrollOnInitialLoad = true,
 }: UseScrollToBottomOptions): UseScrollToBottomReturn {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const hasAutoScrolled = useRef(false);
 
   // Auto-scroll to bottom on initial load
   useEffect(() => {
+    if (!autoScrollOnInitialLoad) return;
     if (itemCount > 0 && !hasAutoScrolled.current) {
       hasAutoScrolled.current = true;
       requestAnimationFrame(() => {
         onScrollToBottom();
       });
     }
-  }, [itemCount, onScrollToBottom]);
+  }, [itemCount, onScrollToBottom, autoScrollOnInitialLoad]);
 
   // Track scroll position — depend on itemCount so listener attaches after content renders
   useEffect(() => {

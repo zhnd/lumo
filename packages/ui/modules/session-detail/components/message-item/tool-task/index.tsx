@@ -1,4 +1,6 @@
 import {
+  ChevronDown,
+  ChevronUp,
   Bot,
   ListChecks,
   CircleCheck,
@@ -7,13 +9,18 @@ import {
   SquareCheck,
   Trash2,
   Map,
-  LogOut,
   LogIn,
   Zap,
   Eye,
   StopCircle,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { markdownComponents } from "../markdown-components";
 
 interface ToolTaskProps {
   name: string;
@@ -99,11 +106,7 @@ function TaskAgent({ parsed }: { parsed: Record<string, unknown> }) {
           <span className="text-muted-foreground">{description}</span>
         )}
       </div>
-      {prompt && (
-        <p className="mt-1.5 line-clamp-3 whitespace-pre-wrap pl-5.5 text-muted-foreground">
-          {prompt}
-        </p>
-      )}
+      {prompt && <CollapsibleMarkdown text={prompt} className="mt-1.5 pl-5.5" />}
     </div>
   );
 }
@@ -122,9 +125,7 @@ function TaskCreate({ parsed }: { parsed: Record<string, unknown> }) {
       </div>
       {subject && <p className="mt-1 pl-5.5 font-medium">{subject}</p>}
       {description && (
-        <p className="mt-0.5 line-clamp-2 pl-5.5 text-muted-foreground">
-          {description}
-        </p>
+        <CollapsibleMarkdown text={description} className="mt-0.5 pl-5.5" />
       )}
     </div>
   );
@@ -193,7 +194,9 @@ function ExitPlanMode({ parsed }: { parsed: Record<string, unknown> }) {
                 </Badge>
               )}
               {p.prompt && (
-                <span className="text-muted-foreground">{p.prompt}</span>
+                <div className="min-w-0 flex-1">
+                  <CollapsibleMarkdown text={p.prompt} />
+                </div>
               )}
             </div>
           ))}
@@ -221,9 +224,7 @@ function SkillTool({ parsed }: { parsed: Record<string, unknown> }) {
         )}
       </div>
       {args && (
-        <p className="mt-1 line-clamp-2 pl-5.5 text-muted-foreground">
-          {args}
-        </p>
+        <CollapsibleMarkdown text={args} className="mt-1 pl-5.5" />
       )}
     </div>
   );
@@ -245,6 +246,59 @@ function SimpleToolRow({
       <Icon className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="font-medium">{label}</span>
       {children}
+    </div>
+  );
+}
+
+const COLLAPSE_THRESHOLD = 900;
+
+function CollapsibleMarkdown({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
+  const isLong = text.length > COLLAPSE_THRESHOLD;
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className={className}>
+      <div
+        className={
+          !expanded && isLong ? "max-h-40 overflow-hidden" : undefined
+        }
+      >
+        <div className="whitespace-pre-wrap break-words text-muted-foreground">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+            components={markdownComponents}
+          >
+            {text}
+          </ReactMarkdown>
+        </div>
+      </div>
+      {isLong && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-1 h-6 gap-1 px-2 text-[11px] text-muted-foreground"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="size-3" />
+              Collapse
+            </>
+          ) : (
+            <>
+              <ChevronDown className="size-3" />
+              Expand
+            </>
+          )}
+        </Button>
+      )}
     </div>
   );
 }

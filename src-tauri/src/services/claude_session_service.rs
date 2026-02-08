@@ -7,8 +7,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::types::{
-    ClaudeMessage, ClaudeSession, ClaudeSessionDetail, ClaudeSessionIndex, ClaudeSessionStats,
-    ClaudeToolUse, RawClaudeMessage,
+    ClaudeContentBlock, ClaudeMessage, ClaudeProjectSummary, ClaudeSession, ClaudeSessionDetail,
+    ClaudeSessionIndex, ClaudeSessionStats, ClaudeToolUse, RawClaudeMessage,
 };
 
 /// Service for Claude Code session operations
@@ -30,6 +30,97 @@ impl ClaudeSessionService {
     /// e.g., "/Users/zhnd/dev/projects/lumo" -> "-Users-zhnd-dev-projects-lumo"
     fn project_path_to_folder_name(project_path: &str) -> String {
         project_path.replace('/', "-")
+    }
+
+    fn timestamp_to_rfc3339(ms: i64) -> Option<String> {
+        chrono::DateTime::from_timestamp_millis(ms).map(|dt| dt.to_rfc3339())
+    }
+
+    fn parse_time_millis(value: &str) -> i64 {
+        chrono::DateTime::parse_from_rfc3339(value)
+            .map(|dt| dt.timestamp_millis())
+            .unwrap_or(0)
+    }
+
+    /// Get all Claude projects with aggregate session stats
+    pub fn get_projects_summary() -> Result<Vec<ClaudeProjectSummary>> {
+        let projects_dir = Self::get_projects_dir()?;
+        if !projects_dir.exists() {
+            return Ok(vec![]);
+        }
+
+        let mut projects = Vec::new();
+
+        for entry in fs::read_dir(&projects_dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            if !path.is_dir() {
+                continue;
+            }
+
+            let index_path = path.join("sessions-index.json");
+            if !index_path.exists() {
+                continue;
+            }
+
+            let Ok(content) = fs::read_to_string(&index_path) else {
+                continue;
+            };
+            let Ok(index) = serde_json::from_str::<ClaudeSessionIndex>(&content) else {
+                continue;
+            };
+
+            let mut session_count = 0_i32;
+            let mut latest_ms = 0_i64;
+            let mut project_path: Option<String> = None;
+
+            for item in index.entries {
+                if item.is_sidechain {
+                    continue;
+                }
+                session_count += 1;
+                if project_path.is_none() {
+                    project_path = Some(item.project_path.clone());
+                }
+
+                let updated = if let Some(ms) = item.file_mtime {
+                    ms
+                } else {
+                    Self::parse_time_millis(&item.modified)
+                };
+                if updated > latest_ms {
+                    latest_ms = updated;
+                }
+            }
+
+            if session_count == 0 {
+                continue;
+            }
+
+            let project_path = project_path.unwrap_or_else(|| path.to_string_lossy().to_string());
+            let project_name = std::path::Path::new(&project_path)
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or(&project_path)
+                .to_string();
+            let last_updated = Self::timestamp_to_rfc3339(latest_ms)
+                .unwrap_or_else(|| chrono::Utc::now().to_rfc3339());
+
+            projects.push(ClaudeProjectSummary {
+                project_path,
+                project_name,
+                session_count,
+                last_updated,
+            });
+        }
+
+        projects.sort_by(|a, b| {
+            let a_time = Self::parse_time_millis(&a.last_updated);
+            let b_time = Self::parse_time_millis(&b.last_updated);
+            b_time.cmp(&a_time)
+        });
+
+        Ok(projects)
     }
 
     /// Get all sessions for a specific project
@@ -175,38 +266,59 @@ impl ClaudeSessionService {
     fn parse_session_messages(content: &str) -> Result<Vec<ClaudeMessage>> {
         let mut messages = Vec::new();
 
-        for line in content.lines() {
+        for (line_index, line) in content.lines().enumerate() {
             if line.trim().is_empty() {
                 continue;
             }
 
             if let Ok(raw) = serde_json::from_str::<RawClaudeMessage>(line) {
-                // Only process user and assistant messages
-                if raw.message_type != "user" && raw.message_type != "assistant" {
+                // Skip non-message events with no useful content
+                if raw.message_type != "user"
+                    && raw.message_type != "assistant"
+                    && raw.message_type != "system"
+                {
                     continue;
                 }
 
-                let uuid = raw.uuid.unwrap_or_default();
+                let uuid = raw
+                    .uuid
+                    .unwrap_or_else(|| format!("line-{}-{}", line_index, raw.message_type));
                 let timestamp = raw.timestamp.unwrap_or_default();
 
                 // Parse content
-                let (text, tool_uses) = if let Some(msg_data) = &raw.message {
+                let (text, tool_uses, blocks) = if let Some(msg_data) = &raw.message {
                     if let Some(content_value) = &msg_data.content {
-                        Self::parse_content(content_value)
+                        Self::parse_content(content_value, raw.tool_use_result.as_ref())
                     } else {
-                        (None, vec![])
+                        (None, vec![], vec![])
                     }
                 } else if let Some(txt) = &raw.content {
-                    (Some(txt.clone()), vec![])
+                    let block = ClaudeContentBlock {
+                        block_type: "text".to_string(),
+                        text: Some(txt.clone()),
+                        tool_use_id: None,
+                        name: None,
+                        input: None,
+                        output: None,
+                        raw_json: None,
+                        file_path: None,
+                        file_content: None,
+                        is_error: None,
+                    };
+                    (Some(txt.clone()), vec![], vec![block])
                 } else {
-                    (None, vec![])
+                    (None, vec![], vec![])
                 };
 
                 // Get model from message data
                 let model = raw.message.as_ref().and_then(|m| m.model.clone());
 
-                // Skip messages without content
-                if text.is_none() && tool_uses.is_empty() {
+                let has_text = text.as_ref().map(|t| !t.trim().is_empty()).unwrap_or(false);
+                let has_blocks = blocks.iter().any(Self::block_has_visible_content);
+                let has_tool_uses = !tool_uses.is_empty();
+
+                // Skip messages without any renderable content
+                if !has_text && !has_tool_uses && !has_blocks {
                     continue;
                 }
 
@@ -216,6 +328,7 @@ impl ClaudeSessionService {
                     timestamp,
                     text,
                     tool_uses,
+                    blocks,
                     model,
                 });
             }
@@ -344,12 +457,30 @@ impl ClaudeSessionService {
     }
 
     /// Parse content value into text and tool uses
-    fn parse_content(value: &serde_json::Value) -> (Option<String>, Vec<ClaudeToolUse>) {
+    fn parse_content(
+        value: &serde_json::Value,
+        tool_use_result: Option<&serde_json::Value>,
+    ) -> (Option<String>, Vec<ClaudeToolUse>, Vec<ClaudeContentBlock>) {
         match value {
-            serde_json::Value::String(s) => (Some(s.clone()), vec![]),
+            serde_json::Value::String(s) => {
+                let block = ClaudeContentBlock {
+                    block_type: "text".to_string(),
+                    text: Some(s.clone()),
+                    tool_use_id: None,
+                    name: None,
+                    input: None,
+                    output: None,
+                    raw_json: None,
+                    file_path: None,
+                    file_content: None,
+                    is_error: None,
+                };
+                (Some(s.clone()), vec![], vec![block])
+            }
             serde_json::Value::Array(arr) => {
                 let mut text_parts = Vec::new();
                 let mut tool_uses = Vec::new();
+                let mut blocks = Vec::new();
 
                 for item in arr {
                     if let Some(obj) = item.as_object() {
@@ -359,6 +490,18 @@ impl ClaudeSessionService {
                             Some("text") => {
                                 if let Some(text) = obj.get("text").and_then(|v| v.as_str()) {
                                     text_parts.push(text.to_string());
+                                    blocks.push(ClaudeContentBlock {
+                                        block_type: "text".to_string(),
+                                        text: Some(text.to_string()),
+                                        tool_use_id: None,
+                                        name: None,
+                                        input: None,
+                                        output: None,
+                                        raw_json: None,
+                                        file_path: None,
+                                        file_content: None,
+                                        is_error: None,
+                                    });
                                 }
                             }
                             Some("tool_use") => {
@@ -373,9 +516,91 @@ impl ClaudeSessionService {
                                     tool_uses.push(ClaudeToolUse {
                                         id: id.to_string(),
                                         name: name.to_string(),
+                                        input: input.clone(),
+                                    });
+
+                                    blocks.push(ClaudeContentBlock {
+                                        block_type: "tool_use".to_string(),
+                                        text: None,
+                                        tool_use_id: Some(id.to_string()),
+                                        name: Some(name.to_string()),
                                         input,
+                                        output: None,
+                                        raw_json: None,
+                                        file_path: None,
+                                        file_content: None,
+                                        is_error: None,
                                     });
                                 }
+                            }
+                            Some("tool_result") => {
+                                let tool_use_id = obj
+                                    .get("tool_use_id")
+                                    .and_then(|v| v.as_str())
+                                    .map(String::from);
+                                let output = obj.get("content").or_else(|| obj.get("output")).map(|v| {
+                                    if let Some(s) = v.as_str() {
+                                        s.to_string()
+                                    } else {
+                                        serde_json::to_string(v).unwrap_or_default()
+                                    }
+                                });
+                                let is_error = obj.get("is_error").and_then(|v| v.as_bool());
+                                let raw_json =
+                                    tool_use_result.and_then(|v| serde_json::to_string(v).ok());
+                                let file_path = tool_use_result
+                                    .and_then(|v| {
+                                        v.get("file")
+                                            .and_then(|f| f.get("filePath"))
+                                            .or_else(|| v.get("filePath"))
+                                    })
+                                    .and_then(|v| v.as_str())
+                                    .map(String::from);
+                                let file_content = tool_use_result
+                                    .and_then(|v| {
+                                        v.get("file")
+                                            .and_then(|f| f.get("content"))
+                                            .or_else(|| v.get("content"))
+                                            .or_else(|| v.get("newString"))
+                                    })
+                                    .and_then(|v| v.as_str())
+                                    .map(String::from);
+                                let fallback_output = tool_use_result
+                                    .and_then(|v| v.get("content"))
+                                    .and_then(|v| v.as_str())
+                                    .map(String::from);
+
+                                blocks.push(ClaudeContentBlock {
+                                    block_type: "tool_result".to_string(),
+                                    text: None,
+                                    tool_use_id,
+                                    name: None,
+                                    input: None,
+                                    output: output.or(fallback_output),
+                                    raw_json,
+                                    file_path,
+                                    file_content,
+                                    is_error,
+                                });
+                            }
+                            Some("thinking") | Some("redacted_thinking") => {
+                                let text = obj
+                                    .get("thinking")
+                                    .or_else(|| obj.get("text"))
+                                    .and_then(|v| v.as_str())
+                                    .map(String::from);
+                                blocks.push(ClaudeContentBlock {
+                                    block_type: block_type.unwrap_or("thinking").to_string(),
+                                    text,
+                                    tool_use_id: None,
+                                    name: None,
+                                    input: None,
+                                    output: None,
+                                    raw_json: None,
+                                    file_path: None,
+                                    file_content: None,
+                                    is_error: None,
+                                });
                             }
                             _ => {}
                         }
@@ -388,9 +613,39 @@ impl ClaudeSessionService {
                     Some(text_parts.join("\n"))
                 };
 
-                (text, tool_uses)
+                (text, tool_uses, blocks)
             }
-            _ => (None, vec![]),
+            _ => (None, vec![], vec![]),
+        }
+    }
+    fn block_has_visible_content(block: &ClaudeContentBlock) -> bool {
+        match block.block_type.as_str() {
+            "text" | "thinking" | "redacted_thinking" => block
+                .text
+                .as_ref()
+                .map(|t| !t.trim().is_empty())
+                .unwrap_or(false),
+            "tool_use" => block
+                .name
+                .as_ref()
+                .map(|n| !n.trim().is_empty())
+                .unwrap_or(false),
+            "tool_result" => block
+                .output
+                .as_ref()
+                .map(|o| !o.trim().is_empty())
+                .unwrap_or(false)
+                || block
+                    .file_content
+                    .as_ref()
+                    .map(|c| !c.trim().is_empty())
+                    .unwrap_or(false)
+                || block
+                    .raw_json
+                    .as_ref()
+                    .map(|j| !j.trim().is_empty())
+                    .unwrap_or(false),
+            _ => false,
         }
     }
 }

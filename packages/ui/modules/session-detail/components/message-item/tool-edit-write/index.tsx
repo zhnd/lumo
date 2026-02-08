@@ -17,7 +17,7 @@ export function ToolEditWrite({ tool }: ToolEditWriteProps) {
   const summary = tool.input ? formatToolInput(tool.input) : null;
 
   return (
-    <div className="rounded-lg border bg-muted/30">
+    <div className="overflow-hidden rounded-lg border bg-muted/30">
       <div className="flex items-center gap-2 px-3 py-1.5 text-xs">
         <Icon className="size-3.5 shrink-0 text-muted-foreground" />
         <span className="font-medium">{tool.name}</span>
