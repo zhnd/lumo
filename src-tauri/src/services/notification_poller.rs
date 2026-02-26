@@ -40,6 +40,7 @@ async fn poll_and_notify(app_handle: &AppHandle) -> anyhow::Result<()> {
             .builder()
             .title(&notif.title)
             .body(&notif.message)
+            .sound("default")
             .show()
         {
             log::warn!("Failed to send OS notification: {}", e);
