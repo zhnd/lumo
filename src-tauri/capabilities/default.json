@@ -20,6 +20,7 @@
     "dialog:default",
     "updater:default",
     "process:allow-restart",
-    "notification:default"
+    "notification:default",
+    "window-state:default"
   ]
 }
