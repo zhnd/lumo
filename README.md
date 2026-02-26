@@ -67,7 +67,7 @@ On first launch, Lumo also attempts to configure Claude Code locally so telemetr
 ## Screenshots
 
 <p align="center">
-  <img src="docs/images/overview.jpg" width="900" alt="Lumo overview dashboard" />
+  <img src="docs/images/overview.jpg" width="900" alt="Lumo overview dashboard" style="border-radius: 12px;" />
 </p>
 
 Lumo provides a desktop dashboard for understanding Claude Code usage at a glance:
@@ -87,7 +87,7 @@ An at-a-glance overview of your Claude Code usage:
 - Time range switching (Today / Week / Month)
 
 <p align="center">
-  <img src="docs/images/overview.jpg" width="800" alt="Overview dashboard" />
+  <img src="docs/images/overview.jpg" width="800" alt="Overview dashboard" style="border-radius: 12px;" />
 </p>
 
 ---
@@ -105,7 +105,7 @@ Browse all Claude Code sessions with full message history:
 - Tool call/result blocks, markdown rendering, and raw payload inspection
 
 <p align="center">
-  <img src="docs/images/session.jpg" width="800" alt="Session detail view" />
+  <img src="docs/images/session.jpg" width="800" alt="Session detail view" style="border-radius: 12px;" />
 </p>
 
 ---
@@ -121,7 +121,7 @@ Inspect tool usage behavior across your Claude Code sessions:
 - Tool timeline trends across the selected period
 
 <p align="center">
-  <img src="docs/images/tools.jpg" width="800" alt="Tools analytics view" />
+  <img src="docs/images/tools.jpg" width="800" alt="Tools analytics view" style="border-radius: 12px;" />
 </p>
 
 ---
@@ -137,7 +137,7 @@ Usage insights derived directly from local telemetry:
 - Token usage by model
 
 <p align="center">
-  <img src="docs/images/performance.jpg" width="800" alt="Performance analytics view" />
+  <img src="docs/images/performance.jpg" width="800" alt="Performance analytics view" style="border-radius: 12px;" />
 </p>
 
 ---
@@ -155,7 +155,7 @@ A lightweight "wrapped" summary for your Claude Code habits:
 - Copy / save share card image
 
 <p align="center">
-  <img src="docs/images/claude-code-wrapped.png" width="420" alt="Claude Code Wrapped summary card" />
+  <img src="docs/images/claude-code-wrapped.png" width="420" alt="Claude Code Wrapped summary card" style="border-radius: 12px;" />
 </p>
 
 ---
@@ -252,7 +252,7 @@ You can review or edit that file at any time.
 
 ## macOS Installation Troubleshooting
 
-### Error: "已损坏，无法打开。你应该将它移到废纸篓"
+### Error: "`lumo` is damaged and can't be opened. You should move it to the Trash."
 
 This is usually caused by macOS Gatekeeper/quarantine checks on unsigned or newly-downloaded apps, not necessarily because the app is actually broken.
 
