@@ -28,9 +28,9 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": [
-      "../target/release/lumo-daemon"
-    ],
+    "resources": {
+      "../target/release/lumo-daemon": "lumo-daemon"
+    },
     "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
