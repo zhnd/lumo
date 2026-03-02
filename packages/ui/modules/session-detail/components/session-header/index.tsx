@@ -20,6 +20,7 @@ import { formatDate, formatTimeAgo, getProjectName, getShortId } from "../../lib
 export function SessionHeader({
   session,
   messageCount,
+  turnCount,
   stats,
   collapsed = false,
   onBack,
@@ -80,7 +81,7 @@ export function SessionHeader({
 
           <div className="flex items-center gap-1.5">
             <MessageSquare className="size-3.5" />
-            <span>{messageCount} messages</span>
+            <span>{turnCount} turns · {messageCount} messages</span>
           </div>
 
           <div className="flex items-center gap-1.5">

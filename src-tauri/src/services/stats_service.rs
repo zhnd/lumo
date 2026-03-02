@@ -185,7 +185,10 @@ impl StatsService {
     fn get_today_start() -> i64 {
         let now = Local::now();
         let start = now.date_naive().and_hms_opt(0, 0, 0).unwrap();
-        Local.from_local_datetime(&start).unwrap().timestamp_millis()
+        Local
+            .from_local_datetime(&start)
+            .unwrap()
+            .timestamp_millis()
     }
 
     /// Get metric counters from the metrics table
@@ -263,8 +266,14 @@ impl StatsService {
             lines_removed: lines_row.as_ref().map(|r| r.removed as i32).unwrap_or(0),
             pull_requests: pr_count.as_ref().map(|r| r.count as i32).unwrap_or(0),
             commits: commit_count.as_ref().map(|r| r.count as i32).unwrap_or(0),
-            code_edit_accepts: code_edit_row.as_ref().map(|r| r.accepts as i32).unwrap_or(0),
-            code_edit_rejects: code_edit_row.as_ref().map(|r| r.rejects as i32).unwrap_or(0),
+            code_edit_accepts: code_edit_row
+                .as_ref()
+                .map(|r| r.accepts as i32)
+                .unwrap_or(0),
+            code_edit_rejects: code_edit_row
+                .as_ref()
+                .map(|r| r.rejects as i32)
+                .unwrap_or(0),
         })
     }
 

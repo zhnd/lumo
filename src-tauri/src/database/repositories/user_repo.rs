@@ -19,10 +19,7 @@ impl UserRepository {
         .fetch_all(pool)
         .await?;
 
-        let users: Result<Vec<User>, _> = rows
-            .into_iter()
-            .map(|row| row.try_into())
-            .collect();
+        let users: Result<Vec<User>, _> = rows.into_iter().map(|row| row.try_into()).collect();
 
         users
     }

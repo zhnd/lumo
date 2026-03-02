@@ -28,8 +28,7 @@ pub struct DaemonManager {
 
 impl DaemonManager {
     pub fn new(app_handle: &tauri::AppHandle) -> Result<Self> {
-        let home_dir =
-            dirs::home_dir().context("Could not determine home directory")?;
+        let home_dir = dirs::home_dir().context("Could not determine home directory")?;
 
         let binary_path = home_dir.join(".lumo/bin").join(DAEMON_BINARY);
         let plist_path = home_dir
@@ -59,7 +58,8 @@ impl DaemonManager {
             // Version mismatch — upgrade.
             log::warn!(
                 "Daemon version mismatch: running={}, expected={}. Upgrading...",
-                health.version, EXPECTED_VERSION
+                health.version,
+                EXPECTED_VERSION
             );
             return self.upgrade().await;
         }
@@ -119,10 +119,7 @@ impl DaemonManager {
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(
-                &self.binary_path,
-                std::fs::Permissions::from_mode(0o755),
-            )?;
+            std::fs::set_permissions(&self.binary_path, std::fs::Permissions::from_mode(0o755))?;
         }
 
         log::info!("Installed daemon binary to {}", self.binary_path.display());
@@ -131,26 +128,22 @@ impl DaemonManager {
 
     /// Write (or overwrite) the launchd plist file.
     fn install_plist(&self) -> Result<()> {
-        let content =
-            plist::render_plist(&self.binary_path, &self.log_dir, &self.home_dir);
+        let content = plist::render_plist(&self.binary_path, &self.log_dir, &self.home_dir);
 
         if let Some(parent) = self.plist_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
 
-        std::fs::write(&self.plist_path, content)
-            .context("Failed to write launchd plist")?;
+        std::fs::write(&self.plist_path, content).context("Failed to write launchd plist")?;
         Ok(())
     }
 
     /// Create required directories.
     fn ensure_directories(&self) -> Result<()> {
         if let Some(parent) = self.binary_path.parent() {
-            std::fs::create_dir_all(parent)
-                .context("Failed to create daemon bin directory")?;
+            std::fs::create_dir_all(parent).context("Failed to create daemon bin directory")?;
         }
-        std::fs::create_dir_all(&self.log_dir)
-            .context("Failed to create daemon log directory")?;
+        std::fs::create_dir_all(&self.log_dir).context("Failed to create daemon log directory")?;
         Ok(())
     }
 
@@ -201,9 +194,7 @@ impl DaemonManager {
             return Ok(debug_path);
         }
 
-        anyhow::bail!(
-            "Daemon binary not found. Run `cargo build -p lumo-daemon` first."
-        )
+        anyhow::bail!("Daemon binary not found. Run `cargo build -p lumo-daemon` first.")
     }
 
     /// Wait for the daemon to become healthy after starting, with retries.

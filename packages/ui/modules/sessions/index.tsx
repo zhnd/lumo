@@ -24,7 +24,10 @@ export function Sessions() {
     selectedProjectName,
     totalSessions,
     isLoading,
+    isLoadingMore,
+    hasMore,
     error,
+    loadMore,
     refetch,
   } = useService();
 
@@ -74,6 +77,9 @@ export function Sessions() {
               <SessionList
                 sessions={filteredSessions}
                 onSelectSession={handleSelectSession}
+                hasMore={hasMore}
+                isLoadingMore={isLoadingMore}
+                onLoadMore={loadMore}
               />
             </div>
           </>

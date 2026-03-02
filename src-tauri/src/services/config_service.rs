@@ -37,8 +37,7 @@ impl ConfigService {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).context("Failed to create config directory")?;
         }
-        let content =
-            serde_json::to_string_pretty(config).context("Failed to serialize config")?;
+        let content = serde_json::to_string_pretty(config).context("Failed to serialize config")?;
         fs::write(&path, content).context("Failed to write config file")?;
         Ok(())
     }
@@ -55,9 +54,7 @@ impl ConfigService {
     }
 
     pub fn has_api_key() -> bool {
-        Self::get_api_key()
-            .map(|k| k.is_some())
-            .unwrap_or(false)
+        Self::get_api_key().map(|k| k.is_some()).unwrap_or(false)
     }
 
     pub fn delete_api_key() -> Result<()> {

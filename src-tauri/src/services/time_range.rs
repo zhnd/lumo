@@ -46,9 +46,7 @@ pub fn generate_date_labels(time_range: TimeRange) -> Vec<String> {
     match time_range {
         TimeRange::Today => {
             let current_hour = now.hour();
-            (0..=current_hour)
-                .map(|h| format!("{:02}:00", h))
-                .collect()
+            (0..=current_hour).map(|h| format!("{:02}:00", h)).collect()
         }
         TimeRange::Week => {
             let days_since_monday = now.weekday().num_days_from_monday() as i64;

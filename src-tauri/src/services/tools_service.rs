@@ -131,12 +131,12 @@ impl ToolsService {
         );
 
         let rows: Vec<ToolTrendRow> = sqlx::query_as(&query)
-        .bind(start_time)
-        .bind(end_time)
-        .bind(start_time)
-        .bind(end_time)
-        .fetch_all(pool)
-        .await?;
+            .bind(start_time)
+            .bind(end_time)
+            .bind(start_time)
+            .bind(end_time)
+            .fetch_all(pool)
+            .await?;
 
         let tools: HashSet<String> = rows.iter().map(|r| r.tool_name.clone()).collect();
         let mut tools: Vec<String> = tools.into_iter().collect();

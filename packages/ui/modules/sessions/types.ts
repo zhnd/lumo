@@ -1,9 +1,11 @@
 import type {
   ClaudeProjectSummary,
   ClaudeSession,
+  ClaudeSessionPage,
 } from "@/src/generated/typeshare-types";
 
 export type { ClaudeSession };
+export type { ClaudeSessionPage };
 
 export interface UseServiceReturn {
   sessions: ClaudeSession[];
@@ -14,7 +16,10 @@ export interface UseServiceReturn {
   totalSessions: number;
   selectedProjectName: string;
   isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
   error: Error | null;
+  loadMore: () => void;
   refetch: () => void;
 }
 

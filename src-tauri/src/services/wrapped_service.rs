@@ -13,29 +13,23 @@ pub struct WrappedService;
 
 impl WrappedService {
     /// Get all wrapped data for a period
-    pub async fn get_wrapped_data(
-        pool: &SqlitePool,
-        period: WrappedPeriod,
-    ) -> Result<WrappedData> {
+    pub async fn get_wrapped_data(pool: &SqlitePool, period: WrappedPeriod) -> Result<WrappedData> {
         let (start_time, end_time) = Self::get_period_bounds(period);
 
         // Sessions stats
         let session_stats = Self::get_session_stats(pool, start_time, end_time).await?;
 
         // Top model
-        let (top_model, top_model_pct) =
-            Self::get_top_model(pool, start_time, end_time).await?;
+        let (top_model, top_model_pct) = Self::get_top_model(pool, start_time, end_time).await?;
 
         // Top tool
-        let (top_tool, top_tool_count) =
-            Self::get_top_tool(pool, start_time, end_time).await?;
+        let (top_tool, top_tool_count) = Self::get_top_tool(pool, start_time, end_time).await?;
 
         // Longest streak
         let longest_streak = Self::get_longest_streak(pool, start_time, end_time).await?;
 
         // Peak hour
-        let (peak_hour, peak_hour_label) =
-            Self::get_peak_hour(pool, start_time, end_time).await?;
+        let (peak_hour, peak_hour_label) = Self::get_peak_hour(pool, start_time, end_time).await?;
 
         // Token breakdown
         let token_breakdown = Self::get_token_breakdown(pool, start_time, end_time).await?;
@@ -173,11 +167,7 @@ impl WrappedService {
         }
     }
 
-    async fn get_longest_streak(
-        pool: &SqlitePool,
-        start_time: i64,
-        end_time: i64,
-    ) -> Result<i32> {
+    async fn get_longest_streak(pool: &SqlitePool, start_time: i64, end_time: i64) -> Result<i32> {
         let rows: Vec<DateRow> = sqlx::query_as(
             r#"
             SELECT DISTINCT
@@ -323,10 +313,7 @@ impl WrappedService {
         let end_time = now.timestamp_millis();
 
         let start = match period {
-            WrappedPeriod::Today => now
-                .date_naive()
-                .and_hms_opt(0, 0, 0)
-                .unwrap(),
+            WrappedPeriod::Today => now.date_naive().and_hms_opt(0, 0, 0).unwrap(),
             WrappedPeriod::Week => (now - chrono::Duration::days(7))
                 .date_naive()
                 .and_hms_opt(0, 0, 0)
@@ -337,12 +324,10 @@ impl WrappedService {
                 .unwrap()
                 .and_hms_opt(0, 0, 0)
                 .unwrap(),
-            WrappedPeriod::All => {
-                NaiveDate::from_ymd_opt(2020, 1, 1)
-                    .unwrap()
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-            }
+            WrappedPeriod::All => NaiveDate::from_ymd_opt(2020, 1, 1)
+                .unwrap()
+                .and_hms_opt(0, 0, 0)
+                .unwrap(),
         };
 
         let start_time = Local

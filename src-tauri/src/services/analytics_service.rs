@@ -237,7 +237,6 @@ impl AnalyticsService {
             })
             .collect())
     }
-
 }
 
 #[derive(Debug, sqlx::FromRow)]

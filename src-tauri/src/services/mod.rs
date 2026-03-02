@@ -7,6 +7,8 @@ mod claude_config_service;
 mod claude_session_service;
 mod config_service;
 pub mod notification_poller;
+pub mod session_cache;
+pub mod session_watcher;
 mod stats_service;
 pub mod time_range;
 mod tools_service;

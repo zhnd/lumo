@@ -217,13 +217,11 @@ impl TrendsService {
         Ok(all_labels
             .into_iter()
             .map(|label| {
-                trend_map
-                    .remove(&label)
-                    .unwrap_or(CostEfficiencyTrend {
-                        date: label,
-                        cost_per_session: 0.0,
-                        session_count: 0,
-                    })
+                trend_map.remove(&label).unwrap_or(CostEfficiencyTrend {
+                    date: label,
+                    cost_per_session: 0.0,
+                    session_count: 0,
+                })
             })
             .collect())
     }

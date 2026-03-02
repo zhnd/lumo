@@ -15,6 +15,7 @@ interface UseScrollToBottomOptions {
 
 interface UseScrollToBottomReturn {
   showScrollToBottom: boolean;
+  isNearBottom: boolean;
   scrollToBottom: () => void;
 }
 
@@ -25,6 +26,7 @@ export function useScrollToBottom({
   autoScrollOnInitialLoad = true,
 }: UseScrollToBottomOptions): UseScrollToBottomReturn {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [isNearBottom, setIsNearBottom] = useState(true);
   const hasAutoScrolled = useRef(false);
 
   // Auto-scroll to bottom on initial load
@@ -46,9 +48,12 @@ export function useScrollToBottom({
     const handleScroll = () => {
       const distanceFromBottom =
         el.scrollHeight - el.scrollTop - el.clientHeight;
-      setShowScrollToBottom(distanceFromBottom > THRESHOLD);
+      const nextIsNearBottom = distanceFromBottom <= THRESHOLD;
+      setIsNearBottom(nextIsNearBottom);
+      setShowScrollToBottom(!nextIsNearBottom);
     };
 
+    handleScroll();
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
   }, [scrollRef, itemCount]);
@@ -59,6 +64,7 @@ export function useScrollToBottom({
 
   return {
     showScrollToBottom,
+    isNearBottom,
     scrollToBottom,
   };
 }

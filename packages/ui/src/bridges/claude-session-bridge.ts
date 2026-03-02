@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ClaudeProjectSummary,
-  ClaudeSession,
   ClaudeSessionDetail,
+  ClaudeSessionPage,
 } from "../generated/typeshare-types";
 
 /**
@@ -16,21 +16,15 @@ export class ClaudeSessionBridge {
     return invoke<ClaudeProjectSummary[]>("get_claude_projects");
   }
 
-  /**
-   * Get all Claude Code sessions across all projects
-   */
-  static async getAllSessions(): Promise<ClaudeSession[]> {
-    return invoke<ClaudeSession[]>("get_claude_sessions");
-  }
-
-  /**
-   * Get Claude Code sessions for a specific project
-   */
-  static async getSessionsForProject(
-    projectPath: string
-  ): Promise<ClaudeSession[]> {
-    return invoke<ClaudeSession[]>("get_claude_sessions_for_project", {
+  static async getSessionsPage(
+    projectPath: string | null,
+    offset: number,
+    limit: number,
+  ): Promise<ClaudeSessionPage> {
+    return invoke<ClaudeSessionPage>("get_claude_sessions_page", {
       projectPath,
+      offset,
+      limit,
     });
   }
 

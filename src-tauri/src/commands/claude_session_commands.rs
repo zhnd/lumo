@@ -2,14 +2,10 @@
 //!
 //! Tauri commands for accessing Claude Code session data.
 
+use crate::services::session_cache::SessionDetailCache;
 use crate::services::ClaudeSessionService;
-use crate::types::{ClaudeProjectSummary, ClaudeSession, ClaudeSessionDetail};
-
-/// Get all Claude Code sessions
-#[tauri::command]
-pub fn get_claude_sessions() -> Result<Vec<ClaudeSession>, String> {
-    ClaudeSessionService::get_all_sessions().map_err(|e| e.to_string())
-}
+use crate::types::{ClaudeProjectSummary, ClaudeSessionDetail, ClaudeSessionPage};
+use tauri::{AppHandle, Manager};
 
 /// Get Claude projects summary
 #[tauri::command]
@@ -17,14 +13,37 @@ pub fn get_claude_projects() -> Result<Vec<ClaudeProjectSummary>, String> {
     ClaudeSessionService::get_projects_summary().map_err(|e| e.to_string())
 }
 
-/// Get Claude Code sessions for a specific project
+/// Get paginated Claude Code sessions for a project or all projects.
 #[tauri::command]
-pub fn get_claude_sessions_for_project(project_path: String) -> Result<Vec<ClaudeSession>, String> {
-    ClaudeSessionService::get_sessions_for_project(&project_path).map_err(|e| e.to_string())
+pub fn get_claude_sessions_page(
+    project_path: Option<String>,
+    offset: usize,
+    limit: usize,
+) -> Result<ClaudeSessionPage, String> {
+    ClaudeSessionService::get_sessions_page(project_path.as_deref(), offset, limit)
+        .map_err(|e| e.to_string())
 }
 
 /// Get Claude Code session detail with messages
 #[tauri::command]
-pub fn get_claude_session_detail(session_path: String) -> Result<ClaudeSessionDetail, String> {
-    ClaudeSessionService::get_session_detail(&session_path).map_err(|e| e.to_string())
+pub fn get_claude_session_detail(
+    app_handle: AppHandle,
+    session_path: String,
+) -> Result<ClaudeSessionDetail, String> {
+    // Check cache first
+    if let Some(cache) = app_handle.try_state::<SessionDetailCache>() {
+        if let Some(cached) = cache.get(&session_path) {
+            return Ok(cached);
+        }
+    }
+
+    let detail =
+        ClaudeSessionService::get_session_detail(&session_path).map_err(|e| e.to_string())?;
+
+    // Store in cache
+    if let Some(cache) = app_handle.try_state::<SessionDetailCache>() {
+        cache.set(&session_path, detail.clone());
+    }
+
+    Ok(detail)
 }

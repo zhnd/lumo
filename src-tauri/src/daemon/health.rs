@@ -25,7 +25,10 @@ pub async fn check_daemon_health() -> Option<HealthResponse> {
         let addr = daemon_addr();
         let mut stream = TcpStream::connect(&addr).await.ok()?;
 
-        let request = format!("GET /health HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n", addr);
+        let request = format!(
+            "GET /health HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
+            addr
+        );
         stream.write_all(request.as_bytes()).await.ok()?;
 
         let mut response = Vec::new();

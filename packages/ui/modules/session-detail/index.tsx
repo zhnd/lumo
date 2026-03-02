@@ -4,11 +4,10 @@ import { CardError } from "@/components/card-error";
 import { ScrollToBottomButton } from "@/components/scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import {
-  MessageItem,
+  TimelineItem,
   SessionHeader,
   SessionDetailSkeleton,
   SessionHighlights,
-  SessionViewControls,
 } from "./components";
 import { useService } from "./use-service";
 import type { SessionDetailModuleProps } from "./types";
@@ -16,11 +15,9 @@ import type { SessionDetailModuleProps } from "./types";
 export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
   const {
     sessionDetail,
-    messages,
+    timelineItems,
     totalMessageCount,
-    visibleMessageCount,
-    showEssentialOnly,
-    toggleEssentialOnly,
+    totalTurnCount,
     highlights,
     scrollRef,
     virtualizer,
@@ -28,6 +25,7 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
     scrollToBottom,
     isInitialRenderReady,
     isTopCollapsed,
+    isSessionActive,
     onBack,
     isLoading,
     error,
@@ -57,24 +55,17 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
           <SessionHeader
             session={session}
             messageCount={totalMessageCount}
+            turnCount={totalTurnCount}
             stats={sessionDetail.stats}
             collapsed={isTopCollapsed}
             onBack={onBack}
           />
           {!isTopCollapsed && highlights && <SessionHighlights highlights={highlights} />}
-          {!isTopCollapsed && (
-            <SessionViewControls
-              showEssentialOnly={showEssentialOnly}
-              visibleCount={visibleMessageCount}
-              totalCount={totalMessageCount}
-              onToggleEssentialOnly={toggleEssentialOnly}
-            />
-          )}
         </div>
 
-        {messages.length === 0 ? (
+        {timelineItems.length === 0 ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-            No messages in this session
+            No visible conversation in this session
           </div>
         ) : (
           <div className="relative flex-1 overflow-hidden">
@@ -99,11 +90,22 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
                   >
-                    <MessageItem message={messages[virtualItem.index]} />
+                    <TimelineItem item={timelineItems[virtualItem.index]} />
                   </div>
                 ))}
               </div>
             </div>
+
+            {isSessionActive && (
+              <div className="flex items-center gap-1.5 px-4 py-3">
+                <span className="inline-flex gap-1">
+                  <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60" />
+                </span>
+                <span className="text-xs text-muted-foreground">Session active</span>
+              </div>
+            )}
 
             <ScrollToBottomButton
               visible={showScrollToBottom}

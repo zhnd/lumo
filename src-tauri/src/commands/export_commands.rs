@@ -8,8 +8,7 @@ pub async fn save_image_to_path(data: String, path: String) -> Result<(), String
         .decode(&data)
         .map_err(|e| format!("Invalid base64: {}", e))?;
 
-    std::fs::write(&path, &bytes)
-        .map_err(|e| format!("Failed to write file: {}", e))?;
+    std::fs::write(&path, &bytes).map_err(|e| format!("Failed to write file: {}", e))?;
 
     Ok(())
 }
