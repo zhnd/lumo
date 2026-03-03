@@ -1,6 +1,6 @@
 {
   "name": "lumo",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
