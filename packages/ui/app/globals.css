@@ -136,3 +136,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Sidebar wrapper — fit within layout instead of min-h-svh */
+[data-slot="sidebar-wrapper"] {
+  min-height: auto !important;
+  height: 100%;
+  overflow: hidden;
+}

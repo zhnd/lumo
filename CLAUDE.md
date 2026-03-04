@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Package Manager
+
+This project uses **pnpm** exclusively. Always use `pnpm` / `pnpm dlx` instead of `npm` / `npx`.
+
 ## Project Overview
 
 Lumo is a Claude Code usage monitoring application that collects telemetry data via OpenTelemetry Protocol (OTLP) and displays it in a desktop overview. The architecture consists of:

@@ -4,7 +4,7 @@ import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarLayout } from "@/components/sidebar-layout";
 import { TitleBar } from "@/components/titlebar";
-import { QueryProvider } from "@/src/lib/query-client";
+import { QueryProvider } from "@/lib/query-client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

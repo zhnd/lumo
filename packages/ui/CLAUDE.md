@@ -240,39 +240,27 @@ packages/ui/
 │   ├── page.tsx            # Home route → imports Overview module
 │   ├── layout.tsx          # Root layout
 │   └── globals.css         # Theme variables (shadcn)
-├── modules/                # Page-level business logic
-│   └── overview/           # Overview page module
-│       ├── index.tsx       # UI rendering
-│       ├── use-service.ts  # State + hooks
-│       ├── types.ts        # Types
-│       ├── constants.ts    # Mock data / constants
-│       └── components/     # Module-specific components
-│           ├── index.ts
-│           ├── time-range-tabs/
-│           │   └── index.tsx
-│           ├── token-chart/
-│           │   └── index.tsx
-│           ├── model-distribution/
-│           │   └── index.tsx
-│           └── recent-sessions/
-│               └── index.tsx
-├── components/             # Shared React components
-│   ├── ui/                 # shadcn/ui base components (READ-ONLY)
-│   ├── page-header/        # Page header with sidebar trigger
-│   ├── stat-card/          # Statistics card
-│   ├── sidebar-layout/     # Sidebar layout wrapper
-│   ├── app-sidebar/        # Global sidebar
-│   └── titlebar/           # Window titlebar
-├── src/                    # Frontend source
+├── src/                    # All business code (tsconfig @/* → ./src/*)
 │   ├── bridges/            # Tauri IPC wrappers
-│   ├── hooks/              # React custom hooks
-│   ├── lib/                # Utilities (query-client, utils)
-│   ├── types/              # Global TypeScript types
-│   └── generated/          # Auto-generated TypeScript types
+│   ├── components/         # Shared React components
+│   │   ├── ui/             # shadcn/ui base components (READ-ONLY)
+│   │   ├── page-header/    # Page header with sidebar trigger
+│   │   ├── stat-card/      # Statistics card
+│   │   ├── sidebar-layout/ # Sidebar layout wrapper
+│   │   ├── app-sidebar/    # Global sidebar
+│   │   └── titlebar/       # Window titlebar
+│   ├── generated/          # Auto-generated TypeScript types
+│   ├── hooks/              # Global React hooks
+│   ├── lib/                # Utilities (query-client, utils, format)
+│   └── modules/            # Page-level business logic
+│       └── overview/       # Overview page module
+│           ├── index.tsx
+│           ├── use-service.ts
+│           ├── types.ts
+│           ├── constants.ts
+│           └── components/
 ├── scripts/                # Build scripts
 │   └── generate-types.js   # Typeshare runner
-├── lib/                    # Shared utilities
-├── hooks/                  # Global React hooks
 └── package.json            # Package dependencies
 ```
 
@@ -289,4 +277,4 @@ pnpm generate-types   # Generate TypeScript types from Rust structs
 
 - `next.config.ts`: Sets `output: 'export'` for SSG, configures `assetPrefix` for dev/prod
 - Next.js Image component requires `unoptimized: true` due to SSG constraints
-- TypeScript path alias: `@/*` maps to project root
+- TypeScript path alias: `@/*` maps to `./src/*`
