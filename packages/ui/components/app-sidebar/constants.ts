@@ -3,6 +3,7 @@ import {
   History,
   Wrench,
   BarChart3,
+  Gauge,
   Sparkles,
 } from "lucide-react";
 import type { NavItem } from "./types";
@@ -27,6 +28,11 @@ export const NAV_ITEMS = [
     id: "analytics",
     label: "Performance",
     icon: BarChart3,
+  },
+  {
+    id: "usage",
+    label: "Usage",
+    icon: Gauge,
   },
   {
     id: "wrapped",

@@ -37,7 +37,6 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-2">
         <UpdateIndicator />
-        {/* <UsageLimits /> */}
       </SidebarFooter>
     </Sidebar>
   );

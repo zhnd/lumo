@@ -12,7 +12,11 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                .with_denylist(&["claude-usage-scraper"])
+                .build(),
+        )
         .manage(services::session_cache::SessionDetailCache::new())
         .setup(|app| {
             if cfg!(debug_assertions) {

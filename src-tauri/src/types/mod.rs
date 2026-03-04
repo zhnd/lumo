@@ -7,6 +7,7 @@ mod claude_session;
 mod entities;
 
 mod stats;
+mod subscription_usage;
 mod tools;
 mod trends;
 mod usage;
@@ -17,6 +18,7 @@ pub use claude_session::*;
 pub use entities::*;
 
 pub use stats::*;
+pub use subscription_usage::*;
 pub use tools::*;
 pub use trends::*;
 pub use usage::*;

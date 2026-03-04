@@ -5,6 +5,7 @@ pub mod export_commands;
 
 pub mod session_commands;
 pub mod stats_commands;
+pub mod subscription_usage_commands;
 pub mod tools_commands;
 pub mod trends_commands;
 pub mod usage_commands;
@@ -18,6 +19,7 @@ pub use export_commands::*;
 
 pub use session_commands::*;
 pub use stats_commands::*;
+pub use subscription_usage_commands::*;
 pub use tools_commands::*;
 pub use trends_commands::*;
 pub use usage_commands::*;
@@ -71,6 +73,11 @@ macro_rules! app_commands {
             commands::save_api_key,
             commands::has_api_key,
             commands::delete_api_key,
+            // Subscription usage commands
+            commands::fetch_subscription_usage,
+            commands::show_claude_login,
+            commands::hide_claude_login,
+            commands::logout_claude,
         ]
     };
 }
