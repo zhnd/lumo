@@ -1,6 +1,12 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryCache,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { useEffect, useState } from "react";
 import {
   isPermissionGranted,
@@ -17,6 +23,20 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        queryCache: new QueryCache({
+          onError: (error, query) => {
+            toast.error("Request failed", {
+              description: error.message,
+              action: {
+                label: "Copy",
+                onClick: () =>
+                  navigator.clipboard.writeText(
+                    `Query: ${JSON.stringify(query.queryKey)}\nError: ${error.message}\nTime: ${new Date().toLocaleString()}`
+                  ),
+              },
+            });
+          },
+        }),
         defaultOptions: {
           queries: {
             // Keep defaults conservative; per-query refresh policy is configured in each module.
@@ -31,6 +51,9 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster />
+    </QueryClientProvider>
   );
 }
