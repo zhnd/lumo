@@ -23,6 +23,7 @@ export function useService(): UseServiceReturn {
     queryKey: [...QUERY_KEY],
     queryFn: () => SubscriptionUsageBridge.fetchUsage(),
     refetchInterval: AUTO_REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: true,
     retry: 1,
   });
 
