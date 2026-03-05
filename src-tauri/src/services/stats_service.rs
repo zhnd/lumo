@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use chrono::{Local, TimeZone};
-use shared::SessionRepository;
 use sqlx::SqlitePool;
 
 use super::time_range::get_time_range_bounds;
@@ -19,7 +18,6 @@ impl StatsService {
         let (start_time, end_time) = get_time_range_bounds(time_range);
         let today_start = Self::get_today_start();
         let has_events = Self::source_exists(pool, "events").await?;
-        let has_sessions = Self::source_exists(pool, "sessions").await?;
 
         // Query cost and token totals from events table (not sessions)
         // to ensure consistency with Cost Trends chart
@@ -44,16 +42,17 @@ impl StatsService {
             EventTotalsRow::default()
         };
 
-        // Session counts still come from the sessions view
-        let sessions = if has_sessions {
-            SessionRepository::find_by_time_range(pool, start_time, end_time).await?
+        // Session counts: use lightweight COUNT queries directly on the events table
+        // instead of materializing the expensive sessions VIEW with SELECT *
+        let total_sessions = if has_events {
+            Self::count_sessions(pool, start_time, end_time).await?
         } else {
-            vec![]
+            0
         };
-        let today_sessions = if has_sessions {
-            SessionRepository::find_by_time_range(pool, today_start, end_time).await?
+        let today_sessions = if has_events {
+            Self::count_sessions(pool, today_start, end_time).await?
         } else {
-            vec![]
+            0
         };
 
         // Cache hit rate = cache_read / (cache_read + input)
@@ -80,8 +79,8 @@ impl StatsService {
             cache_tokens: totals.cache_tokens as i32,
             cache_percentage: cache_percentage as f32,
             active_time_seconds: 0,
-            total_sessions: sessions.len() as i32,
-            today_sessions: today_sessions.len() as i32,
+            total_sessions,
+            today_sessions,
             cost_change_percent: cost_change_percent as f32,
             lines_of_code_added: metric_counters.lines_added,
             lines_of_code_removed: metric_counters.lines_removed,
@@ -275,6 +274,24 @@ impl StatsService {
                 .map(|r| r.rejects as i32)
                 .unwrap_or(0),
         })
+    }
+
+    /// Count distinct sessions within a time range by querying events directly.
+    /// This avoids materializing the expensive sessions VIEW.
+    async fn count_sessions(pool: &SqlitePool, start_time: i64, end_time: i64) -> Result<i32> {
+        let (count,): (i32,) = sqlx::query_as(
+            r#"
+            SELECT COUNT(DISTINCT session_id) as count
+            FROM events
+            WHERE timestamp >= ? AND timestamp <= ?
+                AND session_id != 'unknown'
+            "#,
+        )
+        .bind(start_time)
+        .bind(end_time)
+        .fetch_one(pool)
+        .await?;
+        Ok(count)
     }
 
     async fn source_exists(pool: &SqlitePool, name: &str) -> Result<bool> {
