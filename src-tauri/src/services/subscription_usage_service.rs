@@ -35,6 +35,9 @@ fn build_extraction_js(request_id: &str) -> String {
         r#"
 (function() {{
     var REQUEST_ID = '{}';
+    // Guard against duplicate injections: skip if already running for this request
+    if (window.__LUMO_EXTRACT_ID === REQUEST_ID) return;
+    window.__LUMO_EXTRACT_ID = REQUEST_ID;
     var attempts = 0;
     var maxAttempts = 30;
 
@@ -210,12 +213,6 @@ impl SubscriptionUsageService {
             });
         }
 
-        // Wait for page DOM to be ready before injecting extraction script
-        let page_ready = Self::wait_for_page_ready(&webview, 20).await; // ~10s
-        if !page_ready {
-            log::warn!("Page did not reach ready state, proceeding anyway");
-        }
-
         // Generate a unique request ID to match results
         let request_id = format!("{}", std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -232,9 +229,22 @@ impl SubscriptionUsageService {
             .eval(&js)
             .context("Failed to inject extraction script")?;
 
-        // Poll URL hash for result, verifying request ID matches
-        for _ in 0..40 {
+        // Poll URL hash for result, verifying request ID matches.
+        // Re-inject the extraction script periodically in case the initial
+        // injection was lost during page navigation (the script guards against
+        // duplicate execution via window.__LUMO_EXTRACT_ID).
+        let mut last_inject = std::time::Instant::now();
+        for i in 0..40 {
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+
+            // Re-inject every ~5s if no result yet
+            if i > 0 && last_inject.elapsed() > std::time::Duration::from_secs(5) {
+                log::debug!("Re-injecting extraction script (poll iteration {})", i);
+                let _ = webview.eval("window.location.hash = '';");
+                tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+                let _ = webview.eval(&js);
+                last_inject = std::time::Instant::now();
+            }
 
             let url = webview.url().context("Failed to get webview URL")?;
             let fragment = url.fragment().unwrap_or("");
@@ -387,29 +397,6 @@ impl SubscriptionUsageService {
         .context("Failed to create webview window")?;
 
         Ok(webview)
-    }
-
-    /// Wait for the page DOM to be ready (document.readyState is 'complete' or 'interactive').
-    /// Uses a hash-based signal to detect readiness from the webview.
-    /// Returns true if the page became ready, false on timeout.
-    async fn wait_for_page_ready(webview: &tauri::WebviewWindow, max_polls: u32) -> bool {
-        for _ in 0..max_polls {
-            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-            let check_js = r#"
-                if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                    window.location.hash = 'PAGE_READY';
-                }
-            "#;
-            let _ = webview.eval(check_js);
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-            if let Ok(url) = webview.url() {
-                if url.fragment() == Some("PAGE_READY") {
-                    let _ = webview.eval("window.location.hash = '';");
-                    return true;
-                }
-            }
-        }
-        false
     }
 
     /// Poll the webview URL until it stops changing or reaches a non-blank state.
