@@ -1,43 +1,83 @@
 # Tauri Backend Module
 
-The Tauri backend provides the desktop application shell with native OS integration, IPC command handlers, and local database management.
+The Tauri backend provides the desktop application shell with native OS integration, IPC command handlers, business services, and daemon lifecycle management.
 
 ## Architecture
 
-The Tauri app follows a command-based architecture for frontend-backend communication:
+The Tauri app follows a layered architecture:
 
 ```
-Frontend (React) → invoke() → Commands → Repositories → SQLite
+Frontend (React) --> invoke() --> Commands --> Services --> Repositories --> SQLite
+                                                 |
+                                          Types (typeshare)
 ```
 
-### Key Components
+### Layer Responsibilities
 
-1. **Commands** (`src/commands/`): IPC handlers exposed to frontend
-2. **Entities** (`src/database/entities/`): Data models with typeshare
-3. **Repositories** (`src/database/repositories/`): Database access layer
-4. **Connection** (`src/database/connection.rs`): Pool setup and migrations
+1. **Commands** (`src/commands/`): IPC handlers exposed to frontend via `#[command]`
+2. **Services** (`src/services/`): Business logic, data aggregation, calculations
+3. **Types** (`src/types/`): Response types with `#[typeshare]` for TypeScript generation
+4. **Daemon** (`src/daemon/`): Daemon binary lifecycle (install, health, launchd)
+5. **Database** (`src/database/`): DB setup (delegates to shared crate)
 
 ## Directory Structure
 
 ```
 src/
-├── main.rs              # Entry point with Tokio runtime
-├── lib.rs               # Tauri app setup, plugin registration
+├── main.rs                  # Entry point with Tokio runtime
+├── lib.rs                   # App setup, plugin registration, startup sequence
 ├── commands/
-│   ├── mod.rs           # app_commands! macro
-│   └── user_commands.rs # User CRUD commands
+│   ├── mod.rs               # app_commands! macro with all registered commands
+│   ├── analytics_commands.rs
+│   ├── claude_session_commands.rs
+│   ├── daemon_commands.rs
+│   ├── export_commands.rs
+│   ├── session_commands.rs
+│   ├── stats_commands.rs
+│   ├── subscription_usage_commands.rs
+│   ├── system_commands.rs
+│   ├── tools_commands.rs
+│   ├── trends_commands.rs
+│   ├── usage_commands.rs
+│   ├── user_commands.rs
+│   └── wrapped_commands.rs
+├── services/
+│   ├── mod.rs
+│   ├── analytics_service.rs    # Hourly activity, session distribution, cache hit, heatmap
+│   ├── claude_config_service.rs # Auto-configure ~/.claude/settings.json
+│   ├── claude_session_service.rs # Read Claude session JSONL files from disk
+│   ├── config_service.rs       # App configuration (API keys, paths)
+│   ├── notification_poller.rs  # Background poller for OS notifications
+│   ├── session_cache.rs        # In-memory LRU cache for session details
+│   ├── session_watcher.rs      # File watcher for Claude session changes
+│   ├── stats_service.rs        # Summary stats, model stats, token stats
+│   ├── subscription_usage_service.rs # Claude Pro/Max usage scraping via hidden webview
+│   ├── time_range.rs           # Time range helpers (today/week/month)
+│   ├── tools_service.rs        # Tool usage stats, code edit decisions
+│   ├── trends_service.rs       # Usage trends, cost by model, cost efficiency
+│   ├── usage_service.rs        # API usage limits via Anthropic API
+│   └── wrapped_service.rs      # "Wrapped" summary data aggregation
+├── types/
+│   ├── mod.rs
+│   ├── analytics.rs            # Analytics response types
+│   ├── claude_session.rs       # Session detail types
+│   ├── entities.rs             # Re-exported entity types
+│   ├── stats.rs                # Summary/model/token stats types
+│   ├── subscription_usage.rs   # Subscription usage types
+│   ├── tools.rs                # Tool usage types
+│   ├── trends.rs               # Trends response types
+│   ├── usage.rs                # API usage types
+│   └── wrapped.rs              # Wrapped data types
+├── daemon/
+│   ├── mod.rs
+│   ├── manager.rs              # DaemonManager: install, ensure_running
+│   ├── health.rs               # Health check (HTTP GET /health)
+│   └── plist.rs                # macOS launchd plist generation
 └── database/
-    ├── mod.rs           # Database module setup
-    ├── connection.rs    # Pool creation, migrations
-    ├── entities/
-    │   ├── mod.rs
-    │   └── user_entity.rs
-    └── repositories/
-        ├── mod.rs
-        └── user_repo.rs
-
-migrations/
-└── *.sql                # SQLx migration files
+    ├── mod.rs                  # setup() function
+    ├── connection.rs           # Pool creation
+    ├── entities/               # Local entity types (user_entity)
+    └── repositories/           # Local repositories (user_repo)
 ```
 
 ## Command Pattern
@@ -45,13 +85,16 @@ migrations/
 Commands are the IPC bridge between frontend and backend:
 
 ```rust
-use sqlx::SqlitePool;
 use tauri::{command, AppHandle, Manager};
+use sqlx::SqlitePool;
 
 #[command]
-pub async fn get_all_users(app_handle: AppHandle) -> Result<Vec<User>, String> {
+pub async fn get_summary_stats(
+    app_handle: AppHandle,
+    time_range: String,
+) -> Result<SummaryStats, String> {
     let pool = app_handle.state::<SqlitePool>();
-    UserRepository::find_all(&pool)
+    StatsService::get_summary_stats(&pool, &time_range)
         .await
         .map_err(|e| e.to_string())
 }
@@ -63,117 +106,92 @@ pub async fn get_all_users(app_handle: AppHandle) -> Result<Vec<User>, String> {
 - First parameter: `app_handle: AppHandle` for state access
 - Return `Result<T, String>` for serialization
 - Access pool via `app_handle.state::<SqlitePool>()`
-- Delegate to repository methods
+- Delegate to service methods (not directly to repositories)
+- Register in `app_commands!` macro in `commands/mod.rs`
 
-## Adding New Functionality
+## Service Pattern
 
-### 1. Create Entity
+Services contain business logic and should NOT hold state (except caches):
 
 ```rust
-// src/database/entities/session_entity.rs
-use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
-use typeshare::typeshare;
+pub struct StatsService;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
-#[typeshare]
-pub struct Session {
-    pub id: String,
-    pub start_time: i64,
-    pub end_time: Option<i64>,
-    pub total_tokens: i64,
-    pub total_cost: f64,
+impl StatsService {
+    pub async fn get_summary_stats(
+        pool: &SqlitePool,
+        time_range: &str,
+    ) -> anyhow::Result<SummaryStats> {
+        let range = TimeRange::parse(time_range)?;
+        let sessions_count = SessionRepository::count_in_range(pool, &range).await?;
+        // ... aggregate and return
+    }
 }
+```
+
+## Types Pattern (Typeshare)
+
+Response types live in `src/types/` with `#[typeshare]` annotation for TypeScript generation:
+
+```rust
+use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[typeshare]
-pub struct SessionFilter {
-    pub start_date: Option<i64>,
-    pub end_date: Option<i64>,
+pub struct SummaryStats {
+    pub total_sessions: f64,    // Use f64, NOT i64 (typeshare limitation)
+    pub total_cost: f64,
+    pub total_tokens: f64,
 }
 ```
 
-### 2. Create Repository
+**Important**: `typeshare-cli` does NOT support `i64`. Use `f64` for large numbers (timestamps, IDs, counts) in typeshare-annotated structs.
+
+## Adding New Functionality
+
+### 1. Define Response Types
 
 ```rust
-// src/database/repositories/session_repo.rs
-use sqlx::SqlitePool;
-use crate::database::entities::{Session, SessionFilter};
+// src/types/my_types.rs
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[typeshare]
+pub struct MyResponse { ... }
+```
 
-pub struct SessionRepository;
+Export in `src/types/mod.rs`.
 
-impl SessionRepository {
-    pub async fn find_all(pool: &SqlitePool) -> anyhow::Result<Vec<Session>> {
-        let sessions = sqlx::query_as!(Session, "SELECT * FROM sessions ORDER BY start_time DESC")
-            .fetch_all(pool)
-            .await?;
-        Ok(sessions)
-    }
+### 2. Create Service
 
-    pub async fn find_by_filter(
-        pool: &SqlitePool,
-        filter: SessionFilter
-    ) -> anyhow::Result<Vec<Session>> {
-        // Build dynamic query based on filter
-    }
+```rust
+// src/services/my_service.rs
+pub struct MyService;
+impl MyService {
+    pub async fn get_data(pool: &SqlitePool, ...) -> anyhow::Result<MyResponse> { ... }
 }
 ```
+
+Export in `src/services/mod.rs`.
 
 ### 3. Create Commands
 
 ```rust
-// src/commands/session_commands.rs
-use sqlx::SqlitePool;
-use tauri::{command, AppHandle, Manager};
-use crate::database::{entities::Session, repositories::SessionRepository};
-
+// src/commands/my_commands.rs
 #[command]
-pub async fn get_sessions(app_handle: AppHandle) -> Result<Vec<Session>, String> {
+pub async fn get_my_data(app_handle: AppHandle, ...) -> Result<MyResponse, String> {
     let pool = app_handle.state::<SqlitePool>();
-    SessionRepository::find_all(&pool)
-        .await
-        .map_err(|e| e.to_string())
-}
-
-#[command]
-pub async fn get_session_by_id(
-    app_handle: AppHandle,
-    id: String
-) -> Result<Option<Session>, String> {
-    let pool = app_handle.state::<SqlitePool>();
-    SessionRepository::find_by_id(&pool, &id)
-        .await
-        .map_err(|e| e.to_string())
+    MyService::get_data(&pool, ...).await.map_err(|e| e.to_string())
 }
 ```
 
 ### 4. Register Commands
 
 Update `src/commands/mod.rs`:
-
 ```rust
-pub mod user_commands;
-pub mod session_commands;  // Add this
+pub mod my_commands;
+pub use my_commands::*;
 
-pub use user_commands::*;
-pub use session_commands::*;  // Add this
-
-#[macro_export]
-macro_rules! app_commands {
-    () => {
-        tauri::generate_handler![
-            // User commands
-            commands::get_all_users,
-            commands::get_user_by_id,
-            commands::create_user,
-            commands::update_user,
-            commands::delete_user,
-            // Session commands - Add these
-            commands::get_sessions,
-            commands::get_session_by_id,
-        ]
-    };
-}
+// Add to app_commands! macro:
+commands::get_my_data,
 ```
 
 ### 5. Generate TypeScript Types
@@ -182,87 +200,39 @@ macro_rules! app_commands {
 pnpm generate-types
 ```
 
-### 6. Create Frontend Bridge
+## App Startup Sequence
 
-See `components/CLAUDE.md` for frontend integration.
+Defined in `lib.rs`:
 
-## Database Setup
+1. Register plugins (clipboard, dialog, updater, process, notification, window-state, log)
+2. Initialize `SessionDetailCache` as managed state
+3. In `setup()`:
+   - Initialize database and run migrations
+   - Ensure daemon is installed and running via `DaemonManager`
+   - Configure Claude Code OTEL settings (`~/.claude/settings.json`)
+   - Configure Claude Code hooks
+   - Start session file watcher (background)
+   - Start notification poller (background)
 
-Database initialization happens in `lib.rs`:
+## Tauri Plugins
 
-```rust
-.setup(|app| {
-    let app_handle = app.handle().clone();
-    tokio::spawn(async move {
-        if let Err(e) = database::setup(&app_handle).await {
-            eprintln!("Failed to initialize database: {}", e);
-        }
-    });
-    Ok(())
-})
-```
+| Plugin | Purpose |
+|--------|---------|
+| `tauri-plugin-log` | Structured logging |
+| `tauri-plugin-clipboard-manager` | Clipboard access (share card) |
+| `tauri-plugin-dialog` | Native file dialogs (export) |
+| `tauri-plugin-updater` | Auto-update via GitHub releases |
+| `tauri-plugin-process` | Process management |
+| `tauri-plugin-notification` | OS notifications |
+| `tauri-plugin-window-state` | Remember window position/size |
 
-The pool is stored in Tauri's managed state for access in commands.
-
-## Frontend Integration
-
-Commands are invoked from frontend via Tauri's `invoke`:
-
-```typescript
-// src/bridges/session-bridge.ts
-import { invoke } from "@tauri-apps/api/core";
-import type { Session, SessionFilter } from "@/generated/typeshare-types";
-
-export class SessionBridge {
-  static async getSessions(): Promise<Session[]> {
-    return invoke("get_sessions");
-  }
-
-  static async getSessionById(id: string): Promise<Session | null> {
-    return invoke("get_session_by_id", { id });
-  }
-}
-```
+Plugin permissions are configured in `src-tauri/capabilities/default.json`.
 
 ## Development Commands
 
 ```bash
-# Run Tauri in development (includes Next.js)
-pnpm tauri:dev
-
-# Build production app
-pnpm tauri build
-
-# Generate TypeScript types from Rust
-pnpm generate-types
-```
-
-## State Management
-
-- `SqlitePool`: Database connection pool (managed state)
-- Access in commands: `app_handle.state::<SqlitePool>()`
-- Plugins: `tauri-plugin-log` for debug logging
-
-## Error Handling
-
-Commands return `Result<T, String>` for frontend compatibility:
-
-```rust
-#[command]
-pub async fn some_command(app_handle: AppHandle) -> Result<Data, String> {
-    do_something()
-        .await
-        .map_err(|e| e.to_string())  // Convert any error to String
-}
-```
-
-For more structured errors, define error types with Serialize:
-
-```rust
-#[derive(Debug, Serialize)]
-pub enum CommandError {
-    NotFound(String),
-    DatabaseError(String),
-    ValidationError(String),
-}
+pnpm tauri:dev          # Run Tauri with frontend dev server
+pnpm tauri build        # Build production app
+cargo check -p app      # Type-check Tauri crate (package name is "app")
+pnpm generate-types     # Generate TypeScript types from Rust structs
 ```

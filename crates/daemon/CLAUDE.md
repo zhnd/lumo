@@ -1,13 +1,13 @@
 # Daemon Module
 
-The daemon is a standalone Rust HTTP service that receives OpenTelemetry Protocol (OTLP) telemetry data from Claude Code and persists it to SQLite.
+The daemon is a standalone Rust HTTP service that receives OpenTelemetry Protocol (OTLP) telemetry data and hook notifications from Claude Code, then persists them to SQLite.
 
 ## Architecture
 
 The daemon follows a layered architecture pattern:
 
 ```
-Routes → Handlers → Services → Repositories → SQLite
+Routes --> Handlers --> Services --> Repositories --> SQLite
 ```
 
 ### Layer Responsibilities
@@ -23,7 +23,6 @@ Routes → Handlers → Services → Repositories → SQLite
 src/
 ├── main.rs              # Entry point with Tokio runtime
 ├── config.rs            # Environment-based configuration
-├── error.rs             # Error types and conversions
 ├── server/
 │   ├── mod.rs
 │   ├── app.rs           # Axum router setup
@@ -32,12 +31,14 @@ src/
 ├── routes/
 │   ├── mod.rs
 │   ├── health.rs        # GET /health
-│   └── otlp.rs          # POST /v1/metrics, POST /v1/logs
+│   ├── otlp.rs          # POST /v1/metrics, POST /v1/logs
+│   └── notify.rs        # POST /notify (hook notifications)
 ├── handlers/
 │   ├── mod.rs
 │   ├── health.rs        # Health check handler
 │   ├── metrics.rs       # OTLP metrics handler
-│   └── logs.rs          # OTLP logs handler
+│   ├── logs.rs          # OTLP logs handler
+│   └── notify.rs        # Hook notification handler
 └── services/
     ├── mod.rs
     └── otlp_parser.rs   # OTLP protocol parsing
@@ -50,12 +51,12 @@ src/
 | GET | `/health` | Health check with version info |
 | POST | `/v1/metrics` | Receive OTLP metrics (protobuf JSON) |
 | POST | `/v1/logs` | Receive OTLP logs/events (protobuf JSON) |
+| POST | `/notify` | Receive Claude Code hook notifications |
 
-## Adding New Functionality
+## Adding a New Endpoint
 
-### Adding a New Endpoint
+### 1. Create route in `src/routes/`
 
-1. **Create route** in `src/routes/`:
 ```rust
 // src/routes/my_route.rs
 use axum::Router;
@@ -67,7 +68,8 @@ pub fn router() -> Router<AppState> {
 }
 ```
 
-2. **Create handler** in `src/handlers/`:
+### 2. Create handler in `src/handlers/`
+
 ```rust
 // src/handlers/my_handler.rs
 use axum::extract::State;
@@ -82,49 +84,25 @@ pub async fn handle(
 }
 ```
 
-3. **Register route** in `src/server/app.rs`:
+### 3. Register route in `src/server/app.rs`
+
 ```rust
 pub fn create_app(state: AppState) -> Router {
     Router::new()
         .merge(health::router())
         .merge(otlp::router())
+        .merge(notify::router())
         .merge(my_route::router())  // Add here
         .with_state(state)
 }
 ```
 
-### Adding a New Service
-
-Services contain business logic and should be stateless functions:
-
-```rust
-// src/services/my_service.rs
-use lumo_shared::database::entities::MyEntity;
-
-pub fn process_data(input: &RawInput) -> Vec<MyEntity> {
-    // Transform input to domain entities
-}
-```
-
 ## State Management
-
-The `AppState` struct is shared across all handlers via Axum's State extractor:
 
 ```rust
 pub struct AppState {
     pub pool: SqlitePool,    // Database connection pool
     pub config: Arc<Config>, // Immutable configuration
-}
-```
-
-## Error Handling
-
-Handlers should return `Result<impl IntoResponse, AppError>` where `AppError` implements `IntoResponse`:
-
-```rust
-pub async fn handle(...) -> Result<Json<Response>, AppError> {
-    let data = some_operation().map_err(AppError::Database)?;
-    Ok(Json(data))
 }
 ```
 
@@ -135,17 +113,20 @@ Environment variables:
 - `LUMO_PORT`: Port number (default: `4318`)
 - `RUST_LOG`: Log level (default: `info`)
 
+## Daemon Lifecycle
+
+The daemon is managed by the Tauri app via `DaemonManager` (`src-tauri/src/daemon/`):
+- Binary bundled as a resource in the Tauri app
+- Installed to `~/.lumo/bin/lumo-daemon` on first launch
+- Registered as a macOS `launchd` agent (`com.zhnd.lumo-daemon`)
+- Health-checked via `GET /health` before each app startup
+
 ## Development Commands
 
 ```bash
-# Run daemon in development
-cargo run -p lumo-daemon
-
-# Run with debug logging
-RUST_LOG=debug cargo run -p lumo-daemon
-
-# Build release
-cargo build -p lumo-daemon --release
+cargo run -p lumo-daemon                    # Run daemon in development
+RUST_LOG=debug cargo run -p lumo-daemon     # Run with debug logging
+cargo build -p lumo-daemon --release        # Build release binary
 ```
 
 ## Dependencies

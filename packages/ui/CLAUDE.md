@@ -9,7 +9,7 @@ Next.js frontend for the Lumo desktop application.
 - **Data Fetching**: TanStack Query + Tauri IPC
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **Forms**: React Hook Form + Zod (when needed)
-- **Charts**: recharts with shadcn chart wrapper
+- **Charts**: ECharts with custom wrapper component (`@/components/echarts`)
 - **Icons**: lucide-react
 - **Fonts**: Geist (sans & mono)
 - **Type Generation**: Typeshare (Rust → TypeScript)
@@ -79,6 +79,17 @@ component-name/
 ## Module Structure
 
 Modules are page-level business logic containers that correspond to routes. Each route should have a dedicated module in `modules/`.
+
+**Current modules:**
+| Module | Route | Description |
+|--------|-------|-------------|
+| `overview/` | `/` | Dashboard with stats, trends, heatmap |
+| `sessions/` | `/sessions` | Project/session list with filtering |
+| `session-detail/` | `/sessions/detail` | Full session message history |
+| `tools/` | `/tools` | Tool usage analytics and charts |
+| `analytics/` | `/analytics` | Performance analytics (cache, errors, etc.) |
+| `usage/` | `/usage` | Claude Pro/Max subscription usage |
+| `wrapped/` | `/wrapped` | "Wrapped" summary with share card |
 
 **Structure:**
 ```
@@ -237,31 +248,59 @@ Size convention: Use `size-4` (16px) for most icons, `size-5` (20px) for larger 
 ```
 packages/ui/
 ├── app/                    # Next.js App Router (route definitions only)
-│   ├── page.tsx            # Home route → imports Overview module
+│   ├── page.tsx            # / → Overview module
+│   ├── sessions/
+│   │   ├── page.tsx        # /sessions → Sessions module
+│   │   └── detail/
+│   │       └── page.tsx    # /sessions/detail → SessionDetail module
+│   ├── tools/page.tsx      # /tools → Tools module
+│   ├── analytics/page.tsx  # /analytics → Analytics module
+│   ├── usage/page.tsx      # /usage → Usage module
+│   ├── wrapped/page.tsx    # /wrapped → Wrapped module
 │   ├── layout.tsx          # Root layout
 │   └── globals.css         # Theme variables (shadcn)
 ├── src/                    # All business code (tsconfig @/* → ./src/*)
 │   ├── bridges/            # Tauri IPC wrappers
+│   │   ├── session-bridge.ts
+│   │   ├── stats-bridge.ts
+│   │   ├── trends-bridge.ts
+│   │   ├── tools-bridge.ts
+│   │   ├── analytics-bridge.ts
+│   │   ├── claude-session-bridge.ts
+│   │   ├── wrapped-bridge.ts
+│   │   ├── subscription-usage-bridge.ts
+│   │   └── ...
 │   ├── components/         # Shared React components
 │   │   ├── ui/             # shadcn/ui base components (READ-ONLY)
-│   │   ├── page-header/    # Page header with sidebar trigger
+│   │   ├── app-sidebar/    # Global sidebar with navigation
+│   │   ├── page-header/    # Page header with daemon status
+│   │   ├── titlebar/       # Window titlebar
 │   │   ├── stat-card/      # Statistics card
-│   │   ├── sidebar-layout/ # Sidebar layout wrapper
-│   │   ├── app-sidebar/    # Global sidebar
-│   │   └── titlebar/       # Window titlebar
-│   ├── generated/          # Auto-generated TypeScript types
+│   │   ├── card-empty/     # Empty state card
+│   │   ├── card-error/     # Error state card
+│   │   ├── card-loading/   # Loading state card
+│   │   ├── echarts/        # ECharts wrapper component
+│   │   ├── update-indicator/ # App update indicator
+│   │   └── scroll-to-bottom/ # Scroll-to-bottom button
+│   ├── generated/          # Auto-generated TypeScript types (typeshare-types.ts)
 │   ├── hooks/              # Global React hooks
-│   ├── lib/                # Utilities (query-client, utils, format)
+│   │   ├── use-tauri-event.ts
+│   │   ├── use-scroll-to-bottom.ts
+│   │   └── use-mobile.ts
+│   ├── lib/                # Utilities
+│   │   ├── query-options.ts # TanStack Query option factories
+│   │   ├── format.ts       # Number/date formatting
+│   │   └── utils.ts        # cn() helper, etc.
 │   └── modules/            # Page-level business logic
-│       └── overview/       # Overview page module
-│           ├── index.tsx
-│           ├── use-service.ts
-│           ├── types.ts
-│           ├── constants.ts
-│           └── components/
-├── scripts/                # Build scripts
+│       ├── overview/
+│       ├── sessions/
+│       ├── session-detail/
+│       ├── tools/
+│       ├── usage/
+│       └── wrapped/
+├── scripts/
 │   └── generate-types.js   # Typeshare runner
-└── package.json            # Package dependencies
+└── package.json
 ```
 
 ## Development Commands
