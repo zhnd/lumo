@@ -15,12 +15,14 @@ import {
 import { WrappedPeriod } from "@/generated/typeshare-types";
 import {
   HeroStat,
+  CodingPersona,
+  FunFacts,
   TopModel,
   FavoriteTool,
   CostCard,
+  CodeOutput,
   CodingStreak,
   PeakHour,
-  TokenBreakdownChart,
   ShareButton,
 } from "./components";
 import { useService } from "./use-service";
@@ -67,41 +69,22 @@ export function Wrapped() {
                 <Skeleton className="h-3 w-40 mx-auto" />
               </div>
               <div className="px-6 space-y-1">
-                {/* Hero stat skeleton */}
                 <div className="flex flex-col items-center gap-2 py-4">
-                  <Skeleton className="h-4 w-52" />
-                  <Skeleton className="h-12 w-28" />
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-5 w-36" />
+                  <Skeleton className="h-3 w-48" />
+                  <Skeleton className="h-12 w-28 mt-2" />
                   <Skeleton className="h-4 w-36" />
                 </div>
-
                 <Separator />
-
-                {/* Stat rows skeleton */}
                 <div className="space-y-4 py-4">
-                  {Array.from({ length: 6 }, (_, i) => (
+                  {Array.from({ length: 5 }, (_, i) => (
                     <div key={i} className="flex items-center gap-4">
                       <Skeleton className="size-10 rounded-xl" />
                       <div className="flex-1 space-y-1.5">
                         <Skeleton className="h-3 w-20" />
                         <Skeleton className="h-5 w-32" />
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Separator />
-
-                {/* Token breakdown skeleton */}
-                <div className="pt-4 space-y-2">
-                  <Skeleton className="h-3 w-28" />
-                  {Array.from({ length: 4 }, (_, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton
-                        className="h-6 flex-1"
-                        style={{ width: `${80 - i * 15}%` }}
-                      />
-                      <Skeleton className="h-3 w-12" />
                     </div>
                   ))}
                 </div>
@@ -124,28 +107,53 @@ export function Wrapped() {
                   </p>
                 </div>
                 <div className="px-6 space-y-1">
+                  {/* Persona + Hero */}
+                  <CodingPersona data={data} />
                   <HeroStat data={data} />
 
                   <Separator />
 
+                  {/* Output */}
+                  <div className="py-4">
+                    <CodeOutput data={data} />
+                  </div>
+
+                  <Separator />
+
+                  {/* Cost */}
                   <div className="space-y-4 py-4">
-                    <TopModel data={data} />
-                    <FavoriteTool data={data} />
                     <CostCard data={data} />
                   </div>
 
                   <Separator />
 
-                  <div className="pt-4">
-                    <TokenBreakdownChart data={data} />
+                  {/* Preferences */}
+                  <div className="space-y-4 py-4">
+                    <TopModel data={data} />
+                    <FavoriteTool data={data} />
                   </div>
 
                   <Separator />
 
+                  {/* Habits */}
                   <div className="space-y-4 py-4">
                     <CodingStreak data={data} />
                     <PeakHour data={data} />
                   </div>
+
+                  <Separator />
+
+                  {/* Fun facts */}
+                  <div className="py-4">
+                    <FunFacts data={data} />
+                  </div>
+                </div>
+
+                {/* Branding footer */}
+                <div className="px-6 pt-2">
+                  <p className="text-center text-[10px] tracking-wide text-muted-foreground/60">
+                    lumo &middot; your claude code companion
+                  </p>
                 </div>
               </div>
             </div>

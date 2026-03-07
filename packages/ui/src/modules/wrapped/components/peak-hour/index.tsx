@@ -8,13 +8,11 @@ export function PeakHour({ data }: { data: WrappedData }) {
 
   return (
     <div className="flex items-center gap-4">
-      <div className={`flex items-center justify-center size-10 rounded-xl ${
-        isNightOwl ? "bg-indigo-500/10" : "bg-amber-500/10"
-      }`}>
+      <div className="flex items-center justify-center size-10 rounded-xl bg-chart-5/10">
         {isNightOwl ? (
-          <Moon className="size-5 text-indigo-500" />
+          <Moon className="size-5 text-chart-5" />
         ) : (
-          <Sun className="size-5 text-amber-500" />
+          <Sun className="size-5 text-chart-5" />
         )}
       </div>
       <div className="flex-1 min-w-0">

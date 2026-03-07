@@ -73,12 +73,15 @@ impl StatsService {
         // Get metric counters
         let metric_counters = Self::get_metric_counters(pool, start_time, end_time).await?;
 
+        // Active time from OTEL metric (claude_code.active_time.total)
+        let active_time_seconds = Self::get_active_time_seconds(pool, start_time, end_time).await?;
+
         Ok(SummaryStats {
             total_cost: totals.total_cost as f32,
             total_tokens: totals.total_tokens as i32,
             cache_tokens: totals.cache_tokens as i32,
             cache_percentage: cache_percentage as f32,
-            active_time_seconds: 0,
+            active_time_seconds,
             total_sessions,
             today_sessions,
             cost_change_percent: cost_change_percent as f32,
@@ -274,6 +277,27 @@ impl StatsService {
                 .map(|r| r.rejects as i32)
                 .unwrap_or(0),
         })
+    }
+
+    /// Get active time in seconds from the `claude_code.active_time.total` OTEL metric.
+    async fn get_active_time_seconds(
+        pool: &SqlitePool,
+        start_time: i64,
+        end_time: i64,
+    ) -> Result<i32> {
+        let (seconds,): (f64,) = sqlx::query_as(
+            r#"
+            SELECT COALESCE(SUM(value), 0.0)
+            FROM metrics
+            WHERE name = 'claude_code.active_time.total'
+              AND timestamp >= ? AND timestamp <= ?
+            "#,
+        )
+        .bind(start_time)
+        .bind(end_time)
+        .fetch_one(pool)
+        .await?;
+        Ok(seconds as i32)
     }
 
     /// Count distinct sessions within a time range by querying events directly.
