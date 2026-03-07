@@ -11,6 +11,7 @@ pub mod tools_commands;
 pub mod trends_commands;
 pub mod usage_commands;
 pub mod user_commands;
+pub mod skills_commands;
 pub mod wrapped_commands;
 
 pub use analytics_commands::*;
@@ -26,6 +27,7 @@ pub use tools_commands::*;
 pub use trends_commands::*;
 pub use usage_commands::*;
 pub use user_commands::*;
+pub use skills_commands::*;
 pub use wrapped_commands::*;
 
 /// Macro to generate the Tauri command handler with all registered commands
@@ -80,6 +82,14 @@ macro_rules! app_commands {
             commands::show_claude_login,
             commands::hide_claude_login,
             commands::logout_claude,
+            // Skills commands
+            commands::list_skills,
+            commands::get_skill_detail,
+            commands::update_skill,
+            commands::install_skill,
+            commands::uninstall_skill,
+            commands::enable_skill,
+            commands::disable_skill,
             // System commands
             commands::open_log_directory,
         ]
