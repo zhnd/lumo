@@ -1,9 +1,10 @@
 export { HeroStat } from "./hero-stat";
+export { CodingPersona } from "./coding-persona";
+export { FunFacts } from "./fun-facts";
 export { TopModel } from "./top-model";
-export { TokensConsumed } from "./tokens-consumed";
 export { FavoriteTool } from "./favorite-tool";
 export { CostCard } from "./cost-card";
+export { CodeOutput } from "./code-output";
 export { CodingStreak } from "./coding-streak";
 export { PeakHour } from "./peak-hour";
-export { TokenBreakdownChart } from "./token-breakdown";
 export { ShareButton } from "./share-button";

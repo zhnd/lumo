@@ -20,7 +20,6 @@ export function useService(): UseServiceReturn {
     if (!data) return false;
     return (
       data.totalSessions > 0 ||
-      data.totalTokens > 0 ||
       data.totalCost > 0 ||
       data.topToolCount > 0 ||
       data.costSparkline.some((v) => v > 0)
