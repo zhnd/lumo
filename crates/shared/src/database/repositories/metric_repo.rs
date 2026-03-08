@@ -2,7 +2,7 @@
 //!
 //! Provides CRUD operations for metrics.
 
-use sqlx::SqlitePool;
+use sqlx::{Sqlite, SqlitePool};
 
 use crate::database::entities::{Metric, MetricRow, NewMetric};
 use crate::error::Result;
@@ -11,8 +11,11 @@ use crate::error::Result;
 pub struct MetricRepository;
 
 impl MetricRepository {
-    /// Insert a new metric
-    pub async fn insert(pool: &SqlitePool, metric: &NewMetric) -> Result<()> {
+    /// Insert a new metric into any executor (pool or transaction)
+    pub async fn insert<'e, E>(executor: E, metric: &NewMetric) -> Result<()>
+    where
+        E: sqlx::Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(
             r#"
             INSERT INTO metrics (
@@ -49,17 +52,25 @@ impl MetricRepository {
         .bind(&metric.user_email)
         .bind(&metric.unit)
         .bind(&metric.description)
-        .execute(pool)
+        .execute(executor)
         .await?;
 
         Ok(())
     }
 
-    /// Insert multiple metrics in a batch
+    /// Insert multiple metrics in a batch using a single transaction
     pub async fn insert_batch(pool: &SqlitePool, metrics: &[NewMetric]) -> Result<()> {
-        for metric in metrics {
-            Self::insert(pool, metric).await?;
+        if metrics.is_empty() {
+            return Ok(());
         }
+
+        let mut tx = pool.begin().await?;
+
+        for metric in metrics {
+            Self::insert(&mut *tx, metric).await?;
+        }
+
+        tx.commit().await?;
         Ok(())
     }
 

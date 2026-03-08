@@ -2,7 +2,7 @@
 //!
 //! Provides CRUD operations for events.
 
-use sqlx::SqlitePool;
+use sqlx::{Sqlite, SqlitePool};
 
 use crate::database::entities::{Event, EventRow, NewEvent};
 use crate::error::Result;
@@ -11,8 +11,11 @@ use crate::error::Result;
 pub struct EventRepository;
 
 impl EventRepository {
-    /// Insert a new event
-    pub async fn insert(pool: &SqlitePool, event: &NewEvent) -> Result<()> {
+    /// Insert a new event into any executor (pool or transaction)
+    pub async fn insert<'e, E>(executor: E, event: &NewEvent) -> Result<()>
+    where
+        E: sqlx::Executor<'e, Database = Sqlite>,
+    {
         sqlx::query(
             r#"
             INSERT INTO events (
@@ -68,17 +71,25 @@ impl EventRepository {
         .bind(&event.user_email)
         .bind(event.event_sequence)
         .bind(event.tool_result_size_bytes)
-        .execute(pool)
+        .execute(executor)
         .await?;
 
         Ok(())
     }
 
-    /// Insert multiple events in a batch
+    /// Insert multiple events in a batch using a single transaction
     pub async fn insert_batch(pool: &SqlitePool, events: &[NewEvent]) -> Result<()> {
-        for event in events {
-            Self::insert(pool, event).await?;
+        if events.is_empty() {
+            return Ok(());
         }
+
+        let mut tx = pool.begin().await?;
+
+        for event in events {
+            Self::insert(&mut *tx, event).await?;
+        }
+
+        tx.commit().await?;
         Ok(())
     }
 
