@@ -364,10 +364,13 @@ impl WrappedService {
 
         let start = match period {
             WrappedPeriod::Today => now.date_naive().and_hms_opt(0, 0, 0).unwrap(),
-            WrappedPeriod::Week => (now - chrono::Duration::days(7))
-                .date_naive()
-                .and_hms_opt(0, 0, 0)
-                .unwrap(),
+            WrappedPeriod::Week => {
+                let days_since_monday = now.weekday().num_days_from_monday() as i64;
+                (now - chrono::Duration::days(days_since_monday))
+                    .date_naive()
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+            }
             WrappedPeriod::Month => now
                 .date_naive()
                 .with_day(1)

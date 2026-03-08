@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/tooltip";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
 import { useService } from "./use-service";
 
 const ROWS = 7;
@@ -174,10 +173,6 @@ export function ActivityHeatmap() {
       />
     );
   }
-  if (data.length === 0) {
-    return <CardEmpty title="Activity" message="No activity data yet" />;
-  }
-
   const cellMap = new Map<string, (typeof visibleCells)[0]>();
   for (const c of visibleCells) {
     cellMap.set(`${c.col}-${c.row}`, c);

@@ -100,7 +100,7 @@ export function Wrapped() {
           )}
           {data && hasMeaningfulData && (
             <div ref={cardRef} className="bg-muted p-10">
-              <div className="w-full max-w-md rounded-xl border border-border bg-card py-6">
+              <div className="w-md rounded-xl border border-border bg-card py-6">
                 <div className="px-6 pb-2">
                   <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">
                     Your Claude Code Wrapped

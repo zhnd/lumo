@@ -10,7 +10,7 @@ import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { useService } from "./use-service";
 import type { ToolFrequencyBarProps } from "./types";
 
@@ -26,8 +26,9 @@ export function ToolFrequencyBar({ timeRange }: ToolFrequencyBarProps) {
         onRetry={() => refetch()}
       />
     );
-  if (data.length === 0)
-    return <CardEmpty title="Tool Usage" message="No tool data" />;
+  if (data.length === 0) {
+    return <CardChartEmpty title="Tool Usage (Top 10)" />;
+  }
 
   const sorted = [...data].sort((a, b) => b.count - a.count);
   const top = sorted.slice(0, 10);

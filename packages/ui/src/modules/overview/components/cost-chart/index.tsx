@@ -11,7 +11,7 @@ import { EChart, resolveChartColor } from "@/components/echarts";
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { useService } from "./use-service";
 import type { CostChartProps } from "./types";
 import { TimeRange } from "@/generated/typeshare-types";
@@ -45,13 +45,7 @@ export function CostChart({ timeRange }: CostChartProps) {
   }
 
   if (dates.length === 0) {
-    return (
-      <CardEmpty
-        title="Cost Trends"
-        message="No cost data available"
-        className="h-full"
-      />
-    );
+    return <CardChartEmpty title="Cost Trends" height={250} className="h-full" />;
   }
 
   const mutedColor = resolveChartColor("--muted-foreground");
