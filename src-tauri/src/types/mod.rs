@@ -11,6 +11,7 @@ mod subscription_usage;
 mod tools;
 mod trends;
 mod usage;
+mod skills;
 mod wrapped;
 
 pub use analytics::*;
@@ -22,4 +23,5 @@ pub use subscription_usage::*;
 pub use tools::*;
 pub use trends::*;
 pub use usage::*;
+pub use skills::*;
 pub use wrapped::*;
