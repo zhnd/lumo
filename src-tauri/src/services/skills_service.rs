@@ -114,6 +114,7 @@ impl SkillsService {
             .unwrap_or(false)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn build_detail(
         frontmatter: SkillFrontmatter,
         raw_content: String,
@@ -362,7 +363,7 @@ impl SkillsService {
             // Try to read manifest from parent skills/ directory
             let manifest = skill_path
                 .parent()
-                .map(|p| Self::read_manifest(p))
+                .map(Self::read_manifest)
                 .unwrap_or_default();
             let dir_name = skill_path
                 .file_name()

@@ -37,9 +37,11 @@ export function TokenModelChart({ timeRange }: TokenModelChartProps) {
       trigger: "axis",
       borderColor: "transparent",
       axisPointer: { type: "shadow" },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       formatter: (params: any) => {
         const model = params[0]?.name ?? "";
         const lines = params.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (p: any) =>
             `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${p.color};margin-right:6px;"></span>${p.seriesName}: ${p.value.toLocaleString()}`,
         );

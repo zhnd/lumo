@@ -25,9 +25,9 @@ impl ProjectsService {
     /// Decode a folder name back to a project path.
     /// e.g., "-Users-zhnd-dev-projects-lumo" -> "/Users/zhnd/dev/projects/lumo"
     fn folder_name_to_project_path(folder_name: &str) -> String {
-        if folder_name.starts_with('-') {
+        if let Some(stripped) = folder_name.strip_prefix('-') {
             // Unix-style: leading dash → leading slash, remaining dashes → slashes
-            format!("/{}", &folder_name[1..].replace('-', "/"))
+            format!("/{}", stripped.replace('-', "/"))
         } else {
             // Windows-style or fallback
             folder_name.replace('-', "/")
