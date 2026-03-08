@@ -25,7 +25,7 @@ export function computeRestState(
   const sorted = [...sessions].sort((a, b) => b.endTime - a.endTime);
   const gapMs = CONTINUOUS_GAP_THRESHOLD_MIN * 60 * 1000;
 
-  let continuousEnd = sorted[0].endTime;
+  const continuousEnd = sorted[0].endTime;
   let continuousStart = sorted[0].startTime;
 
   // If the most recent session ended more than the gap threshold ago, user is rested

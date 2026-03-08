@@ -1,0 +1,100 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  backend:
+    name: Cargo Check & Clippy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: cargo-${{ runner.os }}
+
+      - name: Build daemon (debug)
+        run: |
+          cargo build -p lumo-daemon
+          mkdir -p target/release
+          cp target/debug/lumo-daemon target/release/lumo-daemon
+
+      - name: Cargo check
+        run: cargo check --workspace
+
+      - name: Cargo clippy
+        run: cargo clippy --workspace -- -D warnings
+
+      - name: Install typeshare-cli
+        run: cargo install typeshare-cli --locked
+
+      - name: Generate TypeScript types
+        run: |
+          typeshare -c src-tauri/typeshare.toml \
+            --lang typescript \
+            --output-file packages/ui/src/generated/typeshare-types.ts \
+            src-tauri/src crates/shared/src
+
+      - name: Upload generated types
+        uses: actions/upload-artifact@v4
+        with:
+          name: typeshare-types
+          path: packages/ui/src/generated/typeshare-types.ts
+          retention-days: 1
+
+  frontend:
+    name: Lint & Type Check
+    needs: backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download generated types
+        uses: actions/download-artifact@v4
+        with:
+          name: typeshare-types
+          path: packages/ui/src/generated
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm -F @lumo/ui check-types

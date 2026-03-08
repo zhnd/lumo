@@ -70,4 +70,12 @@ for (const rel of cargoFiles) {
   console.log(`  Updated ${rel}`)
 }
 
+// --- Sync Cargo.lock ---
+try {
+  execSync('cargo generate-lockfile', { cwd: ROOT, stdio: 'pipe' })
+  console.log('  Updated Cargo.lock')
+} catch (e) {
+  console.error('  Warning: failed to update Cargo.lock:', e.message)
+}
+
 console.log(`\nVersion bumped to ${newVersion}`)

@@ -61,9 +61,9 @@ impl ClaudeSessionService {
     /// Decode a folder name back to a project path.
     /// e.g., "-Users-zhnd-dev-projects-lumo" -> "/Users/zhnd/dev/projects/lumo"
     fn folder_name_to_project_path(folder_name: &str) -> String {
-        if folder_name.starts_with('-') {
+        if let Some(stripped) = folder_name.strip_prefix('-') {
             // Unix-style: leading dash → leading slash, remaining dashes → slashes
-            format!("/{}", &folder_name[1..].replace('-', "/"))
+            format!("/{}", stripped.replace('-', "/"))
         } else {
             // Windows-style or fallback
             folder_name.replace('-', "/")
@@ -257,8 +257,8 @@ impl ClaudeSessionService {
             }
             if first_prompt.is_none() && entry_type == "user" {
                 let is_meta = val.get("isMeta").and_then(|v| v.as_bool()).unwrap_or(false);
-                if !is_meta {
-                    if val.get("toolUseResult").is_none() {
+                if !is_meta
+                    && val.get("toolUseResult").is_none() {
                         if let Some(content) = val.get("message").and_then(|msg| msg.get("content"))
                         {
                             if let Some(preview) = Self::extract_title_preview(content) {
@@ -272,7 +272,6 @@ impl ClaudeSessionService {
                             }
                         }
                     }
-                }
             }
 
             let has_enough_preview =

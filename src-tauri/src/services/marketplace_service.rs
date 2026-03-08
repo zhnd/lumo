@@ -257,7 +257,7 @@ impl MarketplaceService {
         let mut result = Vec::new();
         let mut seen_names = std::collections::HashSet::new();
 
-        for (_key, entry) in &known {
+        for entry in known.values() {
             let manifest = match Self::read_manifest(&entry.install_location) {
                 Some(m) => m,
                 None => continue,
@@ -308,7 +308,7 @@ impl MarketplaceService {
 
         let mut result = Vec::new();
 
-        for (_key, entry) in &known {
+        for entry in known.values() {
             let manifest = Self::read_manifest(&entry.install_location);
 
             let (name, description, owner_name, plugin_count) = match &manifest {
