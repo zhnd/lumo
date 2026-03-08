@@ -1,7 +1,9 @@
 //! Skills service
 //!
 //! Service for managing Claude Code skills from the filesystem.
-//! Skills are stored in ~/.claude/skills/ as directories containing SKILL.md files.
+//! Supports both global (~/.claude/) and project-level (.claude/) skills.
+//! Skills are directories containing SKILL.md files.
+//! Legacy commands are individual .md files in commands/ directories.
 
 use anyhow::{Context, Result};
 use serde::Deserialize;
@@ -9,10 +11,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::types::{CodexSkillSummary, SkillCommandResult, SkillDetail, SkillSummary};
+use crate::types::{CodexSkillSummary, SkillCommandResult, SkillDetail, SkillScope, SkillSummary};
 
 /// YAML frontmatter from SKILL.md
 #[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "kebab-case")]
 struct SkillFrontmatter {
     #[serde(default)]
     name: Option<String>,
@@ -20,6 +23,20 @@ struct SkillFrontmatter {
     description: Option<String>,
     #[serde(default)]
     version: Option<String>,
+    #[serde(default)]
+    allowed_tools: Option<String>,
+    #[serde(default)]
+    model: Option<String>,
+    #[serde(default)]
+    context: Option<String>,
+    #[serde(default)]
+    agent: Option<String>,
+    #[serde(default)]
+    disable_model_invocation: Option<bool>,
+    #[serde(default)]
+    user_invocable: Option<bool>,
+    #[serde(default)]
+    argument_hint: Option<String>,
 }
 
 /// Top-level structure of .skills-manifest.json
@@ -45,19 +62,20 @@ struct ManifestEntry {
 pub struct SkillsService;
 
 impl SkillsService {
-    fn get_skills_dir() -> Result<PathBuf> {
+    fn get_claude_dir() -> Result<PathBuf> {
         let home = dirs::home_dir().context("Failed to get home directory")?;
-        Ok(home.join(".claude").join("skills"))
+        Ok(home.join(".claude"))
     }
 
-    fn read_manifest() -> HashMap<String, ManifestEntry> {
-        let Ok(skills_dir) = Self::get_skills_dir() else {
-            return HashMap::new();
-        };
-        Self::read_manifest_from(&skills_dir)
+    /// Get the base .claude directory for a given scope
+    fn get_base_dir(project_path: Option<&str>) -> Result<PathBuf> {
+        match project_path {
+            Some(path) => Ok(PathBuf::from(path).join(".claude")),
+            None => Self::get_claude_dir(),
+        }
     }
 
-    fn read_manifest_from(skills_dir: &Path) -> HashMap<String, ManifestEntry> {
+    fn read_manifest(skills_dir: &Path) -> HashMap<String, ManifestEntry> {
         let manifest_path = skills_dir.join(".skills-manifest.json");
         fs::read_to_string(&manifest_path)
             .ok()
@@ -66,17 +84,22 @@ impl SkillsService {
             .unwrap_or_default()
     }
 
+    /// Alias for tests that used the old name
+    #[cfg(test)]
+    fn read_manifest_from(skills_dir: &Path) -> HashMap<String, ManifestEntry> {
+        Self::read_manifest(skills_dir)
+    }
+
     fn parse_frontmatter(content: &str) -> (SkillFrontmatter, String) {
         let trimmed = content.trim_start();
         if !trimmed.starts_with("---") {
             return (SkillFrontmatter::default(), content.to_string());
         }
 
-        // Find the closing ---
         let after_first = &trimmed[3..];
         if let Some(end_idx) = after_first.find("\n---") {
             let yaml_str = &after_first[..end_idx].trim();
-            let body = &after_first[end_idx + 4..]; // skip \n---
+            let body = &after_first[end_idx + 4..];
             let frontmatter: SkillFrontmatter =
                 serde_yaml::from_str(yaml_str).unwrap_or_default();
             (frontmatter, body.trim_start_matches('\n').to_string())
@@ -91,21 +114,57 @@ impl SkillsService {
             .unwrap_or(false)
     }
 
-    pub async fn list_skills() -> Result<Vec<SkillSummary>> {
-        let skills_dir = Self::get_skills_dir()?;
+    fn build_detail(
+        frontmatter: SkillFrontmatter,
+        raw_content: String,
+        markdown_body: String,
+        name: &str,
+        scope: SkillScope,
+        is_symlink: bool,
+        path: &Path,
+        manifest_entry: Option<&ManifestEntry>,
+    ) -> SkillDetail {
+        SkillDetail {
+            name: frontmatter.name.unwrap_or_else(|| name.to_string()),
+            description: frontmatter.description.unwrap_or_default(),
+            version: frontmatter.version.unwrap_or_else(|| "0.0.0".to_string()),
+            scope,
+            raw_content,
+            markdown_body,
+            is_symlink,
+            is_readonly: is_symlink,
+            source: manifest_entry.and_then(|e| e.source.clone()),
+            package_name: manifest_entry.and_then(|e| e.package_name.clone()),
+            installed_at: manifest_entry.and_then(|e| e.installed_at.clone()),
+            path: path.to_string_lossy().to_string(),
+            allowed_tools: frontmatter.allowed_tools,
+            model: frontmatter.model,
+            skill_context: frontmatter.context,
+            agent: frontmatter.agent,
+            disable_model_invocation: frontmatter.disable_model_invocation.unwrap_or(false),
+            user_invocable: frontmatter.user_invocable.unwrap_or(true),
+            argument_hint: frontmatter.argument_hint,
+        }
+    }
+
+    /// Scan a skills/ directory for skill subdirectories
+    fn scan_skills_dir(
+        skills_dir: &Path,
+        scope: SkillScope,
+        skills: &mut Vec<SkillSummary>,
+    ) {
         if !skills_dir.exists() {
-            return Ok(Vec::new());
+            return;
         }
 
-        let manifest = Self::read_manifest();
-        let mut skills = Vec::new();
-
-        let entries = fs::read_dir(&skills_dir).context("Failed to read skills directory")?;
+        let manifest = Self::read_manifest(skills_dir);
+        let entries = match fs::read_dir(skills_dir) {
+            Ok(e) => e,
+            Err(_) => return,
+        };
 
         for entry in entries.flatten() {
             let file_name = entry.file_name().to_string_lossy().to_string();
-
-            // Skip hidden files and manifest
             if file_name.starts_with('.') {
                 continue;
             }
@@ -131,6 +190,7 @@ impl SkillsService {
                 name: frontmatter.name.unwrap_or_else(|| file_name.clone()),
                 description: frontmatter.description.unwrap_or_default(),
                 version: frontmatter.version.unwrap_or_else(|| "0.0.0".to_string()),
+                scope: scope.clone(),
                 is_symlink,
                 source: manifest_entry.and_then(|e| e.source.clone()),
                 package_name: manifest_entry.and_then(|e| e.package_name.clone()),
@@ -138,54 +198,222 @@ impl SkillsService {
                 path: path.to_string_lossy().to_string(),
             });
         }
+    }
+
+    /// Recursively scan a commands/ directory for legacy .md files
+    fn scan_commands_dir(commands_dir: &Path, skills: &mut Vec<SkillSummary>) {
+        if !commands_dir.exists() {
+            return;
+        }
+        Self::scan_commands_dir_recursive(commands_dir, commands_dir, skills);
+    }
+
+    fn scan_commands_dir_recursive(
+        base_dir: &Path,
+        current_dir: &Path,
+        skills: &mut Vec<SkillSummary>,
+    ) {
+        let entries = match fs::read_dir(current_dir) {
+            Ok(e) => e,
+            Err(_) => return,
+        };
+
+        for entry in entries.flatten() {
+            let path = entry.path();
+
+            if path.is_dir() {
+                Self::scan_commands_dir_recursive(base_dir, &path, skills);
+                continue;
+            }
+
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            if !file_name.ends_with(".md") || file_name.starts_with('.') {
+                continue;
+            }
+
+            let content = fs::read_to_string(&path).unwrap_or_default();
+            let (frontmatter, _body) = Self::parse_frontmatter(&content);
+
+            let rel_path = path
+                .strip_prefix(base_dir)
+                .unwrap_or(&path)
+                .with_extension("");
+            let command_name = rel_path.to_string_lossy().to_string();
+            let display_name = frontmatter.name.unwrap_or_else(|| command_name.clone());
+
+            skills.push(SkillSummary {
+                name: display_name,
+                description: frontmatter.description.unwrap_or_default(),
+                version: frontmatter.version.unwrap_or_default(),
+                scope: SkillScope::Legacy,
+                is_symlink: Self::is_symlink(&path),
+                source: Some("local".to_string()),
+                package_name: None,
+                installed_at: None,
+                path: path.to_string_lossy().to_string(),
+            });
+        }
+    }
+
+    /// List skills for a given scope.
+    /// If project_path is None, lists global (personal) skills.
+    /// If project_path is Some, lists skills for that project.
+    pub async fn list_skills(project_path: Option<&str>) -> Result<Vec<SkillSummary>> {
+        let mut skills = Vec::new();
+
+        let base_dir = Self::get_base_dir(project_path)?;
+        let scope = if project_path.is_some() {
+            SkillScope::Project
+        } else {
+            SkillScope::Personal
+        };
+
+        Self::scan_skills_dir(&base_dir.join("skills"), scope, &mut skills);
+        Self::scan_commands_dir(&base_dir.join("commands"), &mut skills);
 
         skills.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         Ok(skills)
     }
 
-    pub async fn get_skill_detail(name: &str) -> Result<SkillDetail> {
-        let skills_dir = Self::get_skills_dir()?;
-        let skill_path = skills_dir.join(name);
+    /// Count skills in a .claude directory (skill dirs + legacy command files).
+    pub fn count_in_dir(base_dir: &Path) -> i32 {
+        let mut count: i32 = 0;
 
-        if !skill_path.exists() || !skill_path.is_dir() {
-            anyhow::bail!("Skill '{}' not found", name);
+        // Count skill directories
+        let skills_dir = base_dir.join("skills");
+        if skills_dir.exists() {
+            if let Ok(entries) = fs::read_dir(&skills_dir) {
+                for entry in entries.flatten() {
+                    let name = entry.file_name().to_string_lossy().to_string();
+                    if !name.starts_with('.') && entry.path().is_dir() {
+                        count += 1;
+                    }
+                }
+            }
         }
 
-        let skill_md_path = skill_path.join("SKILL.md");
-        let raw_content = if skill_md_path.exists() {
-            fs::read_to_string(&skill_md_path).context("Failed to read SKILL.md")?
-        } else {
-            String::new()
-        };
+        // Count legacy command files
+        let commands_dir = base_dir.join("commands");
+        if commands_dir.exists() {
+            count += Self::count_md_files_recursive(&commands_dir);
+        }
 
-        let (frontmatter, markdown_body) = Self::parse_frontmatter(&raw_content);
-        let is_symlink = Self::is_symlink(&skill_path);
-        let manifest = Self::read_manifest();
-        let manifest_entry = manifest.get(name);
-
-        Ok(SkillDetail {
-            name: frontmatter.name.unwrap_or_else(|| name.to_string()),
-            description: frontmatter.description.unwrap_or_default(),
-            version: frontmatter.version.unwrap_or_else(|| "0.0.0".to_string()),
-            raw_content,
-            markdown_body,
-            is_symlink,
-            is_readonly: is_symlink,
-            source: manifest_entry.and_then(|e| e.source.clone()),
-            package_name: manifest_entry.and_then(|e| e.package_name.clone()),
-            installed_at: manifest_entry.and_then(|e| e.installed_at.clone()),
-            path: skill_path.to_string_lossy().to_string(),
-        })
+        count
     }
 
-    pub async fn update_skill(name: &str, content: &str) -> Result<SkillCommandResult> {
-        let skills_dir = Self::get_skills_dir()?;
-        let skill_path = skills_dir.join(name);
+    fn count_md_files_recursive(dir: &Path) -> i32 {
+        let mut count: i32 = 0;
+        let entries = match fs::read_dir(dir) {
+            Ok(e) => e,
+            Err(_) => return 0,
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                count += Self::count_md_files_recursive(&path);
+            } else {
+                let name = entry.file_name().to_string_lossy().to_string();
+                if name.ends_with(".md") && !name.starts_with('.') {
+                    count += 1;
+                }
+            }
+        }
+        count
+    }
 
-        if !skill_path.exists() || !skill_path.is_dir() {
+    /// Get skill detail by its full filesystem path.
+    pub async fn get_skill_detail(path: &str) -> Result<SkillDetail> {
+        let skill_path = PathBuf::from(path);
+
+        if !skill_path.exists() {
+            anyhow::bail!("Skill path '{}' not found", path);
+        }
+
+        // Determine scope from path
+        let home = dirs::home_dir().unwrap_or_default();
+        let global_claude = home.join(".claude");
+        let scope = if skill_path.starts_with(&global_claude) {
+            if skill_path
+                .to_string_lossy()
+                .contains("/commands/")
+            {
+                SkillScope::Legacy
+            } else {
+                SkillScope::Personal
+            }
+        } else if skill_path.to_string_lossy().contains("/.claude/commands/") {
+            SkillScope::Legacy
+        } else {
+            SkillScope::Project
+        };
+
+        if skill_path.is_dir() {
+            // Skill directory with SKILL.md
+            let skill_md_path = skill_path.join("SKILL.md");
+            let raw_content = if skill_md_path.exists() {
+                fs::read_to_string(&skill_md_path).context("Failed to read SKILL.md")?
+            } else {
+                String::new()
+            };
+
+            let (frontmatter, markdown_body) = Self::parse_frontmatter(&raw_content);
+            let is_symlink = Self::is_symlink(&skill_path);
+
+            // Try to read manifest from parent skills/ directory
+            let manifest = skill_path
+                .parent()
+                .map(|p| Self::read_manifest(p))
+                .unwrap_or_default();
+            let dir_name = skill_path
+                .file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_default();
+            let manifest_entry = manifest.get(&dir_name);
+            let name = dir_name.clone();
+
+            Ok(Self::build_detail(
+                frontmatter,
+                raw_content,
+                markdown_body,
+                &name,
+                scope,
+                is_symlink,
+                &skill_path,
+                manifest_entry,
+            ))
+        } else {
+            // Legacy command .md file
+            let raw_content =
+                fs::read_to_string(&skill_path).context("Failed to read command file")?;
+            let (frontmatter, markdown_body) = Self::parse_frontmatter(&raw_content);
+            let is_symlink = Self::is_symlink(&skill_path);
+
+            let name = skill_path
+                .file_stem()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_default();
+
+            Ok(Self::build_detail(
+                frontmatter,
+                raw_content,
+                markdown_body,
+                &name,
+                scope,
+                is_symlink,
+                &skill_path,
+                None,
+            ))
+        }
+    }
+
+    /// Update a skill by its full filesystem path.
+    pub async fn update_skill(path: &str, content: &str) -> Result<SkillCommandResult> {
+        let skill_path = PathBuf::from(path);
+
+        if !skill_path.exists() {
             return Ok(SkillCommandResult {
                 success: false,
-                message: format!("Skill '{}' not found", name),
+                message: format!("Skill path '{}' not found", path),
             });
         }
 
@@ -196,12 +424,63 @@ impl SkillsService {
             });
         }
 
-        let skill_md_path = skill_path.join("SKILL.md");
-        fs::write(&skill_md_path, content).context("Failed to write SKILL.md")?;
+        if skill_path.is_dir() {
+            let skill_md_path = skill_path.join("SKILL.md");
+            fs::write(&skill_md_path, content).context("Failed to write SKILL.md")?;
+        } else {
+            fs::write(&skill_path, content).context("Failed to write command file")?;
+        }
 
         Ok(SkillCommandResult {
             success: true,
             message: "Skill updated successfully".to_string(),
+        })
+    }
+
+    /// Create a new skill.
+    /// If project_path is None, creates in ~/.claude/skills/.
+    /// If project_path is Some, creates in <project>/.claude/skills/.
+    pub async fn create_skill(
+        name: &str,
+        project_path: Option<&str>,
+    ) -> Result<SkillCommandResult> {
+        let base_dir = Self::get_base_dir(project_path)?;
+        let skills_dir = base_dir.join("skills");
+
+        if !skills_dir.exists() {
+            fs::create_dir_all(&skills_dir).context("Failed to create skills directory")?;
+        }
+
+        let skill_path = skills_dir.join(name);
+
+        if skill_path.exists() {
+            return Ok(SkillCommandResult {
+                success: false,
+                message: format!("Skill '{}' already exists", name),
+            });
+        }
+
+        fs::create_dir_all(&skill_path).context("Failed to create skill directory")?;
+
+        let template = format!(
+            r#"---
+name: {}
+description: ""
+---
+
+# {}
+
+Add your skill instructions here.
+"#,
+            name, name
+        );
+
+        let skill_md_path = skill_path.join("SKILL.md");
+        fs::write(&skill_md_path, template).context("Failed to write SKILL.md")?;
+
+        Ok(SkillCommandResult {
+            success: true,
+            message: skill_path.to_string_lossy().to_string(),
         })
     }
 
@@ -217,11 +496,20 @@ impl SkillsService {
         )
     }
 
-    async fn run_plugin_command(args: &[&str]) -> Result<SkillCommandResult> {
+    async fn run_plugin_command(
+        args: &[&str],
+        cwd: Option<&str>,
+    ) -> Result<SkillCommandResult> {
         let claude_bin = Self::find_claude_binary()?;
 
-        let output = tokio::process::Command::new(&claude_bin)
-            .args(args)
+        let mut cmd = tokio::process::Command::new(&claude_bin);
+        cmd.args(args);
+
+        if let Some(dir) = cwd {
+            cmd.current_dir(dir);
+        }
+
+        let output = cmd
             .output()
             .await
             .context("Failed to execute claude command")?;
@@ -339,21 +627,29 @@ impl SkillsService {
         Ok(skills)
     }
 
-    pub async fn install_skill(name: &str) -> Result<SkillCommandResult> {
-        Self::run_plugin_command(&["plugin", "install", name]).await
+    /// Install a plugin. If project_path is provided, installs in that project scope.
+    pub async fn install_skill(
+        name: &str,
+        project_path: Option<&str>,
+    ) -> Result<SkillCommandResult> {
+        Self::run_plugin_command(&["plugin", "install", name], project_path).await
     }
 
     pub async fn uninstall_skill(path: &str) -> Result<SkillCommandResult> {
         let skill_path = std::path::Path::new(path);
 
-        if !skill_path.exists() || !skill_path.is_dir() {
+        if !skill_path.exists() {
             return Ok(SkillCommandResult {
                 success: false,
                 message: format!("Skill path '{}' not found", path),
             });
         }
 
-        fs::remove_dir_all(skill_path).context("Failed to remove skill directory")?;
+        if skill_path.is_dir() {
+            fs::remove_dir_all(skill_path).context("Failed to remove skill directory")?;
+        } else {
+            fs::remove_file(skill_path).context("Failed to remove command file")?;
+        }
 
         Ok(SkillCommandResult {
             success: true,
@@ -362,11 +658,11 @@ impl SkillsService {
     }
 
     pub async fn enable_skill(name: &str) -> Result<SkillCommandResult> {
-        Self::run_plugin_command(&["plugin", "enable", name]).await
+        Self::run_plugin_command(&["plugin", "enable", name], None).await
     }
 
     pub async fn disable_skill(name: &str) -> Result<SkillCommandResult> {
-        Self::run_plugin_command(&["plugin", "disable", name]).await
+        Self::run_plugin_command(&["plugin", "disable", name], None).await
     }
 }
 

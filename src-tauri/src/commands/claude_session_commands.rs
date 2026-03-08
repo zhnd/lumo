@@ -4,14 +4,8 @@
 
 use crate::services::session_cache::SessionDetailCache;
 use crate::services::ClaudeSessionService;
-use crate::types::{ClaudeProjectSummary, ClaudeSessionDetail, ClaudeSessionPage};
+use crate::types::{ClaudeSessionDetail, ClaudeSessionPage};
 use tauri::{AppHandle, Manager};
-
-/// Get Claude projects summary
-#[tauri::command]
-pub fn get_claude_projects() -> Result<Vec<ClaudeProjectSummary>, String> {
-    ClaudeSessionService::get_projects_summary().map_err(|e| e.to_string())
-}
 
 /// Get paginated Claude Code sessions for a project or all projects.
 #[tauri::command]

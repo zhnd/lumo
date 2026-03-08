@@ -19,6 +19,7 @@ import {
   CalendarComponent,
   VisualMapComponent,
   RadarComponent,
+  GraphicComponent,
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import type { EChartsOption } from "echarts";
@@ -38,6 +39,7 @@ echarts.use([
   CalendarComponent,
   VisualMapComponent,
   RadarComponent,
+  GraphicComponent,
   CanvasRenderer,
 ]);
 
@@ -64,6 +66,74 @@ export function resolveChartColor(cssVar: string): string {
 export function resolveChartColorAlpha(cssVar: string, alpha: number): string {
   const rgb = resolveChartColor(cssVar);
   return rgb.replace("rgb(", "rgba(").replace(")", `, ${alpha})`);
+}
+
+/**
+ * Returns an ECharts option that renders an empty chart skeleton.
+ *
+ * - `"axis"` (default): grid with dashed split lines and faint y-axis labels
+ * - `"pie"`: a faint gray donut ring
+ *
+ * Both variants show a centered "No data" label.
+ */
+export function emptyChartOption(
+  type: "axis" | "pie" = "axis",
+): EChartsOption {
+  const mutedColor = resolveChartColor("--muted-foreground");
+  const borderColor = resolveChartColorAlpha("--border", 0.4);
+
+  const noDataGraphic = {
+    type: "text" as const,
+    left: "center" as const,
+    top: "middle" as const,
+    style: {
+      text: "No data",
+      fontSize: 13,
+      fill: mutedColor,
+      opacity: 0.6,
+    },
+  };
+
+  if (type === "pie") {
+    return {
+      graphic: noDataGraphic,
+      series: [
+        {
+          type: "pie",
+          radius: ["40%", "70%"],
+          data: [{ value: 1, itemStyle: { color: borderColor } }],
+          label: { show: false },
+          emphasis: { disabled: true },
+          silent: true,
+        },
+      ],
+    };
+  }
+
+  return {
+    graphic: noDataGraphic,
+    grid: { top: 10, right: 10, bottom: 20, left: 40 },
+    xAxis: {
+      type: "value",
+      show: false,
+    },
+    yAxis: {
+      type: "value",
+      min: 0,
+      max: 100,
+      splitNumber: 4,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      splitLine: {
+        lineStyle: { color: borderColor, type: "dashed" },
+      },
+      axisLabel: {
+        color: mutedColor,
+        opacity: 0.4,
+      },
+    },
+    series: [],
+  };
 }
 
 interface EChartsProps {

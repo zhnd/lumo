@@ -10,7 +10,7 @@ import { EChart, resolveChartColor } from "@/components/echarts";
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { useService } from "./use-service";
 import type { TokenModelChartProps } from "./types";
 
@@ -26,8 +26,9 @@ export function TokenModelChart({ timeRange }: TokenModelChartProps) {
         onRetry={() => refetch()}
       />
     );
-  if (data.length === 0)
-    return <CardEmpty title="Token Usage by Model" message="No token data" />;
+  if (data.length === 0) {
+    return <CardChartEmpty title="Token Usage by Model" height={160} />;
+  }
 
   const models = data.map((d) => d.displayName || d.model);
 

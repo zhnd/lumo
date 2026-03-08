@@ -1,6 +1,5 @@
 export { SkillList } from "./skill-list";
 export { SkillCard } from "./skill-card";
-export { SkillDetailView } from "./skill-detail";
-export { SkillEditor } from "./skill-editor";
-export { InstallDialog } from "./install-dialog";
 export { AddSkillDialog } from "./add-skill-dialog";
+export { CreateDialog } from "./create-dialog";
+export { DeleteSkillDialog } from "./delete-dialog";

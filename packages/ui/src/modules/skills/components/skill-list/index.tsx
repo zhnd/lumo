@@ -2,7 +2,7 @@
 
 import { CardEmpty } from "@/components/card-empty";
 import { Input } from "@/components/ui/input";
-import { Puzzle, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { SkillCard } from "../skill-card";
 import type { SkillListProps } from "./types";
 import { useService } from "./use-service";
@@ -14,15 +14,6 @@ export function SkillList({
   isUninstalling,
 }: SkillListProps) {
   const { search, setSearch, filteredSkills } = useService(skills);
-
-  if (skills.length === 0) {
-    return (
-      <CardEmpty
-        message="No skills installed. Click 'Add Skill' to get started."
-        icon={<Puzzle className="size-8 text-muted-foreground" />}
-      />
-    );
-  }
 
   return (
     <div className="space-y-4">

@@ -1,36 +1,53 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { Puzzle } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
+import { CardEmpty } from "@/components/card-empty";
+import { ScopeSelector } from "@/components/scope-selector";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import {
   SkillList,
-  SkillDetailView,
-  SkillEditor,
   AddSkillDialog,
+  CreateDialog,
+  DeleteSkillDialog,
 } from "./components";
 import { useService } from "./use-service";
-import { VIEW_MODE } from "./types";
 
 export function Skills() {
+  const router = useRouter();
   const {
     skills,
     isLoading,
     isError,
     refetch,
-    selectedSkill,
-    viewMode,
-    onSelectSkill,
-    onBack,
-    onEdit,
-    onEditDone,
-    onUninstall,
+    projects,
+    scope,
+    onScopeChange,
+    onRequestDelete,
+    onConfirmDelete,
+    pendingDelete,
+    setPendingDelete,
     isUninstalling,
+    skillCounts,
+    globalCount,
     isAddDialogOpen,
     setIsAddDialogOpen,
+    createDialogOpen,
+    setCreateDialogOpen,
   } = useService();
+
+  const handleSelectSkill = (path: string) => {
+    const encodedPath = encodeURIComponent(path);
+    router.push(`/skills/detail?path=${encodedPath}`);
+  };
+
+  const handleCreated = (createdPath: string) => {
+    handleSelectSkill(createdPath);
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -39,10 +56,26 @@ export function Skills() {
           <Plus className="size-4" />
           Add Skill
         </Button>
+        <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="mr-1.5 size-3.5" />
+          New Skill
+        </Button>
       </PageHeader>
 
-      <div className="flex-1 overflow-y-auto bg-muted/40">
-        <div className="mx-auto max-w-6xl p-6">
+      <div className="border-b px-6 py-3">
+        <div className="mx-auto max-w-5xl">
+          <ScopeSelector
+            projects={projects}
+            value={scope}
+            onChange={onScopeChange}
+            counts={skillCounts}
+            globalCount={globalCount}
+          />
+        </div>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto bg-muted/40">
+        <div className="mx-auto max-w-5xl p-6">
           {isLoading && <CardLoading showTitle />}
           {isError && (
             <CardError
@@ -50,26 +83,18 @@ export function Skills() {
               onRetry={() => refetch()}
             />
           )}
-          {!isLoading && !isError && viewMode === VIEW_MODE.List && (
+          {!isLoading && !isError && skills.length === 0 && (
+            <CardEmpty
+              message="No skills found. Create a new skill or install plugins from the Marketplace."
+              icon={<Puzzle className="size-8 text-muted-foreground" />}
+            />
+          )}
+          {!isLoading && !isError && skills.length > 0 && (
             <SkillList
               skills={skills}
-              onSelect={onSelectSkill}
-              onUninstall={onUninstall}
+              onSelect={handleSelectSkill}
+              onUninstall={onRequestDelete}
               isUninstalling={isUninstalling}
-            />
-          )}
-          {viewMode === VIEW_MODE.Detail && selectedSkill && (
-            <SkillDetailView
-              name={selectedSkill}
-              onBack={onBack}
-              onEdit={onEdit}
-            />
-          )}
-          {viewMode === VIEW_MODE.Edit && selectedSkill && (
-            <SkillEditor
-              name={selectedSkill}
-              onDone={onEditDone}
-              onBack={onBack}
             />
           )}
         </div>
@@ -78,6 +103,20 @@ export function Skills() {
       <AddSkillDialog
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
+      />
+      <CreateDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        projectPath={scope}
+        onCreated={handleCreated}
+      />
+      <DeleteSkillDialog
+        skillName={pendingDelete?.name ?? null}
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+        onConfirm={onConfirmDelete}
       />
     </div>
   );

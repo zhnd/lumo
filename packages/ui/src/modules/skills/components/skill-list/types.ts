@@ -2,7 +2,7 @@ import type { SkillSummary } from "@/generated/typeshare-types";
 
 export interface SkillListProps {
   skills: SkillSummary[];
-  onSelect: (name: string) => void;
-  onUninstall: (name: string) => void;
+  onSelect: (path: string) => void;
+  onUninstall: (path: string) => void;
   isUninstalling: boolean;
 }
