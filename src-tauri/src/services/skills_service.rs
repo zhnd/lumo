@@ -22,13 +22,21 @@ struct SkillFrontmatter {
     version: Option<String>,
 }
 
+/// Top-level structure of .skills-manifest.json
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+struct SkillsManifest {
+    #[serde(default)]
+    skills: HashMap<String, ManifestEntry>,
+}
+
 /// Entry from .skills-manifest.json
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 struct ManifestEntry {
     #[serde(default)]
     source: Option<String>,
-    #[serde(default)]
+    #[serde(default, alias = "package")]
     package_name: Option<String>,
     #[serde(default)]
     installed_at: Option<String>,
@@ -46,10 +54,15 @@ impl SkillsService {
         let Ok(skills_dir) = Self::get_skills_dir() else {
             return HashMap::new();
         };
+        Self::read_manifest_from(&skills_dir)
+    }
+
+    fn read_manifest_from(skills_dir: &Path) -> HashMap<String, ManifestEntry> {
         let manifest_path = skills_dir.join(".skills-manifest.json");
         fs::read_to_string(&manifest_path)
             .ok()
-            .and_then(|content| serde_json::from_str(&content).ok())
+            .and_then(|content| serde_json::from_str::<SkillsManifest>(&content).ok())
+            .map(|m| m.skills)
             .unwrap_or_default()
     }
 
@@ -259,5 +272,182 @@ impl SkillsService {
 
     pub async fn disable_skill(name: &str) -> Result<SkillCommandResult> {
         Self::run_plugin_command(&["plugin", "disable", name]).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_manifest_with_nested_skills_structure() {
+        let json = r#"{
+            "skills": {
+                "commit": {
+                    "version": "1.0.0",
+                    "installedAt": "2026-02-18T10:47:35.989Z",
+                    "package": "@user/commit",
+                    "path": "/home/user/.claude/skills/commit",
+                    "target": "claude-code"
+                },
+                "react-best-practices": {
+                    "version": "1.0.1",
+                    "installedAt": "2026-02-18T10:47:41.050Z",
+                    "package": "@user/react-best-practices",
+                    "path": "/home/user/.claude/skills/react-best-practices",
+                    "target": "claude-code",
+                    "source": "vercel-labs/agent-skills/skills/react-best-practices"
+                }
+            },
+            "remoteCache": {
+                "vercel-labs/agent-skills/skills/react-best-practices": {
+                    "lastCheckedAt": "2026-03-03T03:14:59.567Z",
+                    "lastSeenSha": "abc123"
+                }
+            }
+        }"#;
+
+        let manifest: SkillsManifest = serde_json::from_str(json).unwrap();
+        assert_eq!(manifest.skills.len(), 2);
+
+        let commit = manifest.skills.get("commit").unwrap();
+        assert_eq!(
+            commit.package_name.as_deref(),
+            Some("@user/commit")
+        );
+        assert_eq!(
+            commit.installed_at.as_deref(),
+            Some("2026-02-18T10:47:35.989Z")
+        );
+        assert!(commit.source.is_none());
+
+        let react = manifest.skills.get("react-best-practices").unwrap();
+        assert_eq!(
+            react.source.as_deref(),
+            Some("vercel-labs/agent-skills/skills/react-best-practices")
+        );
+        assert_eq!(
+            react.package_name.as_deref(),
+            Some("@user/react-best-practices")
+        );
+    }
+
+    #[test]
+    fn test_parse_manifest_empty_json() {
+        let json = "{}";
+        let manifest: SkillsManifest = serde_json::from_str(json).unwrap();
+        assert!(manifest.skills.is_empty());
+    }
+
+    #[test]
+    fn test_parse_manifest_missing_optional_fields() {
+        let json = r#"{
+            "skills": {
+                "my-skill": {
+                    "version": "1.0.0"
+                }
+            }
+        }"#;
+
+        let manifest: SkillsManifest = serde_json::from_str(json).unwrap();
+        let entry = manifest.skills.get("my-skill").unwrap();
+        assert!(entry.source.is_none());
+        assert!(entry.package_name.is_none());
+        assert!(entry.installed_at.is_none());
+    }
+
+    #[test]
+    fn test_read_manifest_from_with_real_structure() {
+        let tmp = tempfile::tempdir().unwrap();
+        let manifest_content = r#"{
+            "skills": {
+                "commit": {
+                    "version": "1.0.0",
+                    "installedAt": "2026-02-18T10:47:35.989Z",
+                    "package": "@user/commit",
+                    "path": "/home/user/.claude/skills/commit",
+                    "target": "claude-code",
+                    "source": "anthropics/commit"
+                }
+            },
+            "remoteCache": {}
+        }"#;
+        fs::write(
+            tmp.path().join(".skills-manifest.json"),
+            manifest_content,
+        )
+        .unwrap();
+
+        let result = SkillsService::read_manifest_from(tmp.path());
+        assert_eq!(result.len(), 1);
+
+        let commit = result.get("commit").unwrap();
+        assert_eq!(commit.package_name.as_deref(), Some("@user/commit"));
+        assert_eq!(commit.source.as_deref(), Some("anthropics/commit"));
+        assert_eq!(
+            commit.installed_at.as_deref(),
+            Some("2026-02-18T10:47:35.989Z")
+        );
+    }
+
+    #[test]
+    fn test_read_manifest_from_missing_file() {
+        let tmp = tempfile::tempdir().unwrap();
+        let result = SkillsService::read_manifest_from(tmp.path());
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_read_manifest_from_invalid_json() {
+        let tmp = tempfile::tempdir().unwrap();
+        fs::write(tmp.path().join(".skills-manifest.json"), "not json").unwrap();
+        let result = SkillsService::read_manifest_from(tmp.path());
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_parse_frontmatter_with_yaml() {
+        let content = "---\nname: My Skill\ndescription: A test skill\nversion: 1.2.3\n---\n# Body\nSome content";
+        let (fm, body) = SkillsService::parse_frontmatter(content);
+        assert_eq!(fm.name.as_deref(), Some("My Skill"));
+        assert_eq!(fm.description.as_deref(), Some("A test skill"));
+        assert_eq!(fm.version.as_deref(), Some("1.2.3"));
+        assert_eq!(body, "# Body\nSome content");
+    }
+
+    #[test]
+    fn test_parse_frontmatter_no_frontmatter() {
+        let content = "# Just Markdown\nNo frontmatter here";
+        let (fm, body) = SkillsService::parse_frontmatter(content);
+        assert!(fm.name.is_none());
+        assert_eq!(body, content);
+    }
+
+    #[test]
+    fn test_parse_frontmatter_unclosed() {
+        let content = "---\nname: Broken\nNo closing delimiter";
+        let (fm, body) = SkillsService::parse_frontmatter(content);
+        assert!(fm.name.is_none());
+        assert_eq!(body, content);
+    }
+
+    #[test]
+    fn test_parse_frontmatter_empty_content() {
+        let (fm, body) = SkillsService::parse_frontmatter("");
+        assert!(fm.name.is_none());
+        assert_eq!(body, "");
+    }
+
+    #[test]
+    fn test_manifest_package_field_alias() {
+        // The actual manifest uses "package", not "packageName"
+        let json = r#"{"package": "@user/my-skill"}"#;
+        let entry: ManifestEntry = serde_json::from_str(json).unwrap();
+        assert_eq!(entry.package_name.as_deref(), Some("@user/my-skill"));
+
+        // Also works with "packageName" (camelCase)
+        let json2 = r#"{"packageName": "@user/my-skill"}"#;
+        let entry2: ManifestEntry = serde_json::from_str(json2).unwrap();
+        assert_eq!(entry2.package_name.as_deref(), Some("@user/my-skill"));
     }
 }

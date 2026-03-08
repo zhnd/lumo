@@ -49,3 +49,6 @@ notify = { version = "7", default-features = false, features = ["macos_fsevent"]
 urlencoding = "2"
 serde_yaml = "0.9"
 which = "7"
+
+[dev-dependencies]
+tempfile = "3"
