@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { CardError } from "@/components/card-error";
+import { ProjectNav } from "@/components/project-nav";
 import {
   SessionList,
   SessionListSkeleton,
-  ProjectList,
   ProjectListSkeleton,
 } from "./components";
 import { useService } from "./use-service";
@@ -67,11 +67,14 @@ export function Sessions() {
           />
         ) : (
           <>
-            <ProjectList
+            <ProjectNav
               projects={projects}
-              selectedProjectPath={selectedProjectPath}
-              totalSessions={totalSessions}
-              onSelectProject={setSelectedProjectPath}
+              selected={selectedProjectPath}
+              onSelect={setSelectedProjectPath}
+              allBadge={totalSessions}
+              counts={Object.fromEntries(
+                projects.map((p) => [p.projectPath, p.sessionCount]),
+              )}
             />
             <div className="min-h-0 min-w-0 flex-1">
               <SessionList

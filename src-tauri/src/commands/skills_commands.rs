@@ -7,39 +7,53 @@ use tauri::command;
 use crate::services::SkillsService;
 use crate::types::{SkillCommandResult, SkillDetail, SkillSummary};
 
-/// List all installed skills
+/// List skills. If project_path is provided, lists project-scoped skills.
 #[command]
-pub async fn list_skills() -> Result<Vec<SkillSummary>, String> {
-    SkillsService::list_skills()
+pub async fn list_skills(project_path: Option<String>) -> Result<Vec<SkillSummary>, String> {
+    SkillsService::list_skills(project_path.as_deref())
         .await
         .map_err(|e| e.to_string())
 }
 
-/// Get detailed information about a specific skill
+/// Get detailed information about a skill by its full filesystem path.
 #[command]
-pub async fn get_skill_detail(name: String) -> Result<SkillDetail, String> {
-    SkillsService::get_skill_detail(&name)
+pub async fn get_skill_detail(path: String) -> Result<SkillDetail, String> {
+    SkillsService::get_skill_detail(&path)
         .await
         .map_err(|e| e.to_string())
 }
 
-/// Update a skill's SKILL.md content
+/// Update a skill's content by its full filesystem path.
 #[command]
-pub async fn update_skill(name: String, content: String) -> Result<SkillCommandResult, String> {
-    SkillsService::update_skill(&name, &content)
+pub async fn update_skill(path: String, content: String) -> Result<SkillCommandResult, String> {
+    SkillsService::update_skill(&path, &content)
         .await
         .map_err(|e| e.to_string())
 }
 
-/// Install a skill via claude plugin CLI
+/// Create a new skill. If project_path is provided, creates in project scope.
 #[command]
-pub async fn install_skill(name: String) -> Result<SkillCommandResult, String> {
-    SkillsService::install_skill(&name)
+pub async fn create_skill(
+    name: String,
+    project_path: Option<String>,
+) -> Result<SkillCommandResult, String> {
+    SkillsService::create_skill(&name, project_path.as_deref())
         .await
         .map_err(|e| e.to_string())
 }
 
-/// Uninstall a skill by removing its directory
+/// Install a plugin. If project_path is provided, installs in project scope.
+#[command]
+pub async fn install_skill(
+    name: String,
+    project_path: Option<String>,
+) -> Result<SkillCommandResult, String> {
+    SkillsService::install_skill(&name, project_path.as_deref())
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Uninstall a skill by removing its directory/file.
 #[command]
 pub async fn uninstall_skill(path: String) -> Result<SkillCommandResult, String> {
     SkillsService::uninstall_skill(&path)

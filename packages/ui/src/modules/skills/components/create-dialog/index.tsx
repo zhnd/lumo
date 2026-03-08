@@ -12,41 +12,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useService } from "./use-service";
-import type { InstallDialogProps } from "./types";
+import type { CreateDialogProps } from "./types";
 
-export function InstallDialog({
+export function CreateDialog({
   open,
   onOpenChange,
   projectPath,
-}: InstallDialogProps) {
-  const { pluginName, setPluginName, isInstalling, installResult, onInstall } =
-    useService(() => onOpenChange(false), projectPath);
+  onCreated,
+}: CreateDialogProps) {
+  const { skillName, setSkillName, isCreating, createResult, onCreate } =
+    useService(() => onOpenChange(false), projectPath, onCreated);
 
-  const scopeLabel = projectPath ? "project" : "global";
+  const scopeLabel = projectPath ? "project" : "global (~/.claude/skills/)";
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Install Plugin</SheetTitle>
+          <SheetTitle>New Skill</SheetTitle>
           <SheetDescription>
-            Install a plugin via Claude CLI ({scopeLabel} scope).
+            Create a new skill with a template SKILL.md ({scopeLabel}).
           </SheetDescription>
         </SheetHeader>
 
         <div className="px-4">
           <Input
-            placeholder="e.g. @anthropic/skill-name"
-            value={pluginName}
-            onChange={(e) => setPluginName(e.target.value)}
+            placeholder="e.g. my-custom-skill"
+            value={skillName}
+            onChange={(e) => setSkillName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !isInstalling) onInstall();
+              if (e.key === "Enter" && !isCreating) onCreate();
             }}
-            disabled={isInstalling}
+            disabled={isCreating}
           />
-          {installResult && !installResult.success && (
+          {createResult && !createResult.success && (
             <p className="mt-2 text-xs text-destructive">
-              {installResult.message}
+              {createResult.message}
             </p>
           )}
         </div>
@@ -55,18 +56,18 @@ export function InstallDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isInstalling}
+            disabled={isCreating}
           >
             Cancel
           </Button>
           <Button
-            onClick={onInstall}
-            disabled={isInstalling || !pluginName.trim()}
+            onClick={onCreate}
+            disabled={isCreating || !skillName.trim()}
           >
-            {isInstalling && (
+            {isCreating && (
               <Loader2 className="mr-1.5 size-3.5 animate-spin" />
             )}
-            Install
+            Create
           </Button>
         </SheetFooter>
       </SheetContent>

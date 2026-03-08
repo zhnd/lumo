@@ -11,6 +11,7 @@ pub mod tools_commands;
 pub mod trends_commands;
 pub mod usage_commands;
 pub mod user_commands;
+pub mod projects_commands;
 pub mod skills_commands;
 pub mod wrapped_commands;
 
@@ -27,6 +28,7 @@ pub use tools_commands::*;
 pub use trends_commands::*;
 pub use usage_commands::*;
 pub use user_commands::*;
+pub use projects_commands::*;
 pub use skills_commands::*;
 pub use wrapped_commands::*;
 
@@ -52,8 +54,10 @@ macro_rules! app_commands {
             commands::get_usage_trends,
             commands::get_cost_by_model_trends,
             commands::get_cost_efficiency_trend,
+            // Projects commands
+            commands::get_projects,
+            commands::get_global_skill_count,
             // Claude session commands
-            commands::get_claude_projects,
             commands::get_claude_sessions_page,
             commands::get_claude_session_detail,
             // Tools commands
@@ -90,6 +94,7 @@ macro_rules! app_commands {
             commands::uninstall_skill,
             commands::enable_skill,
             commands::disable_skill,
+            commands::create_skill,
             // System commands
             commands::open_log_directory,
         ]
