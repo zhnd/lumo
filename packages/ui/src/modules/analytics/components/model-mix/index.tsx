@@ -10,7 +10,7 @@ import { EChart, resolveChartColor } from "@/components/echarts";
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { useService } from "./use-service";
 import type { ModelMixProps } from "./types";
 import { fmt } from "@/lib/format";
@@ -34,8 +34,9 @@ export function ModelMix({ timeRange }: ModelMixProps) {
         onRetry={() => refetch()}
       />
     );
-  if (data.length === 0)
-    return <CardEmpty title="Model Mix" message="No model data" />;
+  if (data.length === 0) {
+    return <CardChartEmpty title="Model Mix" chartType="pie" className="h-full" />;
+  }
 
   const option: EChartsOption = {
     tooltip: {

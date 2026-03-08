@@ -10,7 +10,7 @@ import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { TimeRange } from "@/generated/typeshare-types";
 import { useService } from "./use-service";
 import type { ToolTimelineProps } from "./types";
@@ -34,8 +34,9 @@ export function ToolTimeline({ timeRange }: ToolTimelineProps) {
         onRetry={() => refetch()}
       />
     );
-  if (series.length === 0)
-    return <CardEmpty title="Tool Timeline" message="No data" />;
+  if (series.length === 0) {
+    return <CardChartEmpty title="Tool Timeline (Top 5)" height={250} />;
+  }
 
   const option: EChartsOption = {
     tooltip: { trigger: "axis", borderColor: "transparent" },

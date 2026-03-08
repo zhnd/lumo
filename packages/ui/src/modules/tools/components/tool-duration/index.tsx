@@ -10,7 +10,7 @@ import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { useService } from "./use-service";
 import type { ToolDurationProps } from "./types";
 
@@ -26,8 +26,9 @@ export function ToolDuration({ timeRange }: ToolDurationProps) {
         onRetry={() => refetch()}
       />
     );
-  if (data.length === 0)
-    return <CardEmpty title="Avg Duration" message="No data" />;
+  if (data.length === 0) {
+    return <CardChartEmpty title="Avg Duration" height={200} />;
+  }
 
   const option: EChartsOption = {
     tooltip: {

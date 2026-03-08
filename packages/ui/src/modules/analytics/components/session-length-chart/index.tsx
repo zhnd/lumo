@@ -10,7 +10,7 @@ import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { useService } from "./use-service";
 import type { SessionLengthChartProps } from "./types";
 
@@ -28,7 +28,7 @@ export function SessionLengthChart({ timeRange }: SessionLengthChartProps) {
     );
   }
   if (data.length === 0 || data.every((d) => d.count === 0)) {
-    return <CardEmpty title="Session Length" message="No session data" />;
+    return <CardChartEmpty title="Session Length Distribution" />;
   }
 
   const option: EChartsOption = {

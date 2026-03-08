@@ -11,7 +11,7 @@ import { EChart, resolveChartColor } from "@/components/echarts";
 import type { EChartsOption } from "@/components/echarts";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { CardEmpty } from "@/components/card-empty";
+import { CardChartEmpty } from "@/components/card-chart-empty";
 import { useService } from "./use-service";
 import type { CodeEditDecisionsProps } from "./types";
 
@@ -28,8 +28,9 @@ export function CodeEditDecisions({ timeRange }: CodeEditDecisionsProps) {
         onRetry={() => refetch()}
       />
     );
-  if (totalAccepts + totalRejects === 0)
-    return <CardEmpty title="Code Edit Decisions" message="No data" />;
+  if (totalAccepts + totalRejects === 0) {
+    return <CardChartEmpty title="Code Edit Decisions" chartType="pie" height={200} />;
+  }
 
   const donutOption: EChartsOption = {
     tooltip: { trigger: "item", borderColor: "transparent" },
