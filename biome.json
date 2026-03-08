@@ -10,14 +10,10 @@
     "ignoreUnknown": true,
     "includes": [
       "packages/ui/**",
-      "biome.json",
-      "turbo.json",
-      "package.json",
       "!packages/ui/.next",
       "!packages/ui/out",
       "!packages/ui/src/components/ui",
-      "!packages/ui/src/generated",
-      "!**/node_modules"
+      "!packages/ui/src/generated"
     ]
   },
   "formatter": {
@@ -33,24 +29,14 @@
       "recommended": true,
       "correctness": {
         "noUnusedImports": "error",
-        "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn",
-        "useHookAtTopLevel": "error"
+        "noUnusedVariables": "error"
       },
       "suspicious": {
-        "noExplicitAny": "off",
-        "noArrayIndexKey": "warn"
-      },
-      "complexity": {
-        "noStaticOnlyClass": "off"
+        "noExplicitAny": "off"
       },
       "style": {
         "useConst": "error",
-        "useImportType": "error",
-        "noNonNullAssertion": "warn"
-      },
-      "a11y": {
-        "recommended": false
+        "useImportType": "error"
       }
     }
   },
@@ -86,5 +72,30 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/ui/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useExhaustiveDependencies": "warn",
+            "useHookAtTopLevel": "error"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "warn"
+          },
+          "complexity": {
+            "noStaticOnlyClass": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "warn"
+          },
+          "a11y": {
+            "recommended": false
+          }
+        }
+      }
+    }
+  ]
 }
