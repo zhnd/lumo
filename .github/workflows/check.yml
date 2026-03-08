@@ -1,8 +1,6 @@
 name: Check
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -36,6 +34,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: cargo-${{ runner.os }}
+          save-if: true
 
       - name: Build daemon (debug)
         run: |
