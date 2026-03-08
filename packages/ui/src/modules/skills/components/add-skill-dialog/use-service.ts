@@ -64,7 +64,7 @@ export function useService(onClose: () => void) {
   });
 
   const pluginInstallMutation = useMutation({
-    mutationFn: SkillsBridge.installSkill,
+    mutationFn: (name: string) => SkillsBridge.installSkill(name),
     onSuccess: (result) => {
       if (result.success) {
         setPluginName("");
