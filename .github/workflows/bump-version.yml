@@ -32,14 +32,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.branch }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install tools
         run: npm install -g semver
@@ -66,7 +69,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BRANCH_NAME="bump/v${{ steps.new_version.outputs.version }}"
           git checkout -b $BRANCH_NAME
-          git add package.json packages/ui/package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml crates/daemon/Cargo.toml crates/shared/Cargo.toml
+          git add package.json packages/ui/package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml crates/daemon/Cargo.toml crates/shared/Cargo.toml Cargo.lock
           git commit -m "chore: bump ${{ steps.extract_type.outputs.type }} version to v${{ steps.new_version.outputs.version }}"
           git push origin $BRANCH_NAME
 
