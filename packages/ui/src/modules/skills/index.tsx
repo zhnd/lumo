@@ -1,20 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Globe, Puzzle } from "lucide-react";
+import { Puzzle } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
-import { ProjectNav } from "@/components/project-nav";
+import { ScopeSelector } from "@/components/scope-selector";
 import { Button } from "@/components/ui/button";
-import { Plus, Download } from "lucide-react";
-import {
-  SkillList,
-  InstallDialog,
-  CreateDialog,
-  DeleteSkillDialog,
-} from "./components";
+import { Plus } from "lucide-react";
+import { SkillList, CreateDialog, DeleteSkillDialog } from "./components";
 import { useService } from "./use-service";
 
 export function Skills() {
@@ -34,8 +29,6 @@ export function Skills() {
     isUninstalling,
     skillCounts,
     globalCount,
-    installDialogOpen,
-    setInstallDialogOpen,
     createDialogOpen,
     setCreateDialogOpen,
   } = useService();
@@ -52,65 +45,50 @@ export function Skills() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <PageHeader title="Skills">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setInstallDialogOpen(true)}
-          >
-            <Download className="mr-1.5 size-3.5" />
-            Install Plugin
-          </Button>
-          <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-1.5 size-3.5" />
-            New Skill
-          </Button>
-        </div>
+        <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="mr-1.5 size-3.5" />
+          New Skill
+        </Button>
       </PageHeader>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-        <ProjectNav
-          projects={projects}
-          selected={scope}
-          onSelect={onScopeChange}
-          allLabel="Global"
-          allIcon={<Globe className="size-4 text-muted-foreground" />}
-          allBadge={globalCount}
-          counts={skillCounts}
-        />
-
-        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-muted/40">
-          <div className="mx-auto max-w-5xl p-6">
-            {isLoading && <CardLoading showTitle />}
-            {isError && (
-              <CardError
-                message="Failed to load skills"
-                onRetry={() => refetch()}
-              />
-            )}
-            {!isLoading && !isError && skills.length === 0 && (
-              <CardEmpty
-                message="No skills installed. Click 'Install Plugin' to add one."
-                icon={<Puzzle className="size-8 text-muted-foreground" />}
-              />
-            )}
-            {!isLoading && !isError && skills.length > 0 && (
-              <SkillList
-                skills={skills}
-                onSelect={handleSelectSkill}
-                onUninstall={onRequestDelete}
-                isUninstalling={isUninstalling}
-              />
-            )}
-          </div>
+      <div className="border-b px-6 py-3">
+        <div className="mx-auto max-w-5xl">
+          <ScopeSelector
+            projects={projects}
+            value={scope}
+            onChange={onScopeChange}
+            counts={skillCounts}
+            globalCount={globalCount}
+          />
         </div>
       </div>
 
-      <InstallDialog
-        open={installDialogOpen}
-        onOpenChange={setInstallDialogOpen}
-        projectPath={scope}
-      />
+      <div className="min-h-0 flex-1 overflow-y-auto bg-muted/40">
+        <div className="mx-auto max-w-5xl p-6">
+          {isLoading && <CardLoading showTitle />}
+          {isError && (
+            <CardError
+              message="Failed to load skills"
+              onRetry={() => refetch()}
+            />
+          )}
+          {!isLoading && !isError && skills.length === 0 && (
+            <CardEmpty
+              message="No skills found. Create a new skill or install plugins from the Marketplace."
+              icon={<Puzzle className="size-8 text-muted-foreground" />}
+            />
+          )}
+          {!isLoading && !isError && skills.length > 0 && (
+            <SkillList
+              skills={skills}
+              onSelect={handleSelectSkill}
+              onUninstall={onRequestDelete}
+              isUninstalling={isUninstalling}
+            />
+          )}
+        </div>
+      </div>
+
       <CreateDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}

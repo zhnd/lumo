@@ -11,6 +11,7 @@ mod subscription_usage;
 mod tools;
 mod trends;
 mod usage;
+mod marketplace;
 mod skills;
 mod wrapped;
 
@@ -23,5 +24,6 @@ pub use subscription_usage::*;
 pub use tools::*;
 pub use trends::*;
 pub use usage::*;
+pub use marketplace::*;
 pub use skills::*;
 pub use wrapped::*;

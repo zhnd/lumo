@@ -21,6 +21,13 @@
     "updater:default",
     "process:allow-restart",
     "notification:default",
-    "window-state:default"
+    "window-state:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        { "url": "https://*" },
+        { "url": "http://*" }
+      ]
+    }
   ]
 }

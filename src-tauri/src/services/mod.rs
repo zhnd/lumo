@@ -16,6 +16,7 @@ mod tools_service;
 mod trends_service;
 mod usage_service;
 mod projects_service;
+mod marketplace_service;
 mod skills_service;
 mod wrapped_service;
 
@@ -29,5 +30,6 @@ pub use tools_service::ToolsService;
 pub use trends_service::TrendsService;
 pub use usage_service::UsageService;
 pub use projects_service::ProjectsService;
+pub use marketplace_service::MarketplaceService;
 pub use skills_service::SkillsService;
 pub use wrapped_service::WrappedService;
