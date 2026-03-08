@@ -5,7 +5,7 @@
 use tauri::command;
 
 use crate::services::SkillsService;
-use crate::types::{SkillCommandResult, SkillDetail, SkillSummary};
+use crate::types::{CodexSkillSummary, SkillCommandResult, SkillDetail, SkillSummary};
 
 /// List all installed skills
 #[command]
@@ -35,6 +35,25 @@ pub async fn update_skill(name: String, content: String) -> Result<SkillCommandR
 #[command]
 pub async fn install_skill(name: String) -> Result<SkillCommandResult, String> {
     SkillsService::install_skill(&name)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// Install a skill from a GitHub source or local path via npx skills CLI
+#[command]
+pub async fn install_skill_from_source(
+    source: String,
+    is_local: bool,
+) -> Result<SkillCommandResult, String> {
+    SkillsService::install_skill_from_source(&source, is_local)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// List available Codex skills from ~/.agents/skills/
+#[command]
+pub async fn list_codex_skills() -> Result<Vec<CodexSkillSummary>, String> {
+    SkillsService::list_codex_skills()
         .await
         .map_err(|e| e.to_string())
 }

@@ -87,6 +87,8 @@ macro_rules! app_commands {
             commands::get_skill_detail,
             commands::update_skill,
             commands::install_skill,
+            commands::install_skill_from_source,
+            commands::list_codex_skills,
             commands::uninstall_skill,
             commands::enable_skill,
             commands::disable_skill,

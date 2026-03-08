@@ -9,6 +9,7 @@ export function useService() {
   const queryClient = useQueryClient();
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODE.List);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const skillsQuery = useQuery({
     queryKey: ["skills"],
@@ -57,5 +58,7 @@ export function useService() {
     onEditDone: handleEditDone,
     onUninstall: uninstallMutation.mutate,
     isUninstalling: uninstallMutation.isPending,
+    isAddDialogOpen,
+    setIsAddDialogOpen,
   };
 }

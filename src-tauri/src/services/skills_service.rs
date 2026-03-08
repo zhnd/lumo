@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::types::{SkillCommandResult, SkillDetail, SkillSummary};
+use crate::types::{CodexSkillSummary, SkillCommandResult, SkillDetail, SkillSummary};
 
 /// YAML frontmatter from SKILL.md
 #[derive(Debug, Deserialize, Default)]
@@ -211,6 +211,12 @@ impl SkillsService {
         )
     }
 
+    fn find_npx_binary() -> Result<PathBuf> {
+        which::which("npx").context(
+            "npx not found in PATH. Please install Node.js first.",
+        )
+    }
+
     async fn run_plugin_command(args: &[&str]) -> Result<SkillCommandResult> {
         let claude_bin = Self::find_claude_binary()?;
 
@@ -242,6 +248,95 @@ impl SkillsService {
                 },
             })
         }
+    }
+
+    async fn run_skills_cli_command(args: &[&str]) -> Result<SkillCommandResult> {
+        let npx_bin = Self::find_npx_binary()?;
+
+        let mut cmd_args = vec!["--yes", "skills"];
+        cmd_args.extend_from_slice(args);
+
+        let output = tokio::process::Command::new(&npx_bin)
+            .args(&cmd_args)
+            .output()
+            .await
+            .context("Failed to execute npx skills command")?;
+
+        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+
+        if output.status.success() {
+            Ok(SkillCommandResult {
+                success: true,
+                message: if stdout.trim().is_empty() {
+                    "Skill installed successfully".to_string()
+                } else {
+                    stdout.trim().to_string()
+                },
+            })
+        } else {
+            Ok(SkillCommandResult {
+                success: false,
+                message: if stderr.trim().is_empty() {
+                    stdout.trim().to_string()
+                } else {
+                    stderr.trim().to_string()
+                },
+            })
+        }
+    }
+
+    pub async fn install_skill_from_source(source: &str, is_local: bool) -> Result<SkillCommandResult> {
+        if is_local {
+            Self::run_skills_cli_command(&["add", source, "--global", "--copy"]).await
+        } else {
+            Self::run_skills_cli_command(&["add", source, "--global", "--yes"]).await
+        }
+    }
+
+    pub async fn list_codex_skills() -> Result<Vec<CodexSkillSummary>> {
+        let home = dirs::home_dir().context("Failed to get home directory")?;
+        let codex_skills_dir = home.join(".agents").join("skills");
+
+        if !codex_skills_dir.exists() {
+            return Ok(Vec::new());
+        }
+
+        let mut skills = Vec::new();
+        let entries = fs::read_dir(&codex_skills_dir).context("Failed to read ~/.agents/skills/")?;
+
+        for entry in entries.flatten() {
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            if file_name.starts_with('.') {
+                continue;
+            }
+
+            let path = entry.path();
+            if !path.is_dir() {
+                continue;
+            }
+
+            let skill_md_path = path.join("SKILL.md");
+            let (name, description) = if skill_md_path.exists() {
+                let content = fs::read_to_string(&skill_md_path).unwrap_or_default();
+                let (fm, _) = Self::parse_frontmatter(&content);
+                (
+                    fm.name.unwrap_or_else(|| file_name.clone()),
+                    fm.description.unwrap_or_default(),
+                )
+            } else {
+                (file_name.clone(), String::new())
+            };
+
+            skills.push(CodexSkillSummary {
+                name,
+                description,
+                path: path.to_string_lossy().to_string(),
+            });
+        }
+
+        skills.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        Ok(skills)
     }
 
     pub async fn install_skill(name: &str) -> Result<SkillCommandResult> {

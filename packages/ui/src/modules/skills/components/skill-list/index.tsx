@@ -18,7 +18,7 @@ export function SkillList({
   if (skills.length === 0) {
     return (
       <CardEmpty
-        message="No skills installed. Click 'Install Plugin' to add one."
+        message="No skills installed. Click 'Add Skill' to get started."
         icon={<Puzzle className="size-8 text-muted-foreground" />}
       />
     );

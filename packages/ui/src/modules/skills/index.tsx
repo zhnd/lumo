@@ -3,7 +3,14 @@
 import { PageHeader } from "@/components/page-header";
 import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { SkillList, SkillDetailView, SkillEditor } from "./components";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import {
+  SkillList,
+  SkillDetailView,
+  SkillEditor,
+  AddSkillDialog,
+} from "./components";
 import { useService } from "./use-service";
 import { VIEW_MODE } from "./types";
 
@@ -21,11 +28,18 @@ export function Skills() {
     onEditDone,
     onUninstall,
     isUninstalling,
+    isAddDialogOpen,
+    setIsAddDialogOpen,
   } = useService();
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <PageHeader title="Skills" />
+      <PageHeader title="Skills">
+        <Button className="cursor-pointer" size="sm" onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="size-4" />
+          Add Skill
+        </Button>
+      </PageHeader>
 
       <div className="flex-1 overflow-y-auto bg-muted/40">
         <div className="mx-auto max-w-6xl p-6">
@@ -60,6 +74,11 @@ export function Skills() {
           )}
         </div>
       </div>
+
+      <AddSkillDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
     </div>
   );
 }

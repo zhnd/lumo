@@ -38,6 +38,16 @@ pub struct SkillDetail {
     pub path: String,
 }
 
+/// Summary of a Codex skill from ~/.agents/skills/
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CodexSkillSummary {
+    pub name: String,
+    pub description: String,
+    pub path: String,
+}
+
 /// Result of a skill command (install/uninstall/enable/disable)
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
