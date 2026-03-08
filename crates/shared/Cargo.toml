@@ -30,4 +30,4 @@ tokio.workspace = true
 tracing.workspace = true
 
 # Utilities
-dirs = "5.0"
+dirs = "6.0"
