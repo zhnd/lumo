@@ -9,23 +9,35 @@ import type {
  * Skills Bridge - Frontend interface for Claude Skills management
  */
 export class SkillsBridge {
-  static async listSkills(): Promise<SkillSummary[]> {
-    return invoke<SkillSummary[]>("list_skills");
+  static async listSkills(
+    projectPath: string | null = null,
+  ): Promise<SkillSummary[]> {
+    return invoke<SkillSummary[]>("list_skills", { projectPath });
   }
 
-  static async getSkillDetail(name: string): Promise<SkillDetail> {
-    return invoke<SkillDetail>("get_skill_detail", { name });
+  static async getSkillDetail(path: string): Promise<SkillDetail> {
+    return invoke<SkillDetail>("get_skill_detail", { path });
   }
 
   static async updateSkill(
-    name: string,
+    path: string,
     content: string,
   ): Promise<SkillCommandResult> {
-    return invoke<SkillCommandResult>("update_skill", { name, content });
+    return invoke<SkillCommandResult>("update_skill", { path, content });
   }
 
-  static async installSkill(name: string): Promise<SkillCommandResult> {
-    return invoke<SkillCommandResult>("install_skill", { name });
+  static async createSkill(
+    name: string,
+    projectPath: string | null = null,
+  ): Promise<SkillCommandResult> {
+    return invoke<SkillCommandResult>("create_skill", { name, projectPath });
+  }
+
+  static async installSkill(
+    name: string,
+    projectPath: string | null = null,
+  ): Promise<SkillCommandResult> {
+    return invoke<SkillCommandResult>("install_skill", { name, projectPath });
   }
 
   static async uninstallSkill(path: string): Promise<SkillCommandResult> {

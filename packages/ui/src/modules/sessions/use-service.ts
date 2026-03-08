@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { ClaudeSessionBridge } from "@/bridges/claude-session-bridge";
 import { watcherBackedQueryOptions } from "@/lib/query-options";
 import { useTauriEvent } from "@/hooks/use-tauri-event";
+import { useProjects } from "@/hooks/use-projects";
 import type { UseServiceReturn } from "./types";
 
 const PAGE_SIZE = 20;
@@ -21,7 +22,7 @@ export function useService(): UseServiceReturn {
     }
 
     invalidateTimerRef.current = setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ["claude-projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["claude-sessions-page"] });
       invalidateTimerRef.current = null;
     }, 300);
@@ -37,13 +38,7 @@ export function useService(): UseServiceReturn {
     };
   }, []);
 
-  const projectsQuery = useQuery({
-    ...watcherBackedQueryOptions,
-    queryKey: ["claude-projects"],
-    queryFn: () => ClaudeSessionBridge.getProjects(),
-  });
-
-  const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
+  const { projects, isLoading: isLoadingProjects, error: projectsError } = useProjects();
   const effectiveSelectedProjectPath = hasManualSelection
     ? selectedProjectPath
     : (projects[0]?.projectPath ?? null);
@@ -92,11 +87,9 @@ export function useService(): UseServiceReturn {
   }, [projects, effectiveSelectedProjectPath, sessionsQuery.data, sessions.length]);
 
   const isLoading =
-    projectsQuery.isLoading ||
-    (projects.length === 0 && !projectsQuery.data) ||
-    sessionsQuery.isLoading;
+    isLoadingProjects || sessionsQuery.isLoading;
 
-  const error = (projectsQuery.error || sessionsQuery.error) as Error | null;
+  const error = (projectsError || sessionsQuery.error) as Error | null;
 
   return {
     sessions,
@@ -120,7 +113,7 @@ export function useService(): UseServiceReturn {
       void sessionsQuery.fetchNextPage();
     },
     refetch: () => {
-      projectsQuery.refetch();
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       sessionsQuery.refetch();
     },
   };

@@ -38,6 +38,7 @@ pub struct ClaudeProjectSummary {
     pub project_path: String,
     pub project_name: String,
     pub session_count: i32,
+    pub skill_count: i32,
     pub last_updated: String,
 }
 

@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkFrontmatter from "remark-frontmatter";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import { markdownComponents } from "./markdown-components";
@@ -15,7 +16,7 @@ export function MarkdownViewer({ content, className }: MarkdownViewerProps) {
   return (
     <div className={className}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkFrontmatter, remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
         components={markdownComponents}
       >
