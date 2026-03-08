@@ -11,6 +11,7 @@ const ROUTE_MAP: Record<string, string> = {
   analytics: "/analytics",
   usage: "/usage",
   skills: "/skills",
+  marketplace: "/marketplace",
   wrapped: "/wrapped",
 } as const;
 
@@ -20,6 +21,7 @@ const NAV_ROUTES = [
   { prefix: "/analytics", id: "analytics" },
   { prefix: "/usage", id: "usage" },
   { prefix: "/skills", id: "skills" },
+  { prefix: "/marketplace", id: "marketplace" },
   { prefix: "/wrapped", id: "wrapped" },
 ] as const;
 

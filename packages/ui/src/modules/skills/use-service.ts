@@ -10,7 +10,6 @@ import type { SkillsScope } from "./types";
 export function useService() {
   const queryClient = useQueryClient();
   const [scope, setScope] = useState<SkillsScope>(null);
-  const [installDialogOpen, setInstallDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<{ path: string; name: string } | null>(null);
 
@@ -74,8 +73,6 @@ export function useService() {
     pendingDelete,
     setPendingDelete,
     isUninstalling: uninstallMutation.isPending,
-    installDialogOpen,
-    setInstallDialogOpen,
     createDialogOpen,
     setCreateDialogOpen,
   };

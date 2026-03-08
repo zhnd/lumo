@@ -6,6 +6,7 @@ import {
   Gauge,
   Sparkles,
   Puzzle,
+  Store,
 } from "lucide-react";
 import type { NavItem } from "./types";
 
@@ -39,6 +40,11 @@ export const NAV_ITEMS = [
     id: "skills",
     label: "Skills",
     icon: Puzzle,
+  },
+  {
+    id: "marketplace",
+    label: "Marketplace",
+    icon: Store,
   },
   {
     id: "wrapped",

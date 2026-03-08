@@ -12,6 +12,7 @@ pub mod trends_commands;
 pub mod usage_commands;
 pub mod user_commands;
 pub mod projects_commands;
+pub mod marketplace_commands;
 pub mod skills_commands;
 pub mod wrapped_commands;
 
@@ -29,6 +30,7 @@ pub use trends_commands::*;
 pub use usage_commands::*;
 pub use user_commands::*;
 pub use projects_commands::*;
+pub use marketplace_commands::*;
 pub use skills_commands::*;
 pub use wrapped_commands::*;
 
@@ -95,6 +97,14 @@ macro_rules! app_commands {
             commands::enable_skill,
             commands::disable_skill,
             commands::create_skill,
+            // Marketplace commands
+            commands::list_marketplace_plugins,
+            commands::list_marketplaces,
+            commands::install_marketplace_plugin,
+            commands::uninstall_marketplace_plugin,
+            commands::add_marketplace,
+            commands::remove_marketplace,
+            commands::update_marketplaces,
             // System commands
             commands::open_log_directory,
         ]
