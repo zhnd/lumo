@@ -1,13 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+import { isImagePath, parseRichContent, tryBuildSvgPreview } from "../../shared/content-parser";
 import { DiffViewer } from "../../viewers/diff-viewer";
 import { ImageViewer } from "../../viewers/image-viewer";
-import {
-  isImagePath,
-  parseRichContent,
-  tryBuildSvgPreview,
-} from "../../shared/content-parser";
 
 interface ToolEditProps {
   input?: string;
@@ -35,12 +31,7 @@ export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps
   // Image file: try to render the image directly
   if (isImagePath(resolvedPath)) {
     // Try all available sources for SVG content (most complete first)
-    const svgSrc = tryBuildSvgPreview(
-      resolvedPath ?? "",
-      fileContent,
-      output,
-      newString,
-    );
+    const svgSrc = tryBuildSvgPreview(resolvedPath ?? "", fileContent, output, newString);
 
     if (svgSrc) {
       return <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />;
@@ -69,11 +60,7 @@ export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps
 
   return (
     <div className="space-y-2">
-      <DiffViewer
-        oldValue={oldString}
-        newValue={newString}
-        filePath={resolvedPath}
-      />
+      <DiffViewer oldValue={oldString} newValue={newString} filePath={resolvedPath} />
       {output && (
         <div className="px-3 py-1 text-[11px] text-muted-foreground">
           {output.length > 200 ? `${output.slice(0, 200)}...` : output}

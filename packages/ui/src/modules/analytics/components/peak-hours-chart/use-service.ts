@@ -12,10 +12,7 @@ export function useService(timeRange: TimeRange) {
     queryFn: () => AnalyticsBridge.getHourlyActivity(timeRange),
   });
 
-  const peakHour = data?.reduce(
-    (max, h) => (h.count > max.count ? h : max),
-    { hour: 0, count: 0 },
-  );
+  const peakHour = data?.reduce((max, h) => (h.count > max.count ? h : max), { hour: 0, count: 0 });
 
   return {
     data: data ?? [],

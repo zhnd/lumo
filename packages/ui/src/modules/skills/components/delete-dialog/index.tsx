@@ -25,8 +25,8 @@ export function DeleteSkillDialog({
           <AlertDialogTitle>Delete skill</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete
-            {skillName ? <> &quot;{skillName}&quot;</> : " this skill"}? This
-            action cannot be undone.
+            {skillName ? <> &quot;{skillName}&quot;</> : " this skill"}? This action cannot be
+            undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

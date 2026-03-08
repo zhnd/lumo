@@ -1,6 +1,6 @@
 "use client";
 
-import { FilePenLine, Wrench, ListChecks, TriangleAlert } from "lucide-react";
+import { FilePenLine, ListChecks, TriangleAlert, Wrench } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionHighlightsProps } from "./types";
 

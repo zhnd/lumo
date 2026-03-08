@@ -1,28 +1,28 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import * as echarts from "echarts/core";
+import type { EChartsOption } from "echarts";
 import {
   BarChart,
+  GaugeChart,
+  HeatmapChart,
   LineChart,
   PieChart,
   RadarChart,
   SankeyChart,
   TreemapChart,
-  GaugeChart,
-  HeatmapChart,
 } from "echarts/charts";
 import {
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
   CalendarComponent,
-  VisualMapComponent,
-  RadarComponent,
   GraphicComponent,
+  GridComponent,
+  LegendComponent,
+  RadarComponent,
+  TooltipComponent,
+  VisualMapComponent,
 } from "echarts/components";
+import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
-import type { EChartsOption } from "echarts";
+import { useEffect, useRef } from "react";
 
 echarts.use([
   BarChart,
@@ -48,9 +48,7 @@ echarts.use([
  */
 export function resolveChartColor(cssVar: string): string {
   if (typeof document === "undefined") return "#888";
-  const raw = getComputedStyle(document.documentElement)
-    .getPropertyValue(cssVar)
-    .trim();
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
   if (!raw) return "#888";
   const el = document.createElement("div");
   el.style.color = `hsl(${raw})`;
@@ -76,9 +74,7 @@ export function resolveChartColorAlpha(cssVar: string, alpha: number): string {
  *
  * Both variants show a centered "No data" label.
  */
-export function emptyChartOption(
-  type: "axis" | "pie" = "axis",
-): EChartsOption {
+export function emptyChartOption(type: "axis" | "pie" = "axis"): EChartsOption {
   const mutedColor = resolveChartColor("--muted-foreground");
   const borderColor = resolveChartColorAlpha("--border", 0.4);
 
@@ -182,13 +178,7 @@ export function EChart({ option, className, style }: EChartsProps) {
     };
   }, []);
 
-  return (
-    <div
-      ref={containerRef}
-      className={className}
-      style={{ width: "100%", ...style }}
-    />
-  );
+  return <div ref={containerRef} className={className} style={{ width: "100%", ...style }} />;
 }
 
 export type { EChartsOption };

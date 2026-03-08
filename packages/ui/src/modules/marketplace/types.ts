@@ -14,10 +14,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
 } as const;
 
 /** Get display label for an installed scope. */
-export function scopeLabel(
-  s: PluginInstalledScope,
-  projects: ClaudeProjectSummary[],
-): string {
+export function scopeLabel(s: PluginInstalledScope, projects: ClaudeProjectSummary[]): string {
   if (s.scope === "user") return "Global";
   if (s.projectPath) {
     const match = projects.find((p) => p.projectPath === s.projectPath);

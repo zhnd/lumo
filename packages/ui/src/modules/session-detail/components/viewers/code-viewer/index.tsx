@@ -1,9 +1,9 @@
 "use client";
 
+import { Check, Copy, FileCode } from "lucide-react";
 import { useState } from "react";
-import { Copy, Check, FileCode } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { inferLang } from "../../shared/language-map";
 import { MarkdownViewer } from "../markdown-viewer";
@@ -47,19 +47,12 @@ export function CodeViewer({
         <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-3 py-1.5">
           <div className="flex min-w-0 items-center gap-2">
             <FileCode className="size-3.5 shrink-0 text-muted-foreground" />
-            {fileName && (
-              <span className="truncate text-xs font-medium">{fileName}</span>
-            )}
+            {fileName && <span className="truncate text-xs font-medium">{fileName}</span>}
             <Badge variant="outline" className="h-4 shrink-0 rounded px-1.5 text-[10px]">
               {lang}
             </Badge>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-6"
-            onClick={handleCopy}
-          >
+          <Button variant="ghost" size="icon" className="size-6" onClick={handleCopy}>
             {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
           </Button>
         </div>

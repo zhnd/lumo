@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Bot, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MarkdownViewer } from "../viewers/markdown-viewer";
 import { formatMessageTime, getModelDisplayName } from "../../libs";
 import type { TimelineAssistantItem } from "../../types";
+import { MarkdownViewer } from "../viewers/markdown-viewer";
 
 const COLLAPSE_THRESHOLD = 1200;
 const PREVIEW_LENGTH = 600;
@@ -35,7 +35,12 @@ export function AssistantText({ item }: AssistantTextProps) {
           )}
           <span className="ml-auto">{formatMessageTime(item.timestamp)}</span>
         </div>
-        <div className={cn("text-sm leading-relaxed break-words", !expanded && "max-h-[360px] overflow-hidden")}>
+        <div
+          className={cn(
+            "text-sm leading-relaxed break-words",
+            !expanded && "max-h-[360px] overflow-hidden",
+          )}
+        >
           <MarkdownViewer content={displayText} />
         </div>
         {isLong && (

@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  MarketplacePlugin,
-  MarketplaceInfo,
   MarketplaceCommandResult,
+  MarketplaceInfo,
+  MarketplacePlugin,
 } from "../generated/typeshare-types";
 
 /**
@@ -37,15 +37,11 @@ export class MarketplaceBridge {
     });
   }
 
-  static async addMarketplace(
-    source: string,
-  ): Promise<MarketplaceCommandResult> {
+  static async addMarketplace(source: string): Promise<MarketplaceCommandResult> {
     return invoke<MarketplaceCommandResult>("add_marketplace", { source });
   }
 
-  static async removeMarketplace(
-    name: string,
-  ): Promise<MarketplaceCommandResult> {
+  static async removeMarketplace(name: string): Promise<MarketplaceCommandResult> {
     return invoke<MarketplaceCommandResult>("remove_marketplace", { name });
   }
 

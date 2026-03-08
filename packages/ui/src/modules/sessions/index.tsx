@@ -2,17 +2,13 @@
 
 import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/page-header";
 import { CardError } from "@/components/card-error";
+import { PageHeader } from "@/components/page-header";
 import { ProjectNav } from "@/components/project-nav";
-import {
-  SessionList,
-  SessionListSkeleton,
-  ProjectListSkeleton,
-} from "./components";
-import { useService } from "./use-service";
+import { Button } from "@/components/ui/button";
+import { ProjectListSkeleton, SessionList, SessionListSkeleton } from "./components";
 import type { ClaudeSession } from "./types";
+import { useService } from "./use-service";
 
 export function Sessions() {
   const router = useRouter();
@@ -60,11 +56,7 @@ export function Sessions() {
             </div>
           </>
         ) : error ? (
-          <CardError
-            message="Failed to load sessions"
-            onRetry={refetch}
-            className="m-4 w-full"
-          />
+          <CardError message="Failed to load sessions" onRetry={refetch} className="m-4 w-full" />
         ) : (
           <>
             <ProjectNav
@@ -72,9 +64,7 @@ export function Sessions() {
               selected={selectedProjectPath}
               onSelect={setSelectedProjectPath}
               allBadge={totalSessions}
-              counts={Object.fromEntries(
-                projects.map((p) => [p.projectPath, p.sessionCount]),
-              )}
+              counts={Object.fromEntries(projects.map((p) => [p.projectPath, p.sessionCount]))}
             />
             <div className="min-h-0 min-w-0 flex-1">
               <SessionList

@@ -1,5 +1,5 @@
-import type { ClaudeProjectSummary } from "@/generated/typeshare-types";
 import type { ReactNode } from "react";
+import type { ClaudeProjectSummary } from "@/generated/typeshare-types";
 
 export interface ProjectNavProps {
   projects: ClaudeProjectSummary[];

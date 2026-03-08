@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listen } from "@tauri-apps/api/event";
+import { useCallback, useEffect, useState } from "react";
 import { SubscriptionUsageBridge } from "@/bridges/subscription-usage-bridge";
+import type { LoginResolvedPayload } from "@/generated/typeshare-types";
 import { AUTO_REFRESH_INTERVAL_MS, QUERY_KEY } from "./constants";
 import type { FetchStatus, UseServiceReturn } from "./types";
-import type { LoginResolvedPayload } from "@/generated/typeshare-types";
 
 export function useService(): UseServiceReturn {
   const queryClient = useQueryClient();
@@ -91,7 +91,7 @@ export function useService(): UseServiceReturn {
   return {
     status,
     data: data ?? null,
-    error: error ? String(error) : data?.error ?? null,
+    error: error ? String(error) : (data?.error ?? null),
     refresh: () => refetch(),
     isRefreshing: isRefetching,
     onLogin,

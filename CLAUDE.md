@@ -128,7 +128,9 @@ pnpm tauri build  # Build production Tauri application bundle
 ```bash
 pnpm dev          # Start Next.js dev server on localhost:3000
 pnpm build        # Build Next.js static export to packages/ui/out/
-pnpm lint         # Run ESLint
+pnpm lint         # Run Biome linter
+pnpm format       # Format code with Biome
+pnpm check        # Lint + format with Biome (auto-fix)
 ```
 
 ### Daemon Only

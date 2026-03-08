@@ -23,7 +23,8 @@
     },
     "lint": {
       "dependsOn": ["generate-types"],
-      "outputs": []
+      "outputs": [],
+      "cache": false
     },
     "check-types": {
       "dependsOn": ["generate-types"],

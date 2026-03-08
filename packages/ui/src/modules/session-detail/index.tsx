@@ -4,13 +4,13 @@ import { CardError } from "@/components/card-error";
 import { ScrollToBottomButton } from "@/components/scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import {
-  TimelineItem,
-  SessionHeader,
   SessionDetailSkeleton,
+  SessionHeader,
   SessionHighlights,
+  TimelineItem,
 } from "./components";
-import { useService } from "./use-service";
 import type { SessionDetailModuleProps } from "./types";
+import { useService } from "./use-service";
 
 export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
   const {
@@ -34,10 +34,7 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
   if (error && !isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <CardError
-          message={error?.message || "Failed to load session"}
-          onRetry={onBack}
-        />
+        <CardError message={error?.message || "Failed to load session"} onRetry={onBack} />
       </div>
     );
   }
@@ -107,10 +104,7 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
               </div>
             )}
 
-            <ScrollToBottomButton
-              visible={showScrollToBottom}
-              onClick={scrollToBottom}
-            />
+            <ScrollToBottomButton visible={showScrollToBottom} onClick={scrollToBottom} />
           </div>
         )}
       </div>

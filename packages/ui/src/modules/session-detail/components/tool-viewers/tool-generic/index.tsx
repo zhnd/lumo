@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { MarkdownViewer } from "../../viewers/markdown-viewer";
 import { parseRichContent } from "../../shared/content-parser";
 import { ImageViewer } from "../../viewers/image-viewer";
+import { MarkdownViewer } from "../../viewers/markdown-viewer";
 
 interface ToolGenericProps {
   toolName: string;
@@ -11,7 +11,7 @@ interface ToolGenericProps {
   output?: string;
 }
 
-export function ToolGeneric({ toolName, input, output }: ToolGenericProps) {
+export function ToolGeneric({ toolName: _toolName, input, output }: ToolGenericProps) {
   const parsedInput = useMemo(() => {
     if (!input) return null;
     try {
@@ -53,9 +53,7 @@ export function ToolGeneric({ toolName, input, output }: ToolGenericProps) {
           <MarkdownViewer content={parsedOutput.markdown} />
         </div>
       )}
-      {parsedOutput.images.length > 0 && (
-        <ImageViewer images={parsedOutput.images} />
-      )}
+      {parsedOutput.images.length > 0 && <ImageViewer images={parsedOutput.images} />}
     </div>
   );
 }

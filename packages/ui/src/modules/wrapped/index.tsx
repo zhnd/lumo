@@ -1,10 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { PageHeader } from "@/components/page-header";
 import { CardError } from "@/components/card-error";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/components/page-header";
 import {
   Select,
   SelectContent,
@@ -12,41 +10,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { WrappedPeriod } from "@/generated/typeshare-types";
 import {
-  HeroStat,
-  CodingPersona,
-  FunFacts,
-  TopModel,
-  FavoriteTool,
-  CostCard,
   CodeOutput,
+  CodingPersona,
   CodingStreak,
+  CostCard,
+  FavoriteTool,
+  FunFacts,
+  HeroStat,
   PeakHour,
   ShareButton,
+  TopModel,
 } from "./components";
 import { useService } from "./use-service";
 
 export function Wrapped() {
-  const {
-    period,
-    setPeriod,
-    data,
-    hasMeaningfulData,
-    isLoading,
-    error,
-    refetch,
-  } = useService();
+  const { period, setPeriod, data, hasMeaningfulData, isLoading, error, refetch } = useService();
   const cardRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <PageHeader title="Wrapped">
         <div className="flex items-center gap-2">
-          <Select
-            value={period}
-            onValueChange={(v) => setPeriod(v as WrappedPeriod)}
-          >
+          <Select value={period} onValueChange={(v) => setPeriod(v as WrappedPeriod)}>
             <SelectTrigger className="w-32 h-8 text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -92,11 +81,7 @@ export function Wrapped() {
             </div>
           )}
           {error && (
-            <CardError
-              title="Wrapped"
-              message="Failed to load data"
-              onRetry={() => refetch()}
-            />
+            <CardError title="Wrapped" message="Failed to load data" onRetry={() => refetch()} />
           )}
           {data && hasMeaningfulData && (
             <div ref={cardRef} className="bg-muted p-10">
@@ -162,8 +147,7 @@ export function Wrapped() {
             <div className="w-full max-w-md rounded-xl border border-border bg-card p-6">
               <p className="text-center text-sm font-medium">No wrapped data yet</p>
               <p className="mt-2 text-center text-xs text-muted-foreground">
-                Run more Claude Code sessions in this period, then come back to
-                see your summary.
+                Run more Claude Code sessions in this period, then come back to see your summary.
               </p>
             </div>
           )}

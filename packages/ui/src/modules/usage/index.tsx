@@ -1,7 +1,8 @@
 "use client";
 
-import { PageHeader } from "@/components/page-header";
+import { ArrowRightLeft, Clock, RefreshCw } from "lucide-react";
 import { CardError } from "@/components/card-error";
+import { PageHeader } from "@/components/page-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,14 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { RefreshCw, Clock, ArrowRightLeft } from "lucide-react";
 import type { SubscriptionUsageCategory } from "@/generated/typeshare-types";
-import {
-  UsageCategoryCard,
-  LoginPrompt,
-  NoSubscriptionPrompt,
-  UsageSkeleton,
-} from "./components";
+import { LoginPrompt, NoSubscriptionPrompt, UsageCategoryCard, UsageSkeleton } from "./components";
 import { useService } from "./use-service";
 
 function formatFetchedAt(ts: number, now: number): string {
@@ -53,31 +48,18 @@ function Section({ title, categories }: SectionProps) {
 }
 
 export function Usage() {
-  const {
-    status,
-    data,
-    error,
-    refresh,
-    isRefreshing,
-    onLogin,
-    isLoggingIn,
-    onSwitchAccount,
-    now,
-  } = useService();
+  const { status, data, error, refresh, isRefreshing, onLogin, isLoggingIn, onSwitchAccount, now } =
+    useService();
 
   const categories = data?.usage?.categories ?? [];
   const sessionCats = categories.filter((c) => c.name === "current_session");
-  const weeklyCats = categories.filter(
-    (c) => c.name === "all_models" || c.name === "sonnet_only"
-  );
+  const weeklyCats = categories.filter((c) => c.name === "all_models" || c.name === "sonnet_only");
   const extraCats = categories.filter((c) => c.name === "extra_usage");
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <PageHeader title="Usage">
-        {(status === "success" ||
-          status === "no-subscription" ||
-          status === "parse-error") && (
+        {(status === "success" || status === "no-subscription" || status === "parse-error") && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -89,31 +71,20 @@ export function Usage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Switch account?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will sign you out of the current Claude account. You will
-                  need to sign in again to view usage data.
+                  This will sign you out of the current Claude account. You will need to sign in
+                  again to view usage data.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onSwitchAccount}>
-                  Switch account
-                </AlertDialogAction>
+                <AlertDialogAction onClick={onSwitchAccount}>Switch account</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         )}
-        {(status === "success" ||
-          status === "error" ||
-          status === "parse-error") && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw
-              className={`mr-2 size-4 ${isRefreshing ? "animate-spin" : ""}`}
-            />
+        {(status === "success" || status === "error" || status === "parse-error") && (
+          <Button variant="outline" size="sm" onClick={refresh} disabled={isRefreshing}>
+            <RefreshCw className={`mr-2 size-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         )}
@@ -123,9 +94,7 @@ export function Usage() {
         <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
           {status === "loading" && <UsageSkeleton />}
 
-          {status === "login" && (
-            <LoginPrompt onLogin={onLogin} isLoading={isLoggingIn} />
-          )}
+          {status === "login" && <LoginPrompt onLogin={onLogin} isLoading={isLoggingIn} />}
 
           {status === "no-subscription" && (
             <NoSubscriptionPrompt onSwitchAccount={onSwitchAccount} />
@@ -155,10 +124,9 @@ export function Usage() {
 
               <Section title="Weekly limits" categories={weeklyCats} />
 
-              {extraCats.length > 0 &&
-                (weeklyCats.length > 0 || sessionCats.length > 0) && (
-                  <Separator />
-                )}
+              {extraCats.length > 0 && (weeklyCats.length > 0 || sessionCats.length > 0) && (
+                <Separator />
+              )}
 
               <Section title="Extra usage" categories={extraCats} />
 
@@ -166,9 +134,7 @@ export function Usage() {
               {data.usage.fetchedAt > 0 && (
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Clock className="size-3" />
-                  <span>
-                    Last updated: {formatFetchedAt(data.usage.fetchedAt, now)}
-                  </span>
+                  <span>Last updated: {formatFetchedAt(data.usage.fetchedAt, now)}</span>
                 </div>
               )}
             </div>

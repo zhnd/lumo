@@ -1,24 +1,15 @@
 "use client";
 
+import { Link2, Terminal, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { Link2, Trash2, Terminal } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SkillScope } from "@/generated/typeshare-types";
 import type { SkillCardProps } from "./types";
 
-export function SkillCard({
-  skill,
-  onSelect,
-  onUninstall,
-  isUninstalling,
-}: SkillCardProps) {
+export function SkillCard({ skill, onSelect, onUninstall, isUninstalling }: SkillCardProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
@@ -34,9 +25,7 @@ export function SkillCard({
                 <Terminal className="size-3.5 shrink-0 text-muted-foreground" />
               )}
               <CardTitle className="truncate text-sm">{skill.name}</CardTitle>
-              {skill.isSymlink && (
-                <Link2 className="size-3.5 shrink-0 text-muted-foreground" />
-              )}
+              {skill.isSymlink && <Link2 className="size-3.5 shrink-0 text-muted-foreground" />}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
@@ -79,10 +68,7 @@ export function SkillCard({
                 <Trash2 className="size-3.5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent
-              className="w-auto p-2"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <PopoverContent className="w-auto p-2" onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="destructive"
                 size="sm"

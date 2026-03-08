@@ -1,19 +1,14 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
 import { CardChartEmpty } from "@/components/card-chart-empty";
-import { useService } from "./use-service";
-import type { ModelMixProps } from "./types";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fmt } from "@/lib/format";
+import type { ModelMixProps } from "./types";
+import { useService } from "./use-service";
 
 export function ModelMix({ timeRange }: ModelMixProps) {
   const COLORS = [
@@ -27,13 +22,7 @@ export function ModelMix({ timeRange }: ModelMixProps) {
 
   if (isLoading) return <CardLoading showTitle />;
   if (error)
-    return (
-      <CardError
-        title="Model Mix"
-        message="Failed to load data"
-        onRetry={() => refetch()}
-      />
-    );
+    return <CardError title="Model Mix" message="Failed to load data" onRetry={() => refetch()} />;
   if (data.length === 0) {
     return <CardChartEmpty title="Model Mix" chartType="pie" className="h-full" />;
   }

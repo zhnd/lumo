@@ -1,10 +1,10 @@
 "use client";
 
+import { FileSearch, Globe, Search } from "lucide-react";
 import { useMemo } from "react";
-import { Search, Globe, FileSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MarkdownViewer } from "../../viewers/markdown-viewer";
 import { parseRichContent } from "../../shared/content-parser";
+import { MarkdownViewer } from "../../viewers/markdown-viewer";
 
 interface ToolSearchProps {
   toolName: string;
@@ -49,17 +49,17 @@ export function ToolSearch({ toolName, input, output }: ToolSearchProps) {
         </div>
       )}
       {parsedOutput.markdown.trim() && (
-        <div className={cn(
-          "max-h-[400px] overflow-auto rounded-lg bg-muted/20 px-3 py-2",
-          "text-[11px] text-muted-foreground",
-        )}>
+        <div
+          className={cn(
+            "max-h-[400px] overflow-auto rounded-lg bg-muted/20 px-3 py-2",
+            "text-[11px] text-muted-foreground",
+          )}
+        >
           <MarkdownViewer content={parsedOutput.markdown} />
         </div>
       )}
       {!parsedOutput.markdown.trim() && !query && (
-        <div className="px-3 py-2 text-xs text-muted-foreground">
-          No results
-        </div>
+        <div className="px-3 py-2 text-xs text-muted-foreground">No results</div>
       )}
     </div>
   );

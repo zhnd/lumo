@@ -3,12 +3,12 @@
  */
 
 export type FormatType =
-  | "number"      // Plain number (1000 -> 1K)
-  | "bytes"       // Bytes (1024 -> 1 KB)
-  | "duration"    // Duration in seconds (3600 -> 1h)
-  | "durationMs"  // Duration in milliseconds (60000 -> 1m)
-  | "currency"    // Currency (1000 -> $1K)
-  | "percent";    // Percentage (0.5 -> 50%)
+  | "number" // Plain number (1000 -> 1K)
+  | "bytes" // Bytes (1024 -> 1 KB)
+  | "duration" // Duration in seconds (3600 -> 1h)
+  | "durationMs" // Duration in milliseconds (60000 -> 1m)
+  | "currency" // Currency (1000 -> $1K)
+  | "percent"; // Percentage (0.5 -> 50%)
 
 interface FormatOptions {
   decimals?: number;
@@ -56,7 +56,7 @@ const DURATION_MS_UNITS = [
 function formatWithUnits(
   value: number,
   units: typeof NUMBER_UNITS,
-  decimals: number
+  decimals: number,
 ): FormatResult {
   const absValue = Math.abs(value);
   const sign = value < 0 ? "-" : "";
@@ -64,9 +64,7 @@ function formatWithUnits(
   for (const { threshold, unit, divisor } of units) {
     if (absValue >= threshold) {
       const scaled = absValue / divisor;
-      const formatted = scaled % 1 === 0
-        ? scaled.toString()
-        : scaled.toFixed(decimals);
+      const formatted = scaled % 1 === 0 ? scaled.toString() : scaled.toFixed(decimals);
       return {
         value: sign + formatted,
         unit,
@@ -83,7 +81,7 @@ function formatWithUnits(
     return { value: sign + formatted, unit: "", full: sign + formatted };
   }
 
-  return { value: sign + "0", unit: "", full: sign + "0" };
+  return { value: `${sign}0`, unit: "", full: `${sign}0` };
 }
 
 /**
@@ -99,7 +97,7 @@ function formatWithUnits(
 export function formatValue(
   value: number,
   type: FormatType = "number",
-  options: FormatOptions = {}
+  options: FormatOptions = {},
 ): FormatResult {
   const { decimals = 1, prefix = "", suffix = "" } = options;
 
@@ -129,23 +127,19 @@ export function formatValue(
       return {
         value: numResult.value,
         unit: numResult.unit,
-        full: prefix + "$" + numResult.value + numResult.unit + suffix,
+        full: `${prefix}$${numResult.value}${numResult.unit}${suffix}`,
       };
     }
 
     case "percent": {
       const pctValue = value * 100;
-      const formatted = pctValue % 1 === 0
-        ? pctValue.toString()
-        : pctValue.toFixed(decimals);
+      const formatted = pctValue % 1 === 0 ? pctValue.toString() : pctValue.toFixed(decimals);
       return {
         value: formatted,
         unit: "%",
-        full: prefix + formatted + "%" + suffix,
+        full: `${prefix + formatted}%${suffix}`,
       };
     }
-
-    case "number":
     default:
       result = formatWithUnits(value, NUMBER_UNITS, decimals);
       break;
@@ -164,7 +158,7 @@ export function formatValue(
 export function fmt(
   value: number,
   type: FormatType = "number",
-  options: FormatOptions = {}
+  options: FormatOptions = {},
 ): string {
   return formatValue(value, type, options).full;
 }

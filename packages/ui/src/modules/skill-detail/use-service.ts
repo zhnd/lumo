@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { SkillsBridge } from "@/bridges/skills-bridge";
 
 export function useService(skillPath: string) {

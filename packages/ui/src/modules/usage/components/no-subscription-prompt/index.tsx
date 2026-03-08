@@ -1,13 +1,11 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { AlertCircle, ArrowRightLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { NoSubscriptionPromptProps } from "./types";
 
-export function NoSubscriptionPrompt({
-  onSwitchAccount,
-}: NoSubscriptionPromptProps) {
+export function NoSubscriptionPrompt({ onSwitchAccount }: NoSubscriptionPromptProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16">
       <Card className="w-full max-w-sm">
@@ -18,15 +16,11 @@ export function NoSubscriptionPrompt({
           <div className="space-y-1.5 text-center">
             <p className="font-semibold">No active subscription</p>
             <p className="text-sm text-muted-foreground">
-              Your account may not have a Claude Pro or Max plan, or usage data
-              is currently unavailable.
+              Your account may not have a Claude Pro or Max plan, or usage data is currently
+              unavailable.
             </p>
           </div>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={onSwitchAccount}
-          >
+          <Button variant="outline" className="w-full" onClick={onSwitchAccount}>
             <ArrowRightLeft className="mr-2 size-4" />
             Switch account
           </Button>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { ProjectsBridge } from "@/bridges/projects-bridge";
 import { watcherBackedQueryOptions } from "@/lib/query-options";
 

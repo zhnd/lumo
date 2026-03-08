@@ -1,18 +1,16 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  SkillSummary,
-  SkillDetail,
-  SkillCommandResult,
   CodexSkillSummary,
+  SkillCommandResult,
+  SkillDetail,
+  SkillSummary,
 } from "../generated/typeshare-types";
 
 /**
  * Skills Bridge - Frontend interface for Claude Skills management
  */
 export class SkillsBridge {
-  static async listSkills(
-    projectPath: string | null = null,
-  ): Promise<SkillSummary[]> {
+  static async listSkills(projectPath: string | null = null): Promise<SkillSummary[]> {
     return invoke<SkillSummary[]>("list_skills", { projectPath });
   }
 
@@ -20,10 +18,7 @@ export class SkillsBridge {
     return invoke<SkillDetail>("get_skill_detail", { path });
   }
 
-  static async updateSkill(
-    path: string,
-    content: string,
-  ): Promise<SkillCommandResult> {
+  static async updateSkill(path: string, content: string): Promise<SkillCommandResult> {
     return invoke<SkillCommandResult>("update_skill", { path, content });
   }
 

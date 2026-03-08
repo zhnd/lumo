@@ -1,22 +1,19 @@
+import { CONTINUOUS_GAP_THRESHOLD_MIN } from "./constants";
 import type {
+  CostInsight,
+  EfficiencyScores,
+  HealthInsight,
+  HealthStats,
+  HourlyData,
+  ModelStats,
+  RestPreferences,
+  RestState,
   Session,
   SummaryStats,
-  ModelStats,
-  RestState,
-  RestPreferences,
-  HourlyData,
-  EfficiencyScores,
-  CostInsight,
   WeekDelta,
-  HealthStats,
-  HealthInsight,
 } from "./types";
-import { CONTINUOUS_GAP_THRESHOLD_MIN } from "./constants";
 
-export function computeRestState(
-  sessions: Session[],
-  prefs: RestPreferences
-): RestState {
+export function computeRestState(sessions: Session[], prefs: RestPreferences): RestState {
   if (sessions.length === 0) {
     return { continuousCodingMinutes: 0, status: "rested", progressPercent: 0 };
   }
@@ -47,10 +44,7 @@ export function computeRestState(
       : minutes >= prefs.headsUpMinutes
         ? "heads-up"
         : "rested";
-  const progressPercent = Math.min(
-    100,
-    (minutes / prefs.breakMinutes) * 100
-  );
+  const progressPercent = Math.min(100, (minutes / prefs.breakMinutes) * 100);
 
   return {
     continuousCodingMinutes: Math.round(minutes),
@@ -92,20 +86,15 @@ export function computeEfficiency(stats: SummaryStats): EfficiencyScores {
   const totalEdits = stats.codeEditAccepts + stats.codeEditRejects;
   return {
     cacheRate: stats.cachePercentage,
-    costPerSession:
-      stats.totalSessions > 0 ? stats.totalCost / stats.totalSessions : 0,
+    costPerSession: stats.totalSessions > 0 ? stats.totalCost / stats.totalSessions : 0,
     editAcceptRate: totalEdits > 0 ? (stats.codeEditAccepts / totalEdits) * 100 : 0,
   };
 }
 
-export function computeCostInsights(
-  stats: SummaryStats,
-  models: ModelStats[]
-): CostInsight[] {
+export function computeCostInsights(stats: SummaryStats, models: ModelStats[]): CostInsight[] {
   const insights: CostInsight[] = [];
 
-  const costPerSession =
-    stats.totalSessions > 0 ? stats.totalCost / stats.totalSessions : 0;
+  const costPerSession = stats.totalSessions > 0 ? stats.totalCost / stats.totalSessions : 0;
   insights.push({
     label: "Cost per Session",
     value: `$${costPerSession.toFixed(3)}`,
@@ -235,8 +224,7 @@ export function computeHealthInsights(sessions: Session[]): HealthStats {
   }
 
   // Average session length advice
-  const avgDuration =
-    sessions.reduce((s, x) => s + x.durationMs, 0) / sessions.length / 60000;
+  const avgDuration = sessions.reduce((s, x) => s + x.durationMs, 0) / sessions.length / 60000;
   if (avgDuration > 60) {
     insights.push({
       icon: "clock",
@@ -256,10 +244,7 @@ function formatMinutes(min: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export function computeWeeklyDelta(
-  current: SummaryStats,
-  previous: SummaryStats
-): WeekDelta[] {
+export function computeWeeklyDelta(current: SummaryStats, previous: SummaryStats): WeekDelta[] {
   function pct(cur: number, prev: number): number {
     if (prev === 0) return cur > 0 ? 100 : 0;
     return ((cur - prev) / prev) * 100;

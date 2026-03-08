@@ -1,12 +1,6 @@
 import type { ClaudeContentBlock, ClaudeMessage } from "@/generated/typeshare-types";
 import { extractSlashCommand, sanitizeMessageText } from "./components/shared/text-utils";
-import type {
-  TimelineItem,
-  TimelineUserItem,
-  TimelineAssistantItem,
-  TimelineToolItem,
-  TimelineThinkingItem,
-} from "./types";
+import type { TimelineItem, TimelineUserItem } from "./types";
 
 export interface SessionHighlights {
   toolCalls: number;
@@ -84,7 +78,7 @@ export function getModelDisplayName(model: string | undefined): string {
   if (parts[0] === "claude" && parts.length >= 3) {
     const name = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
     const version = parts[2];
-    if (parts[3] && !isNaN(Number(parts[3]))) {
+    if (parts[3] && !Number.isNaN(Number(parts[3]))) {
       return `${name} ${version}.${parts[3]}`;
     }
     return `${name} ${version}`;
@@ -114,11 +108,7 @@ export function buildFlatTimeline(messages: ClaudeMessage[]): TimelineItem[] {
     }
 
     // Process blocks for assistant/system messages and user messages with tool results
-    const messageItems = buildFlatMessageItems(
-      message,
-      toolResultsById,
-      consumedToolResults,
-    );
+    const messageItems = buildFlatMessageItems(message, toolResultsById, consumedToolResults);
     items.push(...messageItems);
   }
 

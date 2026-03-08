@@ -47,13 +47,9 @@ export function CostCard({ data }: { data: WrappedData }) {
       </div>
       <div className="flex items-baseline gap-0.5 shrink-0">
         <span className="text-sm font-medium text-muted-foreground">$</span>
-        <span className="text-3xl font-extrabold tabular-nums">
-          {costResult.value}
-        </span>
+        <span className="text-3xl font-extrabold tabular-nums">{costResult.value}</span>
         {costResult.unit && (
-          <span className="text-sm font-medium text-muted-foreground">
-            {costResult.unit}
-          </span>
+          <span className="text-sm font-medium text-muted-foreground">{costResult.unit}</span>
         )}
       </div>
     </div>

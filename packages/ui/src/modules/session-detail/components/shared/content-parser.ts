@@ -1,5 +1,5 @@
-import { renderXmlLikeMetaTags } from "./text-utils";
 import { languageFromPath } from "./language-map";
+import { renderXmlLikeMetaTags } from "./text-utils";
 
 export interface RichContent {
   markdown: string;
@@ -78,7 +78,7 @@ function extractRichContent(value: unknown): RichContent {
     }
 
     return {
-      markdown: "```json\n" + JSON.stringify(value, null, 2) + "\n```",
+      markdown: `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``,
       images: [],
     };
   }
@@ -167,7 +167,16 @@ function extractSvgContent(text: string): string | null {
 }
 
 const IMAGE_EXTENSIONS = new Set([
-  "png", "jpg", "jpeg", "gif", "webp", "svg", "ico", "bmp", "tiff", "avif",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "svg",
+  "ico",
+  "bmp",
+  "tiff",
+  "avif",
 ]);
 
 export function isImagePath(filePath?: string): boolean {

@@ -1,7 +1,13 @@
 "use client";
 
-import { Settings, FileText } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { FileText, Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -10,21 +16,19 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { UpdateIndicator } from "@/components/update-indicator";
-import { useService } from "./use-service";
 import { NAV_ITEMS } from "./constants";
+import { useService } from "./use-service";
 
 export function AppSidebar() {
   const { activeItem, onNavItemClick } = useService();
 
   return (
-    <Sidebar variant="floating" collapsible="icon" className="top-(--titlebar-height) h-[calc(100svh-var(--titlebar-height))]">
+    <Sidebar
+      variant="floating"
+      collapsible="icon"
+      className="top-(--titlebar-height) h-[calc(100svh-var(--titlebar-height))]"
+    >
       <SidebarContent className="pt-2">
         <SidebarMenu className="gap-0.5 px-2">
           {NAV_ITEMS.map((item) => (

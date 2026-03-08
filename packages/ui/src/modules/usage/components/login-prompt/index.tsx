@@ -1,8 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ExternalLink, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { LoginPromptProps } from "./types";
 
 export function LoginPrompt({ onLogin, isLoading }: LoginPromptProps) {
@@ -16,8 +16,7 @@ export function LoginPrompt({ onLogin, isLoading }: LoginPromptProps) {
           <div className="space-y-1.5 text-center">
             <p className="font-semibold">Connect to Claude</p>
             <p className="text-sm text-muted-foreground">
-              Sign in to your Claude account to view your subscription usage and
-              limits.
+              Sign in to your Claude account to view your subscription usage and limits.
             </p>
           </div>
           <Button className="w-full" onClick={onLogin} disabled={isLoading}>

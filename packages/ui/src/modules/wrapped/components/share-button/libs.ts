@@ -31,10 +31,7 @@ export async function saveToDesktop(canvas: HTMLCanvasElement) {
 
 export async function copyToClipboard(canvas: HTMLCanvasElement) {
   const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
-      "image/png",
-    );
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/png");
   });
 
   const { Image } = await import("@tauri-apps/api/image");

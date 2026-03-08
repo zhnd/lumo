@@ -1,10 +1,9 @@
 "use client";
 
+import { Circle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-
-import { Circle } from "lucide-react";
-import { useDaemonStatus, type DaemonStatus } from "./use-daemon-status";
+import { type DaemonStatus, useDaemonStatus } from "./use-daemon-status";
 
 interface PageHeaderProps {
   title: string;
@@ -26,17 +25,13 @@ export function PageHeader({ title, children }: PageHeaderProps) {
         <div className="flex items-center gap-2">
           <h1 className="text-sm font-semibold">{title}</h1>
           <Badge variant="outline" className="gap-1 font-normal">
-            <Circle
-              className={`size-2 fill-current ${STATUS_CONFIG[daemonStatus].color}`}
-            />
+            <Circle className={`size-2 fill-current ${STATUS_CONFIG[daemonStatus].color}`} />
             {STATUS_CONFIG[daemonStatus].label}
           </Badge>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        {children}
-      </div>
+      <div className="flex items-center gap-2">{children}</div>
     </header>
   );
 }

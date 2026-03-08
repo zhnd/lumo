@@ -1,15 +1,24 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Check,
+  ChevronDown,
+  Download,
+  FolderOpen,
+  Globe,
+  Loader2,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader2, Check, Download, Users, Trash2, Globe, FolderOpen, ChevronDown } from "lucide-react";
 import { CATEGORY_LABELS, scopeLabel } from "../../types";
 import type { PluginCardProps } from "./types";
 
@@ -69,10 +78,7 @@ export function PluginCard({
               </div>
             )}
           </div>
-          <div
-            className="flex shrink-0 items-center gap-1.5"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="flex shrink-0 items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             {isInstalled ? (
               <>
                 <Badge variant="default" className="gap-1 text-xs">
@@ -121,10 +127,7 @@ export function PluginCard({
                         <DropdownMenuItem
                           key={`${s.scope}-${s.projectPath ?? ""}`}
                           onClick={() =>
-                            onUninstall(
-                              plugin,
-                              s.scope === "project" ? s.projectPath! : null,
-                            )
+                            onUninstall(plugin, s.scope === "project" ? s.projectPath! : null)
                           }
                         >
                           {s.scope === "user" ? (
@@ -142,12 +145,7 @@ export function PluginCard({
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="gap-1.5"
-                    disabled={isBusy}
-                  >
+                  <Button variant="default" size="sm" className="gap-1.5" disabled={isBusy}>
                     {isThisInstalling ? (
                       <Loader2 className="size-3.5 animate-spin" />
                     ) : (
@@ -190,9 +188,7 @@ export function PluginCard({
             </span>
           )}
           {plugin.version && <span>v{plugin.version}</span>}
-          <span className="text-muted-foreground/60">
-            {plugin.marketplaceName}
-          </span>
+          <span className="text-muted-foreground/60">{plugin.marketplaceName}</span>
         </div>
       </CardContent>
     </Card>

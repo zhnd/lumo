@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, FolderOpen } from "lucide-react";
+import { FolderOpen, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -42,8 +42,7 @@ export function ScopeSelector({
             <>
               <FolderOpen className="size-3.5" />
               <span className="max-w-40 truncate">
-                {projects.find((p) => p.projectPath === value)?.projectName ??
-                  value}
+                {projects.find((p) => p.projectPath === value)?.projectName ?? value}
               </span>
             </>
           )}
@@ -67,19 +66,11 @@ export function ScopeSelector({
               {projects.map((project) => {
                 const count = counts?.[project.projectPath];
                 return (
-                  <SelectItem
-                    key={project.projectPath}
-                    value={project.projectPath}
-                  >
+                  <SelectItem key={project.projectPath} value={project.projectPath}>
                     <FolderOpen className="size-3.5" />
-                    <span className="max-w-48 truncate">
-                      {project.projectName}
-                    </span>
+                    <span className="max-w-48 truncate">{project.projectName}</span>
                     {count != null && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-auto h-4 px-1.5 text-[10px]"
-                      >
+                      <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
                         {count}
                       </Badge>
                     )}

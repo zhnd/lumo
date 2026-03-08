@@ -5,8 +5,8 @@ import { TimeRangeTabs } from "@/modules/overview/components/time-range-tabs";
 import {
   CacheHitTrend,
   CostEfficiencyTrend,
-  PeakHoursChart,
   ErrorRateCard,
+  PeakHoursChart,
   SessionLengthChart,
   TokenModelChart,
 } from "./components";

@@ -43,7 +43,7 @@ export function StatCard({ title, value, unit, description, icon, color }: StatC
         <div
           className={cn(
             "flex size-8 items-center justify-center rounded-lg",
-            styles ? styles.iconBg : "bg-muted"
+            styles ? styles.iconBg : "bg-muted",
           )}
         >
           <div className={cn("size-4", styles ? styles.iconText : "text-muted-foreground")}>
@@ -56,9 +56,7 @@ export function StatCard({ title, value, unit, description, icon, color }: StatC
           {value}
           {unit && <span className="ml-0.5 text-xl font-medium">{unit}</span>}
         </div>
-        {description && (
-          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
       </CardContent>
     </Card>
   );

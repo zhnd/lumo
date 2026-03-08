@@ -1,11 +1,11 @@
 // Re-export generated types for convenience
 export {
-  TimeRange,
-  type SummaryStats,
-  type UsageTrend,
   type ModelStats,
-  type TokenStats,
   type Session,
+  type SummaryStats,
+  TimeRange,
+  type TokenStats,
+  type UsageTrend,
 } from "@/generated/typeshare-types";
 
 // Frontend-only types (not generated from backend)

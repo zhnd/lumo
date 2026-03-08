@@ -10,11 +10,7 @@ interface ScrollToBottomButtonProps {
   className?: string;
 }
 
-export function ScrollToBottomButton({
-  visible,
-  onClick,
-  className,
-}: ScrollToBottomButtonProps) {
+export function ScrollToBottomButton({ visible, onClick, className }: ScrollToBottomButtonProps) {
   return (
     <Button
       variant="outline"

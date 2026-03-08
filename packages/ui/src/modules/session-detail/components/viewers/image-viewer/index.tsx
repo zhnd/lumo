@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { ImageData } from "../../shared/content-parser";
 
@@ -16,11 +16,7 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
   return (
     <div className={cn("grid gap-2 sm:grid-cols-2", className)}>
       {images.map((image, index) => (
-        <ImageWithFallback
-          key={`${image.src}-${index}`}
-          src={image.src}
-          alt={image.alt}
-        />
+        <ImageWithFallback key={`${image.src}-${index}`} src={image.src} alt={image.alt} />
       ))}
     </div>
   );

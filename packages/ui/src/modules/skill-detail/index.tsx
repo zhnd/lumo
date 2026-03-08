@@ -1,27 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DetailHeader } from "@/components/detail-header";
-import { CardLoading } from "@/components/card-loading";
+import { Bot, GitFork, Link2, Loader2, Save, Terminal, Trash2, Undo2, Wrench } from "lucide-react";
 import { CardError } from "@/components/card-error";
-import { MarkdownViewer } from "@/components/markdown-viewer";
+import { CardLoading } from "@/components/card-loading";
 import { CodeEditor } from "@/components/code-editor";
-import { DeleteSkillDialog } from "@/modules/skills/components/delete-dialog";
-import {
-  Save,
-  Undo2,
-  Trash2,
-  Loader2,
-  Link2,
-  Terminal,
-  Bot,
-  Wrench,
-  GitFork,
-} from "lucide-react";
+import { DetailHeader } from "@/components/detail-header";
+import { MarkdownViewer } from "@/components/markdown-viewer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { SkillScope } from "@/generated/typeshare-types";
-import { useService } from "./use-service";
+import { DeleteSkillDialog } from "@/modules/skills/components/delete-dialog";
 import type { SkillDetailProps } from "./types";
+import { useService } from "./use-service";
 
 export function SkillDetail({ skillPath }: SkillDetailProps) {
   const {
@@ -102,11 +92,7 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
                   <Undo2 className="mr-1.5 size-3.5" />
                   Discard
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onSave()}
-                  disabled={isSaving}
-                >
+                <Button size="sm" onClick={() => onSave()} disabled={isSaving}>
                   {isSaving ? (
                     <Loader2 className="mr-1.5 size-3.5 animate-spin" />
                   ) : (
@@ -128,41 +114,30 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
           </>
         }
         meta={
-          metaBadges.length > 0 ? (
-            <>
-              {metaBadges.map((badge) => (
-                <Badge
-                  key={badge.label}
-                  variant="secondary"
-                  className="gap-1 text-[10px]"
-                >
+          metaBadges.length > 0
+            ? metaBadges.map((badge) => (
+                <Badge key={badge.label} variant="secondary" className="gap-1 text-[10px]">
                   {badge.icon === "model" && <Bot className="size-3" />}
                   {badge.icon === "tool" && <Wrench className="size-3" />}
                   {badge.icon === "context" && <GitFork className="size-3" />}
                   {badge.label}
                 </Badge>
-              ))}
-            </>
-          ) : undefined
+              ))
+            : undefined
         }
       />
 
       {detail.isReadonly ? (
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-3xl">
-            <MarkdownViewer
-              content={detail.markdownBody || "*No content*"}
-              className="prose-sm"
-            />
+            <MarkdownViewer content={detail.markdownBody || "*No content*"} className="prose-sm" />
           </div>
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-2">
           <div className="flex flex-col overflow-hidden border-r">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">
-                Source
-              </span>
+              <span className="text-xs font-medium text-muted-foreground">Source</span>
             </div>
             <div
               ref={sourceRef}
@@ -174,9 +149,7 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
           </div>
           <div className="flex flex-col overflow-hidden">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">
-                Preview
-              </span>
+              <span className="text-xs font-medium text-muted-foreground">Preview</span>
             </div>
             <div
               ref={previewRef}

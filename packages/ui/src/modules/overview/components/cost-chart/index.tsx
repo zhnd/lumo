@@ -1,21 +1,15 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
 import { CardChartEmpty } from "@/components/card-chart-empty";
-import { useService } from "./use-service";
-import type { CostChartProps } from "./types";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TimeRange } from "@/generated/typeshare-types";
 import { fmt } from "@/lib/format";
+import type { CostChartProps } from "./types";
+import { useService } from "./use-service";
 
 function shortenModel(model: string): string {
   const match = model.match(/claude-(\w+)-([\d-]+)/);
@@ -26,8 +20,7 @@ function shortenModel(model: string): string {
 }
 
 export function CostChart({ timeRange }: CostChartProps) {
-  const { dates, models, seriesMap, totalCost, isLoading, error, refetch } =
-    useService(timeRange);
+  const { dates, models, seriesMap, totalCost, isLoading, error, refetch } = useService(timeRange);
 
   if (isLoading) {
     return <CardLoading showTitle className="h-full" />;
@@ -85,9 +78,7 @@ export function CostChart({ timeRange }: CostChartProps) {
     },
     xAxis: {
       type: "category",
-      data: dates.map((d) =>
-        timeRange === TimeRange.Today ? d : d.slice(5),
-      ),
+      data: dates.map((d) => (timeRange === TimeRange.Today ? d : d.slice(5))),
     },
     yAxis: {
       type: "value",

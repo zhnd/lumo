@@ -7,10 +7,31 @@ const COMMAND_TAGS = new Set([
 ]);
 
 const HTML_LIKE_TAGS = new Set([
-  "p", "div", "span", "code", "pre", "a",
-  "ul", "ol", "li", "table", "thead", "tbody", "tr", "td", "th",
-  "strong", "em", "blockquote", "hr",
-  "h1", "h2", "h3", "h4", "h5", "h6",
+  "p",
+  "div",
+  "span",
+  "code",
+  "pre",
+  "a",
+  "ul",
+  "ol",
+  "li",
+  "table",
+  "thead",
+  "tbody",
+  "tr",
+  "td",
+  "th",
+  "strong",
+  "em",
+  "blockquote",
+  "hr",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
 ]);
 
 const META_TAG_LABELS: Record<string, string> = {
@@ -43,16 +64,14 @@ export function extractSlashCommand(text: string): SlashCommand | null {
 
 export function extractStandaloneStdout(text: string): string | null {
   const stripped = text.replace(/\n{3,}/g, "\n\n").trim();
-  const stdoutMatch = stripped.match(
-    /^<local-command-stdout>([\s\S]*?)<\/local-command-stdout>$/,
-  );
+  const stdoutMatch = stripped.match(/^<local-command-stdout>([\s\S]*?)<\/local-command-stdout>$/);
   return stdoutMatch?.[1].trim() || null;
 }
 
 export function sanitizeMessageText(text: string): string {
   return renderXmlLikeMetaTags(text)
     .replace(
-      /<\/?(?:command-name|command-message|command-args|local-command-stdout|local-command-stderr)>[^]*?<\/(?:command-name|command-message|command-args|local-command-stdout|local-command-stderr)>/g,
+      /<\/?(?:command-name|command-message|command-args|local-command-stdout|local-command-stderr)>[\s\S]*?<\/(?:command-name|command-message|command-args|local-command-stdout|local-command-stderr)>/g,
       "",
     )
     .replace(

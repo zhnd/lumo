@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import type { ShareButtonProps, ActionState } from "./types";
-import { capture, saveToDesktop, copyToClipboard } from "./libs";
+import { capture, copyToClipboard, saveToDesktop } from "./libs";
+import type { ActionState, ShareButtonProps } from "./types";
 
 export function useService({ targetRef }: ShareButtonProps) {
   const [saveState, setSaveState] = useState<ActionState>("idle");

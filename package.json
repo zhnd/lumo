@@ -6,10 +6,18 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "format": "biome format --write .",
+    "check": "biome check --write .",
     "generate-types": "turbo run generate-types",
     "tauri": "tauri",
     "tauri:dev": "pnpm tauri dev",
-    "tauri:build": "pnpm tauri build"
+    "tauri:build": "pnpm tauri build",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,jsx,json,css}": [
+      "biome check --write --no-errors-on-unmatched --staged"
+    ]
   },
   "packageManager": "pnpm@10.31.0",
   "engines": {
@@ -17,7 +25,10 @@
     "pnpm": "10.31.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
     "@tauri-apps/cli": "^2.10.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2",
     "turbo": "^2.8.14"
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Brain, ChevronDown, ChevronRight, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { TimelineThinkingItem } from "../../types";
 
@@ -25,9 +25,7 @@ export function ThinkingBlock({ item }: ThinkingBlockProps) {
           ) : (
             <Brain className="size-3.5 shrink-0" />
           )}
-          <span className="font-medium">
-            {item.redacted ? "Redacted thinking" : "Thinking"}
-          </span>
+          <span className="font-medium">{item.redacted ? "Redacted thinking" : "Thinking"}</span>
           {expanded ? (
             <ChevronDown className="ml-auto size-3.5 shrink-0" />
           ) : (
@@ -35,7 +33,11 @@ export function ThinkingBlock({ item }: ThinkingBlockProps) {
           )}
         </button>
         {expanded && (
-          <div className={cn("max-h-[400px] overflow-auto border-t border-dashed border-border px-3 py-2")}>
+          <div
+            className={cn(
+              "max-h-[400px] overflow-auto border-t border-dashed border-border px-3 py-2",
+            )}
+          >
             <pre className="whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
               {item.text}
             </pre>

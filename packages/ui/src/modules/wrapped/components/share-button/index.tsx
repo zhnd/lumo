@@ -1,7 +1,7 @@
 "use client";
 
+import { Check, Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Download, Check, Copy } from "lucide-react";
 import type { ShareButtonProps } from "./types";
 import { useService } from "./use-service";
 

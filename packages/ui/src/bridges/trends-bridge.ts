@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  UsageTrend,
   CostByModelTrend,
   CostEfficiencyTrend,
   TimeRange,
+  UsageTrend,
 } from "../generated/typeshare-types";
 
 /**

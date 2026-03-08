@@ -31,8 +31,8 @@ export function HeroStat({ data }: { data: WrappedData }) {
           {data.totalSessions} sessions
         </span>
         <span className="flex items-center gap-1.5">
-          <Clock className="size-3.5 text-chart-3" />
-          ~{(data.totalActiveHours / Math.max(data.totalSessions, 1) * 60).toFixed(0)} min/session
+          <Clock className="size-3.5 text-chart-3" />~
+          {((data.totalActiveHours / Math.max(data.totalSessions, 1)) * 60).toFixed(0)} min/session
         </span>
       </div>
     </div>

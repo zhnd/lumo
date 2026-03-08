@@ -2,33 +2,33 @@
 
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+  AlertTriangle,
+  ChevronDown,
+  Download,
+  ExternalLink,
+  FolderOpen,
+  Globe,
+  Loader2,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import {
-  Download,
-  Trash2,
-  Loader2,
-  ExternalLink,
-  Users,
-  AlertTriangle,
-  Globe,
-  FolderOpen,
-  ChevronDown,
-} from "lucide-react";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { CATEGORY_LABELS, scopeLabel } from "../../types";
 import type { PluginDetailProps } from "./types";
 
@@ -95,9 +95,7 @@ export function PluginDetail({
                 {CATEGORY_LABELS[plugin.category] ?? plugin.category}
               </Badge>
             )}
-            {plugin.version && (
-              <Badge variant="outline">v{plugin.version}</Badge>
-            )}
+            {plugin.version && <Badge variant="outline">v{plugin.version}</Badge>}
           </div>
 
           <Separator />
@@ -137,9 +135,7 @@ export function PluginDetail({
             <>
               <Separator />
               <div className="flex flex-col gap-2">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Installed in
-                </span>
+                <span className="text-xs font-medium text-muted-foreground">Installed in</span>
                 {plugin.installedScopes.map((s) => (
                   <div
                     key={`${s.scope}-${s.projectPath ?? ""}`}
@@ -159,10 +155,7 @@ export function PluginDetail({
                       className="size-7 text-muted-foreground hover:text-destructive"
                       disabled={isBusy}
                       onClick={() =>
-                        onUninstall(
-                          plugin,
-                          s.scope === "project" ? s.projectPath! : null,
-                        )
+                        onUninstall(plugin, s.scope === "project" ? s.projectPath! : null)
                       }
                     >
                       {isThisUninstalling ? (
@@ -197,10 +190,9 @@ export function PluginDetail({
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
             <p>
-              Make sure you trust a plugin before installing, updating, or using
-              it. Anthropic does not control what MCP servers, files, or other
-              software are included in plugins and cannot verify that they will
-              work as intended or that they won&apos;t change. See each
+              Make sure you trust a plugin before installing, updating, or using it. Anthropic does
+              not control what MCP servers, files, or other software are included in plugins and
+              cannot verify that they will work as intended or that they won&apos;t change. See each
               plugin&apos;s homepage for more information.
             </p>
           </div>
@@ -220,7 +212,10 @@ export function PluginDetail({
                   <ChevronDown className="size-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[var(--radix-dropdown-menu-trigger-width)]">
+              <DropdownMenuContent
+                align="end"
+                className="w-[var(--radix-dropdown-menu-trigger-width)]"
+              >
                 {availableScopes.map((s) => (
                   <DropdownMenuItem
                     key={s.path ?? "__global__"}

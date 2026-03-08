@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  HourlyActivity,
-  SessionBucket,
-  ErrorRateStats,
   ActivityDay,
   CacheHitTrend,
+  ErrorRateStats,
+  HourlyActivity,
+  SessionBucket,
   TimeRange,
 } from "../generated/typeshare-types";
 
@@ -12,15 +12,11 @@ import type {
  * Analytics Bridge - Frontend interface for analytics operations
  */
 export class AnalyticsBridge {
-  static async getHourlyActivity(
-    timeRange: TimeRange,
-  ): Promise<HourlyActivity[]> {
+  static async getHourlyActivity(timeRange: TimeRange): Promise<HourlyActivity[]> {
     return invoke<HourlyActivity[]>("get_hourly_activity", { timeRange });
   }
 
-  static async getSessionLengthDistribution(
-    timeRange: TimeRange,
-  ): Promise<SessionBucket[]> {
+  static async getSessionLengthDistribution(timeRange: TimeRange): Promise<SessionBucket[]> {
     return invoke<SessionBucket[]>("get_session_length_distribution", {
       timeRange,
     });
@@ -30,9 +26,7 @@ export class AnalyticsBridge {
     return invoke<ErrorRateStats>("get_error_rate", { timeRange });
   }
 
-  static async getCacheHitTrend(
-    timeRange: TimeRange,
-  ): Promise<CacheHitTrend[]> {
+  static async getCacheHitTrend(timeRange: TimeRange): Promise<CacheHitTrend[]> {
     return invoke<CacheHitTrend[]>("get_cache_hit_trend", { timeRange });
   }
 

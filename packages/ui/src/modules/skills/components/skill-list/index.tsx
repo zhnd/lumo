@@ -1,18 +1,13 @@
 "use client";
 
+import { Search } from "lucide-react";
 import { CardEmpty } from "@/components/card-empty";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { SkillCard } from "../skill-card";
 import type { SkillListProps } from "./types";
 import { useService } from "./use-service";
 
-export function SkillList({
-  skills,
-  onSelect,
-  onUninstall,
-  isUninstalling,
-}: SkillListProps) {
+export function SkillList({ skills, onSelect, onUninstall, isUninstalling }: SkillListProps) {
   const { search, setSearch, filteredSkills } = useService(skills);
 
   return (

@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { DiffViewer } from "../../viewers/diff-viewer";
-import { CodeViewer } from "../../viewers/code-viewer";
-import { ImageViewer } from "../../viewers/image-viewer";
 import { isImagePath, parseRichContent, tryBuildSvgPreview } from "../../shared/content-parser";
+import { CodeViewer } from "../../viewers/code-viewer";
+import { DiffViewer } from "../../viewers/diff-viewer";
+import { ImageViewer } from "../../viewers/image-viewer";
 
 interface ToolWriteProps {
   input?: string;
@@ -36,12 +36,7 @@ export function ToolWrite({ input, output, toolName, filePath, fileContent }: To
 
   // Image file: always show image, never diff/code
   if (isImagePath(resolvedPath)) {
-    const svgSrc = tryBuildSvgPreview(
-      resolvedPath ?? "",
-      fileContent,
-      writeContent,
-      output,
-    );
+    const svgSrc = tryBuildSvgPreview(resolvedPath ?? "", fileContent, writeContent, output);
 
     if (svgSrc) {
       return <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />;

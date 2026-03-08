@@ -1,31 +1,19 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { useService } from "./use-service";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ErrorRateCardProps } from "./types";
+import { useService } from "./use-service";
 
 export function ErrorRateCard({ timeRange }: ErrorRateCardProps) {
   const { data, isLoading, error, refetch } = useService(timeRange);
 
   if (isLoading) return <CardLoading showTitle />;
   if (error) {
-    return (
-      <CardError
-        title="Error Rate"
-        message="Failed to load data"
-        onRetry={() => refetch()}
-      />
-    );
+    return <CardError title="Error Rate" message="Failed to load data" onRetry={() => refetch()} />;
   }
 
   const option: EChartsOption = {

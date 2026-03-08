@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { SkillsBridge } from "@/bridges/skills-bridge";
 
 export function useService(onClose: () => void) {
@@ -14,9 +14,7 @@ export function useService(onClose: () => void) {
   const [pluginName, setPluginName] = useState("");
 
   // Track which codex skill is being imported (by path)
-  const [importingCodexPath, setImportingCodexPath] = useState<string | null>(
-    null,
-  );
+  const [importingCodexPath, setImportingCodexPath] = useState<string | null>(null);
 
   const codexSkillsQuery = useQuery({
     queryKey: ["codex-skills"],
@@ -29,8 +27,7 @@ export function useService(onClose: () => void) {
   };
 
   const githubInstallMutation = useMutation({
-    mutationFn: (source: string) =>
-      SkillsBridge.installSkillFromSource(source, false),
+    mutationFn: (source: string) => SkillsBridge.installSkillFromSource(source, false),
     onSuccess: (result) => {
       if (result.success) {
         setGithubSource("");
@@ -42,8 +39,7 @@ export function useService(onClose: () => void) {
   const [failedCodexPath, setFailedCodexPath] = useState<string | null>(null);
 
   const codexImportMutation = useMutation({
-    mutationFn: (path: string) =>
-      SkillsBridge.installSkillFromSource(path, true),
+    mutationFn: (path: string) => SkillsBridge.installSkillFromSource(path, true),
     onMutate: (path) => {
       setImportingCodexPath(path);
       setFailedCodexPath(null);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useMemo, useState } from "react";
 import mermaid from "mermaid";
+import { useEffect, useId, useMemo, useState } from "react";
 
 let mermaidInitialized = false;
 
@@ -66,6 +66,7 @@ export function MermaidDiagram({ chart }: { chart: string }) {
   return (
     <div
       className="my-3 overflow-x-auto rounded-lg border border-border bg-background p-3"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: mermaid renders SVG as HTML string
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

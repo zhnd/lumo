@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { TerminalViewer } from "../../viewers/terminal-viewer";
 import { parseRichContent } from "../../shared/content-parser";
+import { TerminalViewer } from "../../viewers/terminal-viewer";
 
 interface ToolBashProps {
   input?: string;
@@ -23,11 +23,5 @@ export function ToolBash({ input, output, isError }: ToolBashProps) {
   const parsedOutput = parseRichContent(output);
   const displayOutput = parsedOutput.markdown.trim() || undefined;
 
-  return (
-    <TerminalViewer
-      command={command}
-      output={displayOutput}
-      isError={isError}
-    />
-  );
+  return <TerminalViewer command={command} output={displayOutput} isError={isError} />;
 }

@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClaudeSessionBridge } from "@/bridges/claude-session-bridge";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { watcherBackedQueryOptions } from "@/lib/query-options";
 import { useTauriEvent } from "@/hooks/use-tauri-event";
+import { watcherBackedQueryOptions } from "@/lib/query-options";
 import { buildFlatTimeline, buildSessionHighlights } from "./libs";
 import type { UseServiceReturn } from "./types";
 
@@ -121,7 +120,7 @@ export function useService(sessionPath: string): UseServiceReturn {
     hasPreparedInitialRenderRef.current = false;
     previousItemCountRef.current = 0;
     setIsInitialRenderReady(false);
-  }, [sessionPath]);
+  }, []);
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -145,7 +144,7 @@ export function useService(sessionPath: string): UseServiceReturn {
     return () => {
       element.removeEventListener("scroll", handleScroll);
     };
-  }, [timelineItems.length, detailQuery.isLoading]);
+  }, []);
 
   useEffect(() => {
     if (detailQuery.isLoading && !hasPreparedInitialRenderRef.current) {
@@ -227,7 +226,6 @@ export function useService(sessionPath: string): UseServiceReturn {
     detailQuery.data,
     timelineItems.length,
     isNearBottom,
-    scrollRef,
     virtualizer,
   ]);
 

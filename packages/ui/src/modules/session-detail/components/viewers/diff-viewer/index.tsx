@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { DiffView, DiffModeEnum, type DiffFile } from "@git-diff-view/react";
 import { generateDiffFile } from "@git-diff-view/file";
+import { type DiffFile, DiffModeEnum, DiffView } from "@git-diff-view/react";
 import { getDiffViewHighlighter } from "@git-diff-view/shiki";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import "@git-diff-view/react/styles/diff-view.css";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

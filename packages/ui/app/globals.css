@@ -139,7 +139,7 @@
 
 /* Sidebar wrapper — fit within layout instead of min-h-svh */
 [data-slot="sidebar-wrapper"] {
-  min-height: auto !important;
+  min-height: auto;
   height: 100%;
   overflow: hidden;
 }
