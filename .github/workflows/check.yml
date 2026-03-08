@@ -32,6 +32,11 @@ jobs:
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: cargo-${{ runner.os }}
+
+      - name: Create daemon placeholder
+        run: mkdir -p target/release && touch target/release/lumo-daemon
 
       - name: Cargo check
         run: cargo check --workspace

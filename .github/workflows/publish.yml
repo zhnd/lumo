@@ -40,6 +40,7 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
+          shared-key: cargo-${{ runner.os }}
           cache-targets: false
 
       - name: Install system dependencies (Ubuntu only)
