@@ -35,8 +35,11 @@ jobs:
         with:
           shared-key: cargo-${{ runner.os }}
 
-      - name: Create daemon placeholder
-        run: mkdir -p target/release && touch target/release/lumo-daemon
+      - name: Build daemon (debug)
+        run: |
+          cargo build -p lumo-daemon
+          mkdir -p target/release
+          cp target/debug/lumo-daemon target/release/lumo-daemon
 
       - name: Cargo check
         run: cargo check --workspace
