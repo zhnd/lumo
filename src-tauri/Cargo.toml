@@ -15,8 +15,8 @@ name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.5.3", features = [] }
-toml = "0.8"
+tauri-build = { version = "2.5.6", features = [] }
+toml = "1.0"
 
 [dependencies]
 # Workspace dependencies
@@ -31,9 +31,9 @@ anyhow.workspace = true
 chrono.workspace = true
 
 # Tauri-specific dependencies (not in workspace)
-tauri = { version = "2.9.5", features = ["image-png"] }
+tauri = { version = "2.10.3", features = ["image-png"] }
 tauri-plugin-log = "2"
-dirs = "5"
+dirs = "6"
 
 # Shared library
 shared = { path = "../crates/shared" }
@@ -44,11 +44,11 @@ tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-window-state = "2"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
-notify = { version = "7", default-features = false, features = ["macos_fsevent"] }
+reqwest = { version = "0.13", features = ["json", "rustls"], default-features = false }
+notify = { version = "8", default-features = false, features = ["macos_fsevent"] }
 urlencoding = "2"
 serde_yaml = "0.9"
-which = "7"
+which = "8"
 tauri-plugin-opener = "2"
 
 [dev-dependencies]

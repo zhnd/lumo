@@ -4,7 +4,7 @@ resolver = "2"
 
 [workspace.dependencies]
 # Async runtime
-tokio = { version = "1.49.0", features = ["full"] }
+tokio = { version = "1.50.0", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -19,7 +19,7 @@ sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio", "migrate"] }
 
 # Type sharing
 typeshare = "1.0"
-uuid = { version = "1.19", features = ["serde", "v4"] }
+uuid = { version = "1.20", features = ["serde", "v4"] }
 
 # Time
 chrono = { version = "0.4", features = ["serde"] }
@@ -30,8 +30,8 @@ tower = "0.5"
 tower-http = { version = "0.6", features = ["trace", "cors"] }
 
 # OTLP protocol
-opentelemetry-proto = { version = "0.27", features = ["gen-tonic-messages", "with-serde", "logs", "metrics"] }
-prost = "0.13"
+opentelemetry-proto = { version = "0.31", features = ["gen-tonic-messages", "with-serde", "logs", "metrics"] }
+prost = "0.14"
 
 # Logging
 tracing = "0.1"
