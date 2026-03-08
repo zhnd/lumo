@@ -3,6 +3,7 @@ import type {
   SkillSummary,
   SkillDetail,
   SkillCommandResult,
+  CodexSkillSummary,
 } from "../generated/typeshare-types";
 
 /**
@@ -38,6 +39,20 @@ export class SkillsBridge {
     projectPath: string | null = null,
   ): Promise<SkillCommandResult> {
     return invoke<SkillCommandResult>("install_skill", { name, projectPath });
+  }
+
+  static async installSkillFromSource(
+    source: string,
+    isLocal: boolean,
+  ): Promise<SkillCommandResult> {
+    return invoke<SkillCommandResult>("install_skill_from_source", {
+      source,
+      isLocal,
+    });
+  }
+
+  static async listCodexSkills(): Promise<CodexSkillSummary[]> {
+    return invoke<CodexSkillSummary[]>("list_codex_skills");
   }
 
   static async uninstallSkill(path: string): Promise<SkillCommandResult> {

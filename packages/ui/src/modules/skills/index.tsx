@@ -9,7 +9,12 @@ import { CardEmpty } from "@/components/card-empty";
 import { ScopeSelector } from "@/components/scope-selector";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { SkillList, CreateDialog, DeleteSkillDialog } from "./components";
+import {
+  SkillList,
+  AddSkillDialog,
+  CreateDialog,
+  DeleteSkillDialog,
+} from "./components";
 import { useService } from "./use-service";
 
 export function Skills() {
@@ -29,6 +34,8 @@ export function Skills() {
     isUninstalling,
     skillCounts,
     globalCount,
+    isAddDialogOpen,
+    setIsAddDialogOpen,
     createDialogOpen,
     setCreateDialogOpen,
   } = useService();
@@ -45,6 +52,10 @@ export function Skills() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <PageHeader title="Skills">
+        <Button className="cursor-pointer" size="sm" onClick={() => setIsAddDialogOpen(true)}>
+          <Plus className="size-4" />
+          Add Skill
+        </Button>
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
           <Plus className="mr-1.5 size-3.5" />
           New Skill
@@ -89,6 +100,10 @@ export function Skills() {
         </div>
       </div>
 
+      <AddSkillDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
       <CreateDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}

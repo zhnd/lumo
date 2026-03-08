@@ -1,8 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { Link2, Trash2, Terminal } from "lucide-react";
 import { SkillScope } from "@/generated/typeshare-types";
 import type { SkillCardProps } from "./types";
@@ -13,6 +19,8 @@ export function SkillCard({
   onUninstall,
   isUninstalling,
 }: SkillCardProps) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   return (
     <Card
       className="group cursor-pointer gap-3 py-4 transition-colors hover:bg-accent/50"
@@ -57,18 +65,39 @@ export function SkillCard({
               </Badge>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-            onClick={(e) => {
-              e.stopPropagation();
-              onUninstall(skill.path);
-            }}
-            disabled={isUninstalling}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
+          <Popover open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`size-7 text-muted-foreground transition-opacity hover:text-destructive cursor-pointer ${confirmOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                disabled={isUninstalling}
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="destructive"
+                size="sm"
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUninstall(skill.path);
+                  setConfirmOpen(false);
+                }}
+                disabled={isUninstalling}
+              >
+                Confirm
+              </Button>
+            </PopoverContent>
+          </Popover>
         </div>
       </CardContent>
     </Card>
