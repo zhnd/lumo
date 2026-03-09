@@ -12,7 +12,10 @@ export function useService() {
   const [scope, setScope] = useState<SkillsScope>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<{ path: string; name: string } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    path: string;
+    name: string;
+  } | null>(null);
 
   const { projects } = useProjects();
 
@@ -57,7 +60,8 @@ export function useService() {
   }, []);
 
   const skillCounts = useMemo(
-    () => Object.fromEntries(projects.map((p) => [p.projectPath, p.skillCount])),
+    () =>
+      Object.fromEntries(projects.map((p) => [p.projectPath, p.skillCount])),
     [projects],
   );
   const globalCount = globalCountQuery.data ?? 0;

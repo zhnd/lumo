@@ -96,7 +96,7 @@ jobs:
         run: pnpm lint
 
       - name: Biome format check
-        run: pnpm exec biome format packages/ui
+        run: pnpm format:check
 
       - name: Type check
-        run: pnpm -F @lumo/ui check-types
+        run: pnpm check-types

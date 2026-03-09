@@ -8,7 +8,12 @@ import { CardLoading } from "@/components/card-loading";
 import { PageHeader } from "@/components/page-header";
 import { ScopeSelector } from "@/components/scope-selector";
 import { Button } from "@/components/ui/button";
-import { AddSkillDialog, CreateDialog, DeleteSkillDialog, SkillList } from "./components";
+import {
+  AddSkillDialog,
+  CreateDialog,
+  DeleteSkillDialog,
+  SkillList,
+} from "./components";
 import { useService } from "./use-service";
 
 export function Skills() {
@@ -46,7 +51,11 @@ export function Skills() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <PageHeader title="Skills">
-        <Button className="cursor-pointer" size="sm" onClick={() => setIsAddDialogOpen(true)}>
+        <Button
+          className="cursor-pointer"
+          size="sm"
+          onClick={() => setIsAddDialogOpen(true)}
+        >
           <Plus className="size-4" />
           Add Skill
         </Button>
@@ -71,7 +80,12 @@ export function Skills() {
       <div className="min-h-0 flex-1 overflow-y-auto bg-muted/40">
         <div className="mx-auto max-w-5xl p-6">
           {isLoading && <CardLoading showTitle />}
-          {isError && <CardError message="Failed to load skills" onRetry={() => refetch()} />}
+          {isError && (
+            <CardError
+              message="Failed to load skills"
+              onRetry={() => refetch()}
+            />
+          )}
           {!isLoading && !isError && skills.length === 0 && (
             <CardEmpty
               message="No skills found. Create a new skill or install plugins from the Marketplace."
@@ -89,7 +103,10 @@ export function Skills() {
         </div>
       </div>
 
-      <AddSkillDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddSkillDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
       <CreateDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}

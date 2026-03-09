@@ -1,6 +1,16 @@
 "use client";
 
-import { Bot, GitFork, Link2, Loader2, Save, Terminal, Trash2, Undo2, Wrench } from "lucide-react";
+import {
+  Bot,
+  GitFork,
+  Link2,
+  Loader2,
+  Save,
+  Terminal,
+  Trash2,
+  Undo2,
+  Wrench,
+} from "lucide-react";
 import { CardError } from "@/components/card-error";
 import { CardLoading } from "@/components/card-loading";
 import { CodeEditor } from "@/components/code-editor";
@@ -116,7 +126,11 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
         meta={
           metaBadges.length > 0
             ? metaBadges.map((badge) => (
-                <Badge key={badge.label} variant="secondary" className="gap-1 text-[10px]">
+                <Badge
+                  key={badge.label}
+                  variant="secondary"
+                  className="gap-1 text-[10px]"
+                >
                   {badge.icon === "model" && <Bot className="size-3" />}
                   {badge.icon === "tool" && <Wrench className="size-3" />}
                   {badge.icon === "context" && <GitFork className="size-3" />}
@@ -130,14 +144,19 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
       {detail.isReadonly ? (
         <div className="min-h-0 flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-3xl">
-            <MarkdownViewer content={detail.markdownBody || "*No content*"} className="prose-sm" />
+            <MarkdownViewer
+              content={detail.markdownBody || "*No content*"}
+              className="prose-sm"
+            />
           </div>
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-2">
           <div className="flex flex-col overflow-hidden border-r">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">Source</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Source
+              </span>
             </div>
             <div
               ref={sourceRef}
@@ -149,7 +168,9 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
           </div>
           <div className="flex flex-col overflow-hidden">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">Preview</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Preview
+              </span>
             </div>
             <div
               ref={previewRef}

@@ -19,9 +19,16 @@ export function ToolBash({ input, output, isError }: ToolBashProps) {
     }
   }, [input]);
 
-  const command = typeof parsed.command === "string" ? parsed.command : undefined;
+  const command =
+    typeof parsed.command === "string" ? parsed.command : undefined;
   const parsedOutput = parseRichContent(output);
   const displayOutput = parsedOutput.markdown.trim() || undefined;
 
-  return <TerminalViewer command={command} output={displayOutput} isError={isError} />;
+  return (
+    <TerminalViewer
+      command={command}
+      output={displayOutput}
+      isError={isError}
+    />
+  );
 }

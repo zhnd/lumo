@@ -33,30 +33,51 @@ const colorStyles = {
   },
 } as const;
 
-export function StatCard({ title, value, unit, description, icon, color }: StatCardProps) {
+export function StatCard({
+  title,
+  value,
+  unit,
+  description,
+  icon,
+  color,
+}: StatCardProps) {
   const styles = color ? colorStyles[color] : null;
 
   return (
     <Card className="gap-3 py-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
         <div
           className={cn(
             "flex size-8 items-center justify-center rounded-lg",
             styles ? styles.iconBg : "bg-muted",
           )}
         >
-          <div className={cn("size-4", styles ? styles.iconText : "text-muted-foreground")}>
+          <div
+            className={cn(
+              "size-4",
+              styles ? styles.iconText : "text-muted-foreground",
+            )}
+          >
             {icon}
           </div>
         </div>
       </CardHeader>
       <CardContent className="px-4">
-        <div className={cn("text-3xl font-bold tabular-nums tracking-tight", styles?.valueText)}>
+        <div
+          className={cn(
+            "text-3xl font-bold tabular-nums tracking-tight",
+            styles?.valueText,
+          )}
+        >
           {value}
           {unit && <span className="ml-0.5 text-xl font-medium">{unit}</span>}
         </div>
-        {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+        {description && (
+          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+        )}
       </CardContent>
     </Card>
   );

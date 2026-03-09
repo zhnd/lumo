@@ -10,7 +10,9 @@ import type {
  * Skills Bridge - Frontend interface for Claude Skills management
  */
 export class SkillsBridge {
-  static async listSkills(projectPath: string | null = null): Promise<SkillSummary[]> {
+  static async listSkills(
+    projectPath: string | null = null,
+  ): Promise<SkillSummary[]> {
     return invoke<SkillSummary[]>("list_skills", { projectPath });
   }
 
@@ -18,7 +20,10 @@ export class SkillsBridge {
     return invoke<SkillDetail>("get_skill_detail", { path });
   }
 
-  static async updateSkill(path: string, content: string): Promise<SkillCommandResult> {
+  static async updateSkill(
+    path: string,
+    content: string,
+  ): Promise<SkillCommandResult> {
     return invoke<SkillCommandResult>("update_skill", { path, content });
   }
 

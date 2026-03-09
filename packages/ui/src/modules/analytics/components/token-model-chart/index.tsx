@@ -45,7 +45,10 @@ export function TokenModelChart({ timeRange }: TokenModelChartProps) {
     },
     legend: {
       bottom: 0,
-      textStyle: { color: resolveChartColor("--muted-foreground"), fontSize: 11 },
+      textStyle: {
+        color: resolveChartColor("--muted-foreground"),
+        fontSize: 11,
+      },
       itemWidth: 12,
       itemHeight: 12,
     },

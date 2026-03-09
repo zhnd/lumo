@@ -3,7 +3,11 @@
 import { CardError } from "@/components/card-error";
 import { CardLoading } from "@/components/card-loading";
 import type { EChartsOption } from "@/components/echarts";
-import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/echarts";
+import {
+  EChart,
+  resolveChartColor,
+  resolveChartColorAlpha,
+} from "@/components/echarts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CostEfficiencyTrendProps } from "./types";
 import { useService } from "./use-service";
@@ -14,7 +18,11 @@ export function CostEfficiencyTrend({ timeRange }: CostEfficiencyTrendProps) {
   if (isLoading) return <CardLoading showTitle />;
   if (error)
     return (
-      <CardError title="Cost Efficiency" message="Failed to load data" onRetry={() => refetch()} />
+      <CardError
+        title="Cost Efficiency"
+        message="Failed to load data"
+        onRetry={() => refetch()}
+      />
     );
 
   const option: EChartsOption = {

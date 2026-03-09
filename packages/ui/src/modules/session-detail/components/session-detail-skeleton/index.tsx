@@ -45,11 +45,19 @@ export function SessionDetailSkeleton() {
   );
 }
 
-function MessageSkeleton({ align, lines }: { align: "left" | "right"; lines: number }) {
+function MessageSkeleton({
+  align,
+  lines,
+}: {
+  align: "left" | "right";
+  lines: number;
+}) {
   const widths = ["w-full", "w-4/5", "w-3/5", "w-5/6", "w-2/3"];
 
   return (
-    <div className={`flex ${align === "right" ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`flex ${align === "right" ? "justify-end" : "justify-start"}`}
+    >
       <div className={`space-y-1.5 ${align === "right" ? "w-2/3" : "w-3/4"}`}>
         {/* Role + avatar */}
         <div className="flex items-center gap-2">

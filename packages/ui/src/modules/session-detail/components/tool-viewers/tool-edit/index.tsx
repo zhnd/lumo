@@ -1,7 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { isImagePath, parseRichContent, tryBuildSvgPreview } from "../../shared/content-parser";
+import {
+  isImagePath,
+  parseRichContent,
+  tryBuildSvgPreview,
+} from "../../shared/content-parser";
 import { DiffViewer } from "../../viewers/diff-viewer";
 import { ImageViewer } from "../../viewers/image-viewer";
 
@@ -12,7 +16,12 @@ interface ToolEditProps {
   fileContent?: string;
 }
 
-export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps) {
+export function ToolEdit({
+  input,
+  output,
+  filePath,
+  fileContent,
+}: ToolEditProps) {
   const parsed = useMemo(() => {
     try {
       return JSON.parse(input ?? "{}") as Record<string, unknown>;
@@ -23,18 +32,28 @@ export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps
 
   if (!parsed) return null;
 
-  const inputFilePath = typeof parsed.file_path === "string" ? parsed.file_path : undefined;
+  const inputFilePath =
+    typeof parsed.file_path === "string" ? parsed.file_path : undefined;
   const resolvedPath = filePath ?? inputFilePath;
-  const oldString = typeof parsed.old_string === "string" ? parsed.old_string : "";
-  const newString = typeof parsed.new_string === "string" ? parsed.new_string : "";
+  const oldString =
+    typeof parsed.old_string === "string" ? parsed.old_string : "";
+  const newString =
+    typeof parsed.new_string === "string" ? parsed.new_string : "";
 
   // Image file: try to render the image directly
   if (isImagePath(resolvedPath)) {
     // Try all available sources for SVG content (most complete first)
-    const svgSrc = tryBuildSvgPreview(resolvedPath ?? "", fileContent, output, newString);
+    const svgSrc = tryBuildSvgPreview(
+      resolvedPath ?? "",
+      fileContent,
+      output,
+      newString,
+    );
 
     if (svgSrc) {
-      return <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />;
+      return (
+        <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />
+      );
     }
 
     const parsedOutput = parseRichContent(output);
@@ -60,7 +79,11 @@ export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps
 
   return (
     <div className="space-y-2">
-      <DiffViewer oldValue={oldString} newValue={newString} filePath={resolvedPath} />
+      <DiffViewer
+        oldValue={oldString}
+        newValue={newString}
+        filePath={resolvedPath}
+      />
       {output && (
         <div className="px-3 py-1 text-[11px] text-muted-foreground">
           {output.length > 200 ? `${output.slice(0, 200)}...` : output}

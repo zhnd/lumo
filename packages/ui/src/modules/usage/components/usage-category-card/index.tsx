@@ -27,10 +27,14 @@ export function UsageCategoryCard({ category }: UsageCategoryCardProps) {
         <div className="flex items-baseline justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm font-medium">
-              {isExtra && category.amountSpent ? `${category.amountSpent} spent` : category.label}
+              {isExtra && category.amountSpent
+                ? `${category.amountSpent} spent`
+                : category.label}
             </p>
             {category.resetsIn && (
-              <p className="mt-0.5 text-xs text-muted-foreground">Resets {category.resetsIn}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Resets {category.resetsIn}
+              </p>
             )}
           </div>
           <span className={cn("shrink-0 text-sm tabular-nums", textColor)}>
@@ -40,7 +44,10 @@ export function UsageCategoryCard({ category }: UsageCategoryCardProps) {
 
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className={cn("h-full rounded-full transition-all duration-500", barColor)}
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              barColor,
+            )}
             style={{
               width: `${Math.max(Math.min(category.percentUsed, 100), 1)}%`,
             }}
@@ -52,7 +59,9 @@ export function UsageCategoryCard({ category }: UsageCategoryCardProps) {
       {isExtra && category.amountLimit && (
         <div>
           <p className="text-sm font-medium">{category.amountLimit}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Monthly spend limit</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Monthly spend limit
+          </p>
         </div>
       )}
 
@@ -60,7 +69,9 @@ export function UsageCategoryCard({ category }: UsageCategoryCardProps) {
       {isExtra && category.amountBalance && (
         <div>
           <p className="text-sm font-medium">{category.amountBalance}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Current balance</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Current balance
+          </p>
         </div>
       )}
     </div>

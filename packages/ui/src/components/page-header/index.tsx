@@ -25,7 +25,9 @@ export function PageHeader({ title, children }: PageHeaderProps) {
         <div className="flex items-center gap-2">
           <h1 className="text-sm font-semibold">{title}</h1>
           <Badge variant="outline" className="gap-1 font-normal">
-            <Circle className={`size-2 fill-current ${STATUS_CONFIG[daemonStatus].color}`} />
+            <Circle
+              className={`size-2 fill-current ${STATUS_CONFIG[daemonStatus].color}`}
+            />
             {STATUS_CONFIG[daemonStatus].label}
           </Badge>
         </div>

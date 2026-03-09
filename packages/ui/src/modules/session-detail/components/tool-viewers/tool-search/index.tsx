@@ -59,7 +59,9 @@ export function ToolSearch({ toolName, input, output }: ToolSearchProps) {
         </div>
       )}
       {!parsedOutput.markdown.trim() && !query && (
-        <div className="px-3 py-2 text-xs text-muted-foreground">No results</div>
+        <div className="px-3 py-2 text-xs text-muted-foreground">
+          No results
+        </div>
       )}
     </div>
   );

@@ -25,7 +25,9 @@ export function ThinkingBlock({ item }: ThinkingBlockProps) {
           ) : (
             <Brain className="size-3.5 shrink-0" />
           )}
-          <span className="font-medium">{item.redacted ? "Redacted thinking" : "Thinking"}</span>
+          <span className="font-medium">
+            {item.redacted ? "Redacted thinking" : "Thinking"}
+          </span>
           {expanded ? (
             <ChevronDown className="ml-auto size-3.5 shrink-0" />
           ) : (

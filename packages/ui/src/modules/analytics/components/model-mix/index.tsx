@@ -22,9 +22,17 @@ export function ModelMix({ timeRange }: ModelMixProps) {
 
   if (isLoading) return <CardLoading showTitle />;
   if (error)
-    return <CardError title="Model Mix" message="Failed to load data" onRetry={() => refetch()} />;
+    return (
+      <CardError
+        title="Model Mix"
+        message="Failed to load data"
+        onRetry={() => refetch()}
+      />
+    );
   if (data.length === 0) {
-    return <CardChartEmpty title="Model Mix" chartType="pie" className="h-full" />;
+    return (
+      <CardChartEmpty title="Model Mix" chartType="pie" className="h-full" />
+    );
   }
 
   const option: EChartsOption = {
@@ -71,7 +79,10 @@ export function ModelMix({ timeRange }: ModelMixProps) {
         <EChart option={option} style={{ height: 220 }} />
         <div className="mt-4 space-y-2">
           {data.map((d, i) => (
-            <div key={d.model} className="flex items-center justify-between text-sm">
+            <div
+              key={d.model}
+              className="flex items-center justify-between text-sm"
+            >
               <div className="flex items-center gap-2">
                 <div
                   className="size-3 rounded-full"

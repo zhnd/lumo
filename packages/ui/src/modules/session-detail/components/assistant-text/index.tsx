@@ -20,7 +20,9 @@ export function AssistantText({ item }: AssistantTextProps) {
   const isLong = item.text.length > COLLAPSE_THRESHOLD;
   const [expanded, setExpanded] = useState(!isLong);
   const displayModel = getModelDisplayName(item.model);
-  const displayText = !expanded ? item.text.slice(0, PREVIEW_LENGTH) : item.text;
+  const displayText = !expanded
+    ? item.text.slice(0, PREVIEW_LENGTH)
+    : item.text;
 
   return (
     <section className="px-4 py-2 md:px-6">
@@ -29,7 +31,10 @@ export function AssistantText({ item }: AssistantTextProps) {
           <Bot className="size-3.5" />
           <span className="font-medium text-foreground">Claude</span>
           {displayModel && (
-            <Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">
+            <Badge
+              variant="outline"
+              className="h-5 rounded-full px-2 text-[10px]"
+            >
               {displayModel}
             </Badge>
           )}

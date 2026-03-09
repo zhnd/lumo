@@ -14,12 +14,14 @@ import {
 import type { CreateDialogProps } from "./types";
 import { useService } from "./use-service";
 
-export function CreateDialog({ open, onOpenChange, projectPath, onCreated }: CreateDialogProps) {
-  const { skillName, setSkillName, isCreating, createResult, onCreate } = useService(
-    () => onOpenChange(false),
-    projectPath,
-    onCreated,
-  );
+export function CreateDialog({
+  open,
+  onOpenChange,
+  projectPath,
+  onCreated,
+}: CreateDialogProps) {
+  const { skillName, setSkillName, isCreating, createResult, onCreate } =
+    useService(() => onOpenChange(false), projectPath, onCreated);
 
   const scopeLabel = projectPath ? "project" : "global (~/.claude/skills/)";
 
@@ -44,12 +46,18 @@ export function CreateDialog({ open, onOpenChange, projectPath, onCreated }: Cre
             disabled={isCreating}
           />
           {createResult && !createResult.success && (
-            <p className="mt-2 text-xs text-destructive">{createResult.message}</p>
+            <p className="mt-2 text-xs text-destructive">
+              {createResult.message}
+            </p>
           )}
         </div>
 
         <SheetFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isCreating}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isCreating}
+          >
             Cancel
           </Button>
           <Button onClick={onCreate} disabled={isCreating || !skillName.trim()}>

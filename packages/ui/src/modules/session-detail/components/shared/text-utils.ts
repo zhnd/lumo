@@ -50,9 +50,13 @@ export function extractSlashCommand(text: string): SlashCommand | null {
   const nameMatch = text.match(/<command-name>([\s\S]*?)<\/command-name>/);
   if (!nameMatch) return null;
 
-  const messageMatch = text.match(/<command-message>([\s\S]*?)<\/command-message>/);
+  const messageMatch = text.match(
+    /<command-message>([\s\S]*?)<\/command-message>/,
+  );
   const argsMatch = text.match(/<command-args>([\s\S]*?)<\/command-args>/);
-  const stdoutMatch = text.match(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/);
+  const stdoutMatch = text.match(
+    /<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/,
+  );
 
   return {
     name: nameMatch[1].trim(),
@@ -64,7 +68,9 @@ export function extractSlashCommand(text: string): SlashCommand | null {
 
 export function extractStandaloneStdout(text: string): string | null {
   const stripped = text.replace(/\n{3,}/g, "\n\n").trim();
-  const stdoutMatch = stripped.match(/^<local-command-stdout>([\s\S]*?)<\/local-command-stdout>$/);
+  const stdoutMatch = stripped.match(
+    /^<local-command-stdout>([\s\S]*?)<\/local-command-stdout>$/,
+  );
   return stdoutMatch?.[1].trim() || null;
 }
 

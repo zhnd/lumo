@@ -44,7 +44,8 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
         <SheetHeader>
           <SheetTitle>Add Skill</SheetTitle>
           <SheetDescription>
-            Install a skill from GitHub, import from Codex, or use Claude Plugin CLI.
+            Install a skill from GitHub, import from Codex, or use Claude Plugin
+            CLI.
           </SheetDescription>
         </SheetHeader>
 
@@ -65,10 +66,17 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="github" className="mt-4 space-y-3 overflow-y-auto">
+            <TabsContent
+              value="github"
+              className="mt-4 space-y-3 overflow-y-auto"
+            >
               <p className="text-xs text-muted-foreground">
-                Enter a GitHub repository (e.g. owner/repo or owner/repo/skills/name) to install via{" "}
-                <code className="rounded bg-muted px-1 py-0.5 text-[11px]">npx skills</code>.
+                Enter a GitHub repository (e.g. owner/repo or
+                owner/repo/skills/name) to install via{" "}
+                <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+                  npx skills
+                </code>
+                .
               </p>
               <Input
                 placeholder="e.g. anthropics/skills"
@@ -82,7 +90,9 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 disabled={isGithubInstalling}
               />
               {githubInstallResult && !githubInstallResult.success && (
-                <p className="text-xs text-destructive">{githubInstallResult.message}</p>
+                <p className="text-xs text-destructive">
+                  {githubInstallResult.message}
+                </p>
               )}
               <Button
                 onClick={onGithubInstall}
@@ -90,15 +100,22 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 className="w-full"
                 size="sm"
               >
-                {isGithubInstalling && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
+                {isGithubInstalling && (
+                  <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                )}
                 Install from GitHub
               </Button>
             </TabsContent>
 
-            <TabsContent value="codex" className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto">
+            <TabsContent
+              value="codex"
+              className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto"
+            >
               <p className="text-xs text-muted-foreground">
                 Import skills from{" "}
-                <code className="rounded bg-muted px-1 py-0.5 text-[11px]">~/.agents/skills/</code>{" "}
+                <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+                  ~/.agents/skills/
+                </code>{" "}
                 into Claude Code.
               </p>
               {isCodexLoading && (
@@ -112,7 +129,9 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
               {!isCodexLoading && !isCodexError && codexSkills.length === 0 && (
                 <CardEmpty
                   message="No Codex skills found in ~/.agents/skills/"
-                  icon={<FolderInput className="size-8 text-muted-foreground" />}
+                  icon={
+                    <FolderInput className="size-8 text-muted-foreground" />
+                  }
                 />
               )}
               {!isCodexLoading &&
@@ -122,7 +141,9 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                     <Card key={skill.path} className="p-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{skill.name}</p>
+                          <p className="truncate text-sm font-medium">
+                            {skill.name}
+                          </p>
                           {skill.description && (
                             <p className="truncate text-xs text-muted-foreground">
                               {skill.description}
@@ -135,7 +156,9 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                           onClick={() => onCodexImport(skill.path)}
                           disabled={importingCodexPath !== null}
                         >
-                          {isImporting && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
+                          {isImporting && (
+                            <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                          )}
                           Import
                         </Button>
                       </div>
@@ -151,7 +174,10 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 })}
             </TabsContent>
 
-            <TabsContent value="plugin" className="mt-4 space-y-3 overflow-y-auto">
+            <TabsContent
+              value="plugin"
+              className="mt-4 space-y-3 overflow-y-auto"
+            >
               <p className="text-xs text-muted-foreground">
                 Install a plugin via{" "}
                 <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
@@ -171,7 +197,9 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 disabled={isPluginInstalling}
               />
               {pluginInstallResult && !pluginInstallResult.success && (
-                <p className="text-xs text-destructive">{pluginInstallResult.message}</p>
+                <p className="text-xs text-destructive">
+                  {pluginInstallResult.message}
+                </p>
               )}
               <Button
                 onClick={onPluginInstall}
@@ -179,7 +207,9 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 className="w-full"
                 size="sm"
               >
-                {isPluginInstalling && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
+                {isPluginInstalling && (
+                  <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                )}
                 Install Plugin
               </Button>
             </TabsContent>

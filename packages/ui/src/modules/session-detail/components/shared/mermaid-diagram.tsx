@@ -9,7 +9,10 @@ export function MermaidDiagram({ chart }: { chart: string }) {
   const [svg, setSvg] = useState<string>("");
   const [error, setError] = useState<string>("");
   const id = useId();
-  const renderId = useMemo(() => `mermaid-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`, [id]);
+  const renderId = useMemo(
+    () => `mermaid-${id.replace(/[^a-zA-Z0-9_-]/g, "")}`,
+    [id],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -34,7 +37,8 @@ export function MermaidDiagram({ chart }: { chart: string }) {
         }
       } catch (e) {
         if (!cancelled) {
-          const msg = e instanceof Error ? e.message : "Failed to render Mermaid diagram";
+          const msg =
+            e instanceof Error ? e.message : "Failed to render Mermaid diagram";
           setError(msg);
         }
       }

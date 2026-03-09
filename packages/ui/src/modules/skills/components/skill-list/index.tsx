@@ -7,7 +7,12 @@ import { SkillCard } from "../skill-card";
 import type { SkillListProps } from "./types";
 import { useService } from "./use-service";
 
-export function SkillList({ skills, onSelect, onUninstall, isUninstalling }: SkillListProps) {
+export function SkillList({
+  skills,
+  onSelect,
+  onUninstall,
+  isUninstalling,
+}: SkillListProps) {
   const { search, setSearch, filteredSkills } = useService(skills);
 
   return (

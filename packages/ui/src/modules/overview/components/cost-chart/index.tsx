@@ -5,7 +5,13 @@ import { CardError } from "@/components/card-error";
 import { CardLoading } from "@/components/card-loading";
 import type { EChartsOption } from "@/components/echarts";
 import { EChart, resolveChartColor } from "@/components/echarts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { TimeRange } from "@/generated/typeshare-types";
 import { fmt } from "@/lib/format";
 import type { CostChartProps } from "./types";
@@ -20,7 +26,8 @@ function shortenModel(model: string): string {
 }
 
 export function CostChart({ timeRange }: CostChartProps) {
-  const { dates, models, seriesMap, totalCost, isLoading, error, refetch } = useService(timeRange);
+  const { dates, models, seriesMap, totalCost, isLoading, error, refetch } =
+    useService(timeRange);
 
   if (isLoading) {
     return <CardLoading showTitle className="h-full" />;
@@ -38,7 +45,9 @@ export function CostChart({ timeRange }: CostChartProps) {
   }
 
   if (dates.length === 0) {
-    return <CardChartEmpty title="Cost Trends" height={250} className="h-full" />;
+    return (
+      <CardChartEmpty title="Cost Trends" height={250} className="h-full" />
+    );
   }
 
   const mutedColor = resolveChartColor("--muted-foreground");

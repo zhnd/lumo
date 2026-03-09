@@ -1,4 +1,7 @@
-import type { ClaudeProjectSummary, MarketplacePlugin } from "@/generated/typeshare-types";
+import type {
+  ClaudeProjectSummary,
+  MarketplacePlugin,
+} from "@/generated/typeshare-types";
 
 export interface PluginCardProps {
   plugin: MarketplacePlugin;

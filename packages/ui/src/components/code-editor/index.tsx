@@ -29,7 +29,9 @@ function highlight(code: string): string {
   const rest = code.slice(match[0].length);
 
   const yamlHtml = hljs.highlight(fmBody, { language: "yaml" }).value;
-  const mdHtml = rest ? hljs.highlight(rest, { language: "markdown" }).value : "";
+  const mdHtml = rest
+    ? hljs.highlight(rest, { language: "markdown" }).value
+    : "";
 
   return (
     `<span class="hljs-meta">${fmOpen}</span>` +

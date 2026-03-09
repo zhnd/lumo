@@ -16,7 +16,11 @@ export function ImageViewer({ images, className }: ImageViewerProps) {
   return (
     <div className={cn("grid gap-2 sm:grid-cols-2", className)}>
       {images.map((image, index) => (
-        <ImageWithFallback key={`${image.src}-${index}`} src={image.src} alt={image.alt} />
+        <ImageWithFallback
+          key={`${image.src}-${index}`}
+          src={image.src}
+          alt={image.alt}
+        />
       ))}
     </div>
   );

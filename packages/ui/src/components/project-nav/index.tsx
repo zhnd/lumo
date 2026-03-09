@@ -39,8 +39,12 @@ export function ProjectNav({
   showDetails = true,
   widthClass = "md:w-72",
 }: ProjectNavProps) {
-  const AllIcon = allIcon ?? <Layers className="size-3.5 text-muted-foreground" />;
-  const AllIconDesktop = allIcon ?? <Layers className="size-4 text-muted-foreground" />;
+  const AllIcon = allIcon ?? (
+    <Layers className="size-3.5 text-muted-foreground" />
+  );
+  const AllIconDesktop = allIcon ?? (
+    <Layers className="size-4 text-muted-foreground" />
+  );
 
   return (
     <div
@@ -56,7 +60,9 @@ export function ProjectNav({
             <button
               className={cn(
                 "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:bg-accent",
-                selected === null ? "border-primary/40 bg-accent" : "border-border bg-background",
+                selected === null
+                  ? "border-primary/40 bg-accent"
+                  : "border-border bg-background",
               )}
               onClick={() => onSelect(null)}
               type="button"
@@ -78,16 +84,23 @@ export function ProjectNav({
                   key={project.projectPath}
                   className={cn(
                     "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:bg-accent",
-                    isActive ? "border-primary/40 bg-accent" : "border-border bg-background",
+                    isActive
+                      ? "border-primary/40 bg-accent"
+                      : "border-border bg-background",
                   )}
                   onClick={() => onSelect(project.projectPath)}
                   type="button"
                   title={project.projectPath}
                 >
                   <FolderOpen className="size-3.5 text-muted-foreground" />
-                  <span className="max-w-28 truncate font-medium">{project.projectName}</span>
+                  <span className="max-w-28 truncate font-medium">
+                    {project.projectName}
+                  </span>
                   {count != null && (
-                    <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                    <Badge
+                      variant="secondary"
+                      className="h-4 px-1.5 text-[10px]"
+                    >
                       {count}
                     </Badge>
                   )}
@@ -120,7 +133,9 @@ export function ProjectNav({
         <ScrollArea className="h-[calc(100%-49px)]">
           <div className="space-y-1 p-2">
             {projects.length === 0 && (
-              <p className="px-2 py-3 text-xs text-muted-foreground">No projects found</p>
+              <p className="px-2 py-3 text-xs text-muted-foreground">
+                No projects found
+              </p>
             )}
             {projects.map((project) => {
               const isActive = selected === project.projectPath;
@@ -130,7 +145,9 @@ export function ProjectNav({
                   key={project.projectPath}
                   className={cn(
                     "w-full rounded-md border px-2 py-2 text-left transition-colors hover:bg-accent/60",
-                    isActive ? "border-primary/40 bg-accent" : "border-transparent",
+                    isActive
+                      ? "border-primary/40 bg-accent"
+                      : "border-transparent",
                   )}
                   onClick={() => onSelect(project.projectPath)}
                   type="button"
@@ -139,7 +156,9 @@ export function ProjectNav({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
                       <FolderOpen className="size-3.5 shrink-0 text-muted-foreground" />
-                      <span className="truncate text-sm font-medium">{project.projectName}</span>
+                      <span className="truncate text-sm font-medium">
+                        {project.projectName}
+                      </span>
                     </div>
                     {count != null && (
                       <Badge variant="secondary" className="shrink-0">

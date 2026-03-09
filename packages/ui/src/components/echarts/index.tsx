@@ -48,7 +48,9 @@ echarts.use([
  */
 export function resolveChartColor(cssVar: string): string {
   if (typeof document === "undefined") return "#888";
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue(cssVar)
+    .trim();
   if (!raw) return "#888";
   const el = document.createElement("div");
   el.style.color = `hsl(${raw})`;
@@ -178,7 +180,13 @@ export function EChart({ option, className, style }: EChartsProps) {
     };
   }, []);
 
-  return <div ref={containerRef} className={className} style={{ width: "100%", ...style }} />;
+  return (
+    <div
+      ref={containerRef}
+      className={className}
+      style={{ width: "100%", ...style }}
+    />
+  );
 }
 
 export type { EChartsOption };

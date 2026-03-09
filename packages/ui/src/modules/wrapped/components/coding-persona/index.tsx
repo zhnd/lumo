@@ -9,7 +9,8 @@ interface Persona {
 }
 
 function derivePersona(data: WrappedData): Persona {
-  const avgMinPerSession = (data.totalActiveHours / Math.max(data.totalSessions, 1)) * 60;
+  const avgMinPerSession =
+    (data.totalActiveHours / Math.max(data.totalSessions, 1)) * 60;
   const isNight = data.peakHour >= 22 || data.peakHour < 5;
   const isEarlyBird = data.peakHour >= 5 && data.peakHour < 9;
   const hasHighOutput = data.linesOfCodeAdded + data.linesOfCodeRemoved > 5000;

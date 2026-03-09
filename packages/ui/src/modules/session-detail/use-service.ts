@@ -51,7 +51,10 @@ export function useService(sessionPath: string): UseServiceReturn {
     };
   }, []);
 
-  useTauriEvent<SessionFileChangedPayload>("session-file-changed", invalidateDetail);
+  useTauriEvent<SessionFileChangedPayload>(
+    "session-file-changed",
+    invalidateDetail,
+  );
 
   const detailQuery = useQuery({
     ...watcherBackedQueryOptions,
@@ -105,12 +108,13 @@ export function useService(sessionPath: string): UseServiceReturn {
     });
   }, [virtualizer, timelineItems.length]);
 
-  const { showScrollToBottom, isNearBottom, scrollToBottom } = useScrollToBottom({
-    scrollRef,
-    itemCount: timelineItems.length,
-    onScrollToBottom: handleScrollToBottom,
-    autoScrollOnInitialLoad: false,
-  });
+  const { showScrollToBottom, isNearBottom, scrollToBottom } =
+    useScrollToBottom({
+      scrollRef,
+      itemCount: timelineItems.length,
+      onScrollToBottom: handleScrollToBottom,
+      autoScrollOnInitialLoad: false,
+    });
 
   const onBack = useCallback(() => {
     router.push("/sessions");
@@ -130,7 +134,8 @@ export function useService(sessionPath: string): UseServiceReturn {
     }
 
     const handleScroll = () => {
-      const remaining = element.scrollHeight - element.clientHeight - element.scrollTop;
+      const remaining =
+        element.scrollHeight - element.clientHeight - element.scrollTop;
       setIsTopCollapsed((prev) => {
         if (prev) {
           return !(remaining <= TOP_PANEL_SHOW_THRESHOLD);
@@ -200,7 +205,8 @@ export function useService(sessionPath: string): UseServiceReturn {
 
       requestAnimationFrame(() => {
         if (cancelled) return;
-        const remaining = element.scrollHeight - element.clientHeight - element.scrollTop;
+        const remaining =
+          element.scrollHeight - element.clientHeight - element.scrollTop;
         if (remaining > LIVE_FOLLOW_THRESHOLD_PX) {
           virtualizer.scrollToIndex(timelineItems.length - 1, {
             align: "end",

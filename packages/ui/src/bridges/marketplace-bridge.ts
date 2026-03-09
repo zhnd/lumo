@@ -37,11 +37,15 @@ export class MarketplaceBridge {
     });
   }
 
-  static async addMarketplace(source: string): Promise<MarketplaceCommandResult> {
+  static async addMarketplace(
+    source: string,
+  ): Promise<MarketplaceCommandResult> {
     return invoke<MarketplaceCommandResult>("add_marketplace", { source });
   }
 
-  static async removeMarketplace(name: string): Promise<MarketplaceCommandResult> {
+  static async removeMarketplace(
+    name: string,
+  ): Promise<MarketplaceCommandResult> {
     return invoke<MarketplaceCommandResult>("remove_marketplace", { name });
   }
 

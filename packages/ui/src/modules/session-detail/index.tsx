@@ -34,7 +34,10 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
   if (error && !isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <CardError message={error?.message || "Failed to load session"} onRetry={onBack} />
+        <CardError
+          message={error?.message || "Failed to load session"}
+          onRetry={onBack}
+        />
       </div>
     );
   }
@@ -47,7 +50,12 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
 
   return (
     <div className="relative h-full">
-      <div className={cn("flex h-full flex-col", !isInitialRenderReady && "invisible")}>
+      <div
+        className={cn(
+          "flex h-full flex-col",
+          !isInitialRenderReady && "invisible",
+        )}
+      >
         <div className="z-20">
           <SessionHeader
             session={session}
@@ -57,7 +65,9 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
             collapsed={isTopCollapsed}
             onBack={onBack}
           />
-          {!isTopCollapsed && highlights && <SessionHighlights highlights={highlights} />}
+          {!isTopCollapsed && highlights && (
+            <SessionHighlights highlights={highlights} />
+          )}
         </div>
 
         {timelineItems.length === 0 ? (
@@ -100,11 +110,16 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
                   <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
                   <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60" />
                 </span>
-                <span className="text-xs text-muted-foreground">Session active</span>
+                <span className="text-xs text-muted-foreground">
+                  Session active
+                </span>
               </div>
             )}
 
-            <ScrollToBottomButton visible={showScrollToBottom} onClick={scrollToBottom} />
+            <ScrollToBottomButton
+              visible={showScrollToBottom}
+              onClick={scrollToBottom}
+            />
           </div>
         )}
       </div>

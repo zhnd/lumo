@@ -29,7 +29,10 @@ export function SidebarLayout({
       onOpenChange={handleOpenChange}
       className={className}
       style={
-        { "--sidebar-width": "12rem", "--sidebar-width-mobile": "16rem" } as React.CSSProperties
+        {
+          "--sidebar-width": "12rem",
+          "--sidebar-width-mobile": "16rem",
+        } as React.CSSProperties
       }
     >
       {children}

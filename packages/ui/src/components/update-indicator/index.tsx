@@ -1,7 +1,11 @@
 "use client";
 
 import { CircleAlert, Loader2, RotateCcw } from "lucide-react";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { UPDATE_STATUS } from "./types";
 import { useService } from "./use-service";
 
@@ -50,7 +54,11 @@ export function UpdateIndicator() {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton tooltip="Update failed" className="h-9 text-destructive" disabled>
+          <SidebarMenuButton
+            tooltip="Update failed"
+            className="h-9 text-destructive"
+            disabled
+          >
             <CircleAlert className="size-4" />
             <span>Update failed</span>
           </SidebarMenuButton>

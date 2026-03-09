@@ -18,7 +18,12 @@ export function DetailHeader({
       <div className="flex items-center gap-3 px-4 py-2.5">
         <SidebarTrigger className="size-8 shrink-0" />
 
-        <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={onBack}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8 shrink-0"
+          onClick={onBack}
+        >
           <ArrowLeft className="size-4" />
         </Button>
 
@@ -27,7 +32,9 @@ export function DetailHeader({
           {badges}
         </div>
 
-        {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+        {actions && (
+          <div className="flex shrink-0 items-center gap-2">{actions}</div>
+        )}
       </div>
 
       {subtitle && (

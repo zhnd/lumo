@@ -19,7 +19,8 @@ export function useService(skillPath: string) {
 
   const detail = detailQuery.data ?? null;
   const displayContent = editContent ?? detail?.rawContent ?? "";
-  const isDirty = editContent !== null && editContent !== (detail?.rawContent ?? "");
+  const isDirty =
+    editContent !== null && editContent !== (detail?.rawContent ?? "");
 
   const handleContentChange = useCallback((value: string) => {
     setEditContent(value);
@@ -84,14 +85,24 @@ export function useService(skillPath: string) {
 
   const metaBadges = useMemo(() => {
     if (!detail) return [];
-    const items: { label: string; icon: "model" | "tool" | "context" | "flag" }[] = [];
+    const items: {
+      label: string;
+      icon: "model" | "tool" | "context" | "flag";
+    }[] = [];
     if (detail.model) items.push({ label: detail.model, icon: "model" });
-    if (detail.allowedTools) items.push({ label: detail.allowedTools, icon: "tool" });
+    if (detail.allowedTools)
+      items.push({ label: detail.allowedTools, icon: "tool" });
     if (detail.skillContext === "fork")
-      items.push({ label: `Fork${detail.agent ? `: ${detail.agent}` : ""}`, icon: "context" });
-    if (detail.argumentHint) items.push({ label: detail.argumentHint, icon: "flag" });
-    if (detail.disableModelInvocation) items.push({ label: "User-only", icon: "flag" });
-    if (!detail.userInvocable) items.push({ label: "Model-only", icon: "flag" });
+      items.push({
+        label: `Fork${detail.agent ? `: ${detail.agent}` : ""}`,
+        icon: "context",
+      });
+    if (detail.argumentHint)
+      items.push({ label: detail.argumentHint, icon: "flag" });
+    if (detail.disableModelInvocation)
+      items.push({ label: "User-only", icon: "flag" });
+    if (!detail.userInvocable)
+      items.push({ label: "Model-only", icon: "flag" });
     return items;
   }, [detail]);
 

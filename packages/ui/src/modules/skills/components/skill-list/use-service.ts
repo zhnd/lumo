@@ -8,7 +8,9 @@ export function useService(skills: SkillSummary[]) {
     const query = search.trim().toLowerCase();
     if (!query) return skills;
     return skills.filter(
-      (s) => s.name.toLowerCase().includes(query) || s.description?.toLowerCase().includes(query),
+      (s) =>
+        s.name.toLowerCase().includes(query) ||
+        s.description?.toLowerCase().includes(query),
     );
   }, [skills, search]);
 

@@ -45,8 +45,13 @@ export function StatCards({ timeRange }: StatCardsProps) {
   if (timeRange === "month") {
     const now = new Date();
     const daysPassed = now.getDate();
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const projectedCost = daysPassed > 0 ? (stats.totalCost / daysPassed) * daysInMonth : 0;
+    const daysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+    ).getDate();
+    const projectedCost =
+      daysPassed > 0 ? (stats.totalCost / daysPassed) * daysInMonth : 0;
     const projected = formatValue(projectedCost, "currency");
     costDescription = changePercent
       ? `${changePercent} · Projected: ${projected.full}`
@@ -72,7 +77,12 @@ export function StatCards({ timeRange }: StatCardsProps) {
       />
       <StatCard
         title="Lines Changed"
-        value={formatValue(stats.linesOfCodeAdded + stats.linesOfCodeRemoved, "number").full}
+        value={
+          formatValue(
+            stats.linesOfCodeAdded + stats.linesOfCodeRemoved,
+            "number",
+          ).full
+        }
         description={`+${formatValue(stats.linesOfCodeAdded, "number").full} / -${formatValue(stats.linesOfCodeRemoved, "number").full}`}
         icon={<Code className="size-4" />}
         color="violet"

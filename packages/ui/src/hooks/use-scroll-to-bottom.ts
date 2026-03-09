@@ -46,7 +46,8 @@ export function useScrollToBottom({
     if (!el) return;
 
     const handleScroll = () => {
-      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      const distanceFromBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight;
       const nextIsNearBottom = distanceFromBottom <= THRESHOLD;
       setIsNearBottom(nextIsNearBottom);
       setShowScrollToBottom(!nextIsNearBottom);

@@ -48,7 +48,9 @@ export function ToolItem({ item }: ToolItemProps) {
   const [expanded, setExpanded] = useState(!!item.isError);
 
   const icon = TOOL_ICONS[item.toolName] ?? <Wrench className="size-3.5" />;
-  const summary = item.input ? formatToolInput(item.input) : (item.filePath ?? "");
+  const summary = item.input
+    ? formatToolInput(item.input)
+    : (item.filePath ?? "");
 
   return (
     <section className="px-4 py-1 md:px-6">
@@ -59,8 +61,12 @@ export function ToolItem({ item }: ToolItemProps) {
           onClick={() => setExpanded(!expanded)}
         >
           <span className="shrink-0 text-muted-foreground">{icon}</span>
-          <span className="shrink-0 text-xs font-medium text-foreground">{item.toolName}</span>
-          <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{summary}</span>
+          <span className="shrink-0 text-xs font-medium text-foreground">
+            {item.toolName}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+            {summary}
+          </span>
           <span
             className={cn(
               "size-2 shrink-0 rounded-full",
@@ -120,11 +126,29 @@ function ToolContent({ item }: { item: TimelineToolItem }) {
         />
       );
     case "Bash":
-      return <ToolBash input={item.input} output={item.output} isError={item.isError} />;
+      return (
+        <ToolBash
+          input={item.input}
+          output={item.output}
+          isError={item.isError}
+        />
+      );
     default:
       if (SEARCH_TOOLS.has(item.toolName)) {
-        return <ToolSearch toolName={item.toolName} input={item.input} output={item.output} />;
+        return (
+          <ToolSearch
+            toolName={item.toolName}
+            input={item.input}
+            output={item.output}
+          />
+        );
       }
-      return <ToolGeneric toolName={item.toolName} input={item.input} output={item.output} />;
+      return (
+        <ToolGeneric
+          toolName={item.toolName}
+          input={item.input}
+          output={item.output}
+        />
+      );
   }
 }

@@ -13,7 +13,12 @@ import {
 import { DetailHeader } from "@/components/detail-header";
 import { Badge } from "@/components/ui/badge";
 import { fmt, formatDurationMixed } from "@/lib/format";
-import { formatDate, formatTimeAgo, getProjectName, getShortId } from "../../libs";
+import {
+  formatDate,
+  formatTimeAgo,
+  getProjectName,
+  getShortId,
+} from "../../libs";
 import type { SessionHeaderProps } from "./types";
 
 export function SessionHeader({
@@ -25,7 +30,9 @@ export function SessionHeader({
   onBack,
 }: SessionHeaderProps) {
   const title =
-    session.summary || session.firstPrompt || `Session ${getShortId(session.sessionId)}`;
+    session.summary ||
+    session.firstPrompt ||
+    `Session ${getShortId(session.sessionId)}`;
 
   return (
     <DetailHeader
@@ -59,7 +66,9 @@ export function SessionHeader({
 
             <div className="flex items-center gap-1.5">
               <Clock className="size-3.5" />
-              <span>{formatTimeAgo(session.lastUpdated || session.modified)}</span>
+              <span>
+                {formatTimeAgo(session.lastUpdated || session.modified)}
+              </span>
             </div>
 
             <div className="flex items-center gap-1.5">

@@ -7,7 +7,9 @@ import type { UpdateProgress, UseServiceReturn } from "./types";
 import { UPDATE_STATUS } from "./types";
 
 async function downloadUpdate(
-  update: NonNullable<Awaited<ReturnType<typeof import("@tauri-apps/plugin-updater").check>>>,
+  update: NonNullable<
+    Awaited<ReturnType<typeof import("@tauri-apps/plugin-updater").check>>
+  >,
   setStatus: (s: UseServiceReturn["status"]) => void,
   setProgress: React.Dispatch<React.SetStateAction<UpdateProgress>>,
 ) {
@@ -30,12 +32,15 @@ async function downloadUpdate(
 }
 
 export function useService(): UseServiceReturn {
-  const [status, setStatus] = useState<UseServiceReturn["status"]>(UPDATE_STATUS.Idle);
+  const [status, setStatus] = useState<UseServiceReturn["status"]>(
+    UPDATE_STATUS.Idle,
+  );
   const [progress, setProgress] = useState<UpdateProgress>({
     contentLength: undefined,
     downloaded: 0,
   });
-  const [updateInfo, setUpdateInfo] = useState<UseServiceReturn["updateInfo"]>(null);
+  const [updateInfo, setUpdateInfo] =
+    useState<UseServiceReturn["updateInfo"]>(null);
   const downloadingRef = useRef(false);
 
   useQuery({

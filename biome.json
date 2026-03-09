@@ -3,66 +3,36 @@
   "vcs": {
     "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": true,
-    "defaultBranch": "main"
+    "useIgnoreFile": true
   },
   "files": {
     "ignoreUnknown": true,
     "includes": [
-      "packages/ui/**",
-      "!packages/ui/.next",
-      "!packages/ui/out",
-      "!packages/ui/src/components/ui",
-      "!packages/ui/src/generated"
+      "**",
+      "!node_modules",
+      "!.next",
+      "!dist",
+      "!build",
+      "!turbo",
+      "!out",
+      "!generated",
+      "!target"
     ]
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 100,
-    "lineEnding": "lf"
+    "lineWidth": 80,
+    "indentStyle": "space"
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "correctness": {
-        "noUnusedImports": "error",
-        "noUnusedVariables": "error"
-      },
-      "suspicious": {
-        "noExplicitAny": "off"
-      },
-      "style": {
-        "useConst": "error",
-        "useImportType": "error"
-      }
+      "recommended": true
     }
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "double",
-      "jsxQuoteStyle": "double",
-      "semicolons": "always",
-      "trailingCommas": "all",
-      "arrowParentheses": "always"
-    }
-  },
-  "json": {
-    "formatter": {
-      "indentStyle": "space",
-      "indentWidth": 2,
-      "lineWidth": 80
-    }
-  },
-  "css": {
-    "parser": {
-      "cssModules": true,
-      "tailwindDirectives": true
-    },
-    "linter": {
-      "enabled": true
+      "quoteStyle": "double"
     }
   },
   "assist": {
@@ -72,30 +42,5 @@
         "organizeImports": "on"
       }
     }
-  },
-  "overrides": [
-    {
-      "includes": ["packages/ui/**"],
-      "linter": {
-        "rules": {
-          "correctness": {
-            "useExhaustiveDependencies": "warn",
-            "useHookAtTopLevel": "error"
-          },
-          "suspicious": {
-            "noArrayIndexKey": "warn"
-          },
-          "complexity": {
-            "noStaticOnlyClass": "off"
-          },
-          "style": {
-            "noNonNullAssertion": "warn"
-          },
-          "a11y": {
-            "recommended": false
-          }
-        }
-      }
-    }
-  ]
+  }
 }

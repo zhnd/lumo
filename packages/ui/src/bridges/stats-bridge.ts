@@ -1,5 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ModelStats, SummaryStats, TimeRange, TokenStats } from "../generated/typeshare-types";
+import type {
+  ModelStats,
+  SummaryStats,
+  TimeRange,
+  TokenStats,
+} from "../generated/typeshare-types";
 
 /**
  * Stats Bridge - Frontend interface for statistics operations

@@ -44,7 +44,14 @@ export function DiffViewer({
   }, [highlighter]);
 
   const diffFile = useMemo<DiffFile | undefined>(() => {
-    const file = generateDiffFile(fileName, oldValue, fileName, newValue, lang, lang);
+    const file = generateDiffFile(
+      fileName,
+      oldValue,
+      fileName,
+      newValue,
+      lang,
+      lang,
+    );
     file.initTheme("light");
     file.initRaw();
     if (highlighter) {
@@ -58,7 +65,12 @@ export function DiffViewer({
   if (!diffFile) return null;
 
   return (
-    <div className={cn("overflow-hidden rounded-lg border border-border text-[11px]", className)}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-lg border border-border text-[11px]",
+        className,
+      )}
+    >
       <div
         className="overflow-x-auto"
         style={

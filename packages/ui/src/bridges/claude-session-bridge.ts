@@ -1,5 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ClaudeSessionDetail, ClaudeSessionPage } from "../generated/typeshare-types";
+import type {
+  ClaudeSessionDetail,
+  ClaudeSessionPage,
+} from "../generated/typeshare-types";
 
 /**
  * Claude Session Bridge - Frontend interface for Claude Code session operations
@@ -20,7 +23,9 @@ export class ClaudeSessionBridge {
   /**
    * Get Claude Code session detail with messages
    */
-  static async getSessionDetail(sessionPath: string): Promise<ClaudeSessionDetail> {
+  static async getSessionDetail(
+    sessionPath: string,
+  ): Promise<ClaudeSessionDetail> {
     return invoke<ClaudeSessionDetail>("get_claude_session_detail", {
       sessionPath,
     });

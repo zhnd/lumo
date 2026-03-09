@@ -4,7 +4,11 @@ import { CardChartEmpty } from "@/components/card-chart-empty";
 import { CardError } from "@/components/card-error";
 import { CardLoading } from "@/components/card-loading";
 import type { EChartsOption } from "@/components/echarts";
-import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/echarts";
+import {
+  EChart,
+  resolveChartColor,
+  resolveChartColorAlpha,
+} from "@/components/echarts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SessionLengthChartProps } from "./types";
 import { useService } from "./use-service";
@@ -15,7 +19,11 @@ export function SessionLengthChart({ timeRange }: SessionLengthChartProps) {
   if (isLoading) return <CardLoading showTitle />;
   if (error) {
     return (
-      <CardError title="Session Length" message="Failed to load data" onRetry={() => refetch()} />
+      <CardError
+        title="Session Length"
+        message="Failed to load data"
+        onRetry={() => refetch()}
+      />
     );
   }
   if (data.length === 0 || data.every((d) => d.count === 0)) {

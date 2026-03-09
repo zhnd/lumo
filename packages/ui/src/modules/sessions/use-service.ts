@@ -12,7 +12,9 @@ const PAGE_SIZE = 20;
 
 export function useService(): UseServiceReturn {
   const queryClient = useQueryClient();
-  const [selectedProjectPath, setSelectedProjectPath] = useState<string | null>(null);
+  const [selectedProjectPath, setSelectedProjectPath] = useState<string | null>(
+    null,
+  );
   const [hasManualSelection, setHasManualSelection] = useState(false);
   const invalidateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -38,7 +40,11 @@ export function useService(): UseServiceReturn {
     };
   }, []);
 
-  const { projects, isLoading: isLoadingProjects, error: projectsError } = useProjects();
+  const {
+    projects,
+    isLoading: isLoadingProjects,
+    error: projectsError,
+  } = useProjects();
   const effectiveSelectedProjectPath = hasManualSelection
     ? selectedProjectPath
     : (projects[0]?.projectPath ?? null);
@@ -48,7 +54,11 @@ export function useService(): UseServiceReturn {
     queryKey: ["claude-sessions-page", effectiveSelectedProjectPath],
     enabled: hasManualSelection || projects.length > 0,
     queryFn: ({ pageParam = 0 }) =>
-      ClaudeSessionBridge.getSessionsPage(effectiveSelectedProjectPath, pageParam, PAGE_SIZE),
+      ClaudeSessionBridge.getSessionsPage(
+        effectiveSelectedProjectPath,
+        pageParam,
+        PAGE_SIZE,
+      ),
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.offset + lastPage.sessions.length : undefined,
@@ -64,14 +74,16 @@ export function useService(): UseServiceReturn {
   const selectedProjectName = useMemo(() => {
     if (!effectiveSelectedProjectPath) return "All Projects";
     return (
-      projects.find((p) => p.projectPath === effectiveSelectedProjectPath)?.projectName ?? "Project"
+      projects.find((p) => p.projectPath === effectiveSelectedProjectPath)
+        ?.projectName ?? "Project"
     );
   }, [projects, effectiveSelectedProjectPath]);
 
   const totalSessions = useMemo(() => {
     if (effectiveSelectedProjectPath) {
       return (
-        projects.find((p) => p.projectPath === effectiveSelectedProjectPath)?.sessionCount ??
+        projects.find((p) => p.projectPath === effectiveSelectedProjectPath)
+          ?.sessionCount ??
         sessionsQuery.data?.pages[0]?.totalCount ??
         sessions.length
       );
@@ -80,7 +92,12 @@ export function useService(): UseServiceReturn {
     return byProject > 0
       ? byProject
       : (sessionsQuery.data?.pages[0]?.totalCount ?? sessions.length);
-  }, [projects, effectiveSelectedProjectPath, sessionsQuery.data, sessions.length]);
+  }, [
+    projects,
+    effectiveSelectedProjectPath,
+    sessionsQuery.data,
+    sessions.length,
+  ]);
 
   const isLoading = isLoadingProjects || sessionsQuery.isLoading;
 

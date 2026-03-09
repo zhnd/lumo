@@ -16,7 +16,8 @@ export function LoginPrompt({ onLogin, isLoading }: LoginPromptProps) {
           <div className="space-y-1.5 text-center">
             <p className="font-semibold">Connect to Claude</p>
             <p className="text-sm text-muted-foreground">
-              Sign in to your Claude account to view your subscription usage and limits.
+              Sign in to your Claude account to view your subscription usage and
+              limits.
             </p>
           </div>
           <Button className="w-full" onClick={onLogin} disabled={isLoading}>

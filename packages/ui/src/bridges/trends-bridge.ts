@@ -17,11 +17,19 @@ export class TrendsBridge {
     return invoke<UsageTrend[]>("get_usage_trends", { timeRange });
   }
 
-  static async getCostByModelTrends(timeRange: TimeRange): Promise<CostByModelTrend[]> {
-    return invoke<CostByModelTrend[]>("get_cost_by_model_trends", { timeRange });
+  static async getCostByModelTrends(
+    timeRange: TimeRange,
+  ): Promise<CostByModelTrend[]> {
+    return invoke<CostByModelTrend[]>("get_cost_by_model_trends", {
+      timeRange,
+    });
   }
 
-  static async getCostEfficiencyTrend(timeRange: TimeRange): Promise<CostEfficiencyTrend[]> {
-    return invoke<CostEfficiencyTrend[]>("get_cost_efficiency_trend", { timeRange });
+  static async getCostEfficiencyTrend(
+    timeRange: TimeRange,
+  ): Promise<CostEfficiencyTrend[]> {
+    return invoke<CostEfficiencyTrend[]>("get_cost_efficiency_trend", {
+      timeRange,
+    });
   }
 }

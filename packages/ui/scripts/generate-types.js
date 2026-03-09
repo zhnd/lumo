@@ -29,7 +29,9 @@ function checkTypeshareInstalled() {
     });
     return true;
   } catch (_error) {
-    console.error("❌ typeshare CLI is not installed. Please install it first:");
+    console.error(
+      "❌ typeshare CLI is not installed. Please install it first:",
+    );
     console.error("cargo install typeshare-cli");
     return false;
   }

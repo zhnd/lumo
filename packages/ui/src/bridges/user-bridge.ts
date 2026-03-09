@@ -1,5 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { CreateUserDto, UpdateUserDto, User } from "../generated/typeshare-types";
+import type {
+  CreateUserDto,
+  UpdateUserDto,
+  User,
+} from "../generated/typeshare-types";
 /**
  * User Bridge - Frontend interface for user operations
  *

@@ -1,7 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { isImagePath, parseRichContent, tryBuildSvgPreview } from "../../shared/content-parser";
+import {
+  isImagePath,
+  parseRichContent,
+  tryBuildSvgPreview,
+} from "../../shared/content-parser";
 import { CodeViewer } from "../../viewers/code-viewer";
 import { DiffViewer } from "../../viewers/diff-viewer";
 import { ImageViewer } from "../../viewers/image-viewer";
@@ -14,7 +18,13 @@ interface ToolWriteProps {
   fileContent?: string;
 }
 
-export function ToolWrite({ input, output, toolName, filePath, fileContent }: ToolWriteProps) {
+export function ToolWrite({
+  input,
+  output,
+  toolName,
+  filePath,
+  fileContent,
+}: ToolWriteProps) {
   const parsed = useMemo(() => {
     try {
       return JSON.parse(input ?? "{}") as Record<string, unknown>;
@@ -25,10 +35,13 @@ export function ToolWrite({ input, output, toolName, filePath, fileContent }: To
 
   if (!parsed) return null;
 
-  const inputFilePath = typeof parsed.file_path === "string" ? parsed.file_path : undefined;
+  const inputFilePath =
+    typeof parsed.file_path === "string" ? parsed.file_path : undefined;
   const resolvedPath = filePath ?? inputFilePath;
-  const content = typeof parsed.content === "string" ? parsed.content : undefined;
-  const newSource = typeof parsed.new_source === "string" ? parsed.new_source : undefined;
+  const content =
+    typeof parsed.content === "string" ? parsed.content : undefined;
+  const newSource =
+    typeof parsed.new_source === "string" ? parsed.new_source : undefined;
 
   const writeContent = content ?? newSource;
 
@@ -36,10 +49,17 @@ export function ToolWrite({ input, output, toolName, filePath, fileContent }: To
 
   // Image file: always show image, never diff/code
   if (isImagePath(resolvedPath)) {
-    const svgSrc = tryBuildSvgPreview(resolvedPath ?? "", fileContent, writeContent, output);
+    const svgSrc = tryBuildSvgPreview(
+      resolvedPath ?? "",
+      fileContent,
+      writeContent,
+      output,
+    );
 
     if (svgSrc) {
-      return <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />;
+      return (
+        <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />
+      );
     }
 
     const parsedOutput = parseRichContent(output);

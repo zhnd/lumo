@@ -64,7 +64,8 @@ function formatWithUnits(
   for (const { threshold, unit, divisor } of units) {
     if (absValue >= threshold) {
       const scaled = absValue / divisor;
-      const formatted = scaled % 1 === 0 ? scaled.toString() : scaled.toFixed(decimals);
+      const formatted =
+        scaled % 1 === 0 ? scaled.toString() : scaled.toFixed(decimals);
       return {
         value: sign + formatted,
         unit,
@@ -133,7 +134,8 @@ export function formatValue(
 
     case "percent": {
       const pctValue = value * 100;
-      const formatted = pctValue % 1 === 0 ? pctValue.toString() : pctValue.toFixed(decimals);
+      const formatted =
+        pctValue % 1 === 0 ? pctValue.toString() : pctValue.toFixed(decimals);
       return {
         value: formatted,
         unit: "%",

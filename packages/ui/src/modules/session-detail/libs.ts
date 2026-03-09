@@ -1,5 +1,11 @@
-import type { ClaudeContentBlock, ClaudeMessage } from "@/generated/typeshare-types";
-import { extractSlashCommand, sanitizeMessageText } from "./components/shared/text-utils";
+import type {
+  ClaudeContentBlock,
+  ClaudeMessage,
+} from "@/generated/typeshare-types";
+import {
+  extractSlashCommand,
+  sanitizeMessageText,
+} from "./components/shared/text-utils";
 import type { TimelineItem, TimelineUserItem } from "./types";
 
 export interface SessionHighlights {
@@ -97,7 +103,9 @@ export function buildFlatTimeline(messages: ClaudeMessage[]): TimelineItem[] {
 
     // User prompt messages (without tool results)
     if (role === "user") {
-      const hasToolResult = (message.blocks ?? []).some((b) => b.type === "tool_result");
+      const hasToolResult = (message.blocks ?? []).some(
+        (b) => b.type === "tool_result",
+      );
       if (!hasToolResult) {
         const userItem = extractUserItem(message);
         if (userItem) {
@@ -108,7 +116,11 @@ export function buildFlatTimeline(messages: ClaudeMessage[]): TimelineItem[] {
     }
 
     // Process blocks for assistant/system messages and user messages with tool results
-    const messageItems = buildFlatMessageItems(message, toolResultsById, consumedToolResults);
+    const messageItems = buildFlatMessageItems(
+      message,
+      toolResultsById,
+      consumedToolResults,
+    );
     items.push(...messageItems);
   }
 
@@ -261,7 +273,9 @@ function mergeAdjacentAssistantItems(items: TimelineItem[]): TimelineItem[] {
   return merged;
 }
 
-export function buildSessionHighlights(messages: ClaudeMessage[]): SessionHighlights {
+export function buildSessionHighlights(
+  messages: ClaudeMessage[],
+): SessionHighlights {
   const files = new Set<string>();
   let toolCalls = 0;
   let toolResults = 0;
@@ -286,7 +300,9 @@ export function buildSessionHighlights(messages: ClaudeMessage[]): SessionHighli
   };
 }
 
-function collectToolResults(messages: ClaudeMessage[]): Map<string, ToolResultSnapshot> {
+function collectToolResults(
+  messages: ClaudeMessage[],
+): Map<string, ToolResultSnapshot> {
   const toolResultsById = new Map<string, ToolResultSnapshot>();
 
   for (const message of messages) {
@@ -306,7 +322,11 @@ function collectToolResults(messages: ClaudeMessage[]): Map<string, ToolResultSn
 }
 
 function hasRenderableToolResult(block: ClaudeContentBlock): boolean {
-  return !!block.output?.trim() || !!block.fileContent?.trim() || !!block.rawJson?.trim();
+  return (
+    !!block.output?.trim() ||
+    !!block.fileContent?.trim() ||
+    !!block.rawJson?.trim()
+  );
 }
 
 function isInterruptionText(text: string): boolean {
@@ -314,7 +334,9 @@ function isInterruptionText(text: string): boolean {
   return INTERRUPTION_PREFIXES.some((prefix) => trimmed.startsWith(prefix));
 }
 
-function normalizeRole(type: ClaudeMessage["type"]): "user" | "assistant" | "system" {
+function normalizeRole(
+  type: ClaudeMessage["type"],
+): "user" | "assistant" | "system" {
   if (type === "assistant" || type === "system") return type;
   return "user";
 }

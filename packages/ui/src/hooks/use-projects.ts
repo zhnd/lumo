@@ -12,7 +12,10 @@ export function useProjects() {
     queryFn: () => ProjectsBridge.getProjects(),
   });
 
-  const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
+  const projects = useMemo(
+    () => projectsQuery.data ?? [],
+    [projectsQuery.data],
+  );
 
   return {
     projects,

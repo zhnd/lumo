@@ -59,7 +59,13 @@ export function PluginDetail({
   const availableScopes = [
     // Global if not installed globally
     ...(!plugin.installedScopes.some((s) => s.scope === "user")
-      ? [{ label: "Global", path: null as string | null, icon: "globe" as const }]
+      ? [
+          {
+            label: "Global",
+            path: null as string | null,
+            icon: "globe" as const,
+          },
+        ]
       : []),
     // Projects not yet installed
     ...projects
@@ -95,7 +101,9 @@ export function PluginDetail({
                 {CATEGORY_LABELS[plugin.category] ?? plugin.category}
               </Badge>
             )}
-            {plugin.version && <Badge variant="outline">v{plugin.version}</Badge>}
+            {plugin.version && (
+              <Badge variant="outline">v{plugin.version}</Badge>
+            )}
           </div>
 
           <Separator />
@@ -135,7 +143,9 @@ export function PluginDetail({
             <>
               <Separator />
               <div className="flex flex-col gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Installed in</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Installed in
+                </span>
                 {plugin.installedScopes.map((s) => (
                   <div
                     key={`${s.scope}-${s.projectPath ?? ""}`}
@@ -155,7 +165,10 @@ export function PluginDetail({
                       className="size-7 text-muted-foreground hover:text-destructive"
                       disabled={isBusy}
                       onClick={() =>
-                        onUninstall(plugin, s.scope === "project" ? s.projectPath! : null)
+                        onUninstall(
+                          plugin,
+                          s.scope === "project" ? s.projectPath! : null,
+                        )
                       }
                     >
                       {isThisUninstalling ? (
@@ -190,9 +203,10 @@ export function PluginDetail({
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
             <p>
-              Make sure you trust a plugin before installing, updating, or using it. Anthropic does
-              not control what MCP servers, files, or other software are included in plugins and
-              cannot verify that they will work as intended or that they won&apos;t change. See each
+              Make sure you trust a plugin before installing, updating, or using
+              it. Anthropic does not control what MCP servers, files, or other
+              software are included in plugins and cannot verify that they will
+              work as intended or that they won&apos;t change. See each
               plugin&apos;s homepage for more information.
             </p>
           </div>
