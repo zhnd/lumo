@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { MarkdownViewer } from "../../viewers/markdown-viewer";
 import { parseRichContent } from "../../shared/content-parser";
 import { ImageViewer } from "../../viewers/image-viewer";
+import { MarkdownViewer } from "../../viewers/markdown-viewer";
 
 interface ToolGenericProps {
   toolName: string;
@@ -11,7 +11,11 @@ interface ToolGenericProps {
   output?: string;
 }
 
-export function ToolGeneric({ toolName, input, output }: ToolGenericProps) {
+export function ToolGeneric({
+  toolName: _toolName,
+  input,
+  output,
+}: ToolGenericProps) {
   const parsedInput = useMemo(() => {
     if (!input) return null;
     try {
@@ -29,7 +33,9 @@ export function ToolGeneric({ toolName, input, output }: ToolGenericProps) {
         <div className="space-y-1 rounded-lg bg-muted/30 px-3 py-2">
           {Object.entries(parsedInput).map(([key, value]) => (
             <div key={key} className="flex gap-2 text-[11px]">
-              <span className="shrink-0 font-medium text-muted-foreground">{key}:</span>
+              <span className="shrink-0 font-medium text-muted-foreground">
+                {key}:
+              </span>
               <span className="min-w-0 break-all text-foreground">
                 {typeof value === "string"
                   ? value.length > 200

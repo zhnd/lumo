@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { SessionDetail } from "@/modules/session-detail";
 import { SessionDetailSkeleton } from "@/modules/session-detail/components";
 
@@ -22,9 +22,7 @@ function SessionDetailContent() {
 
 export default function SessionDetailPage() {
   return (
-    <Suspense
-      fallback={<SessionDetailSkeleton />}
-    >
+    <Suspense fallback={<SessionDetailSkeleton />}>
       <SessionDetailContent />
     </Suspense>
   );

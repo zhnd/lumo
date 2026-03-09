@@ -1,17 +1,17 @@
 "use client";
 
 import {
+  QueryCache,
   QueryClient,
   QueryClientProvider,
-  QueryCache,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Toaster } from "@/components/ui/sonner";
-import { useEffect, useState } from "react";
 import {
   isPermissionGranted,
   requestPermission,
 } from "@tauri-apps/plugin-notification";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -31,7 +31,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
                 label: "Copy",
                 onClick: () =>
                   navigator.clipboard.writeText(
-                    `Query: ${JSON.stringify(query.queryKey)}\nError: ${error.message}\nTime: ${new Date().toLocaleString()}`
+                    `Query: ${JSON.stringify(query.queryKey)}\nError: ${error.message}\nTime: ${new Date().toLocaleString()}`,
                   ),
               },
             });
@@ -47,7 +47,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             staleTime: 30 * 1000,
           },
         },
-      })
+      }),
   );
 
   return (

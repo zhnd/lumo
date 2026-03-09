@@ -1,20 +1,25 @@
 "use client";
 
 import {
-  GitBranch,
-  FolderOpen,
   Calendar,
   Clock,
-  MessageSquare,
   Coins,
-  Zap,
+  FolderOpen,
+  GitBranch,
+  MessageSquare,
   Timer,
+  Zap,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { DetailHeader } from "@/components/detail-header";
+import { Badge } from "@/components/ui/badge";
 import { fmt, formatDurationMixed } from "@/lib/format";
+import {
+  formatDate,
+  formatTimeAgo,
+  getProjectName,
+  getShortId,
+} from "../../libs";
 import type { SessionHeaderProps } from "./types";
-import { formatDate, formatTimeAgo, getProjectName, getShortId } from "../../libs";
 
 export function SessionHeader({
   session,
@@ -24,7 +29,10 @@ export function SessionHeader({
   collapsed = false,
   onBack,
 }: SessionHeaderProps) {
-  const title = session.summary || session.firstPrompt || `Session ${getShortId(session.sessionId)}`;
+  const title =
+    session.summary ||
+    session.firstPrompt ||
+    `Session ${getShortId(session.sessionId)}`;
 
   return (
     <DetailHeader

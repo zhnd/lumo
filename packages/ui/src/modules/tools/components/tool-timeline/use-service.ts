@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { ToolsBridge } from "@/bridges/tools-bridge";
 import type { TimeRange } from "@/generated/typeshare-types";
 import { foregroundRefreshQueryOptions } from "@/lib/query-options";
@@ -26,9 +26,7 @@ export function useService(timeRange: TimeRange) {
 
     const series = toolNames.map((name) => {
       const counts = dates.map((date) => {
-        const match = items.find(
-          (i) => i.toolName === name && i.date === date,
-        );
+        const match = items.find((i) => i.toolName === name && i.date === date);
         return match?.count ?? 0;
       });
       return { name, data: counts };

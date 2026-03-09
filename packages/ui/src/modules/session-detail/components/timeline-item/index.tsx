@@ -1,17 +1,19 @@
 "use client";
 
 import { memo } from "react";
-import { UserBubble } from "../user-bubble";
+import type { TimelineItem as TimelineItemType } from "../../types";
 import { AssistantText } from "../assistant-text";
 import { ThinkingBlock } from "../thinking-block";
 import { ToolItem } from "../tool-item";
-import type { TimelineItem as TimelineItemType } from "../../types";
+import { UserBubble } from "../user-bubble";
 
 interface TimelineItemProps {
   item: TimelineItemType;
 }
 
-export const TimelineItem = memo(function TimelineItem({ item }: TimelineItemProps) {
+export const TimelineItem = memo(function TimelineItem({
+  item,
+}: TimelineItemProps) {
   switch (item.kind) {
     case "user":
       return <UserBubble item={item} />;

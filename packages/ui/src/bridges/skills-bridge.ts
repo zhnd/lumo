@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  SkillSummary,
-  SkillDetail,
-  SkillCommandResult,
   CodexSkillSummary,
+  SkillCommandResult,
+  SkillDetail,
+  SkillSummary,
 } from "../generated/typeshare-types";
 
 /**

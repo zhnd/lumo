@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { CodeViewer } from "../../viewers/code-viewer";
-import { ImageViewer } from "../../viewers/image-viewer";
 import {
-  parseRichContent,
   buildSvgPreviewSrc,
   isImagePath,
+  parseRichContent,
   postProcessText,
 } from "../../shared/content-parser";
+import { CodeViewer } from "../../viewers/code-viewer";
+import { ImageViewer } from "../../viewers/image-viewer";
 
 interface ToolReadProps {
   input?: string;
@@ -17,7 +17,12 @@ interface ToolReadProps {
   fileContent?: string;
 }
 
-export function ToolRead({ input, output, filePath, fileContent }: ToolReadProps) {
+export function ToolRead({
+  input,
+  output,
+  filePath,
+  fileContent,
+}: ToolReadProps) {
   const parsed = useMemo(() => {
     try {
       return JSON.parse(input ?? "{}") as Record<string, unknown>;
@@ -26,11 +31,14 @@ export function ToolRead({ input, output, filePath, fileContent }: ToolReadProps
     }
   }, [input]);
 
-  const resolvedPath = filePath ?? (typeof parsed.file_path === "string" ? parsed.file_path : undefined);
+  const resolvedPath =
+    filePath ??
+    (typeof parsed.file_path === "string" ? parsed.file_path : undefined);
   const parsedOutput = parseRichContent(output);
   const parsedFileContent = parseRichContent(fileContent);
 
-  const displayContent = parsedFileContent.markdown.trim() || parsedOutput.markdown.trim();
+  const displayContent =
+    parsedFileContent.markdown.trim() || parsedOutput.markdown.trim();
   const cleanContent = displayContent ? postProcessText(displayContent) : "";
 
   const svgSrc = buildSvgPreviewSrc(

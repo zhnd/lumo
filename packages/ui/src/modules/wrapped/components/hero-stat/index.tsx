@@ -23,7 +23,9 @@ export function HeroStat({ data }: { data: WrappedData }) {
         <span className="text-5xl font-extrabold tabular-nums bg-gradient-to-r from-chart-1 to-chart-2 bg-clip-text text-transparent">
           {time.value}
         </span>
-        <span className="text-xl font-medium text-muted-foreground">{time.unit}</span>
+        <span className="text-xl font-medium text-muted-foreground">
+          {time.unit}
+        </span>
       </div>
       <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
         <span className="flex items-center gap-1.5">
@@ -31,8 +33,12 @@ export function HeroStat({ data }: { data: WrappedData }) {
           {data.totalSessions} sessions
         </span>
         <span className="flex items-center gap-1.5">
-          <Clock className="size-3.5 text-chart-3" />
-          ~{(data.totalActiveHours / Math.max(data.totalSessions, 1) * 60).toFixed(0)} min/session
+          <Clock className="size-3.5 text-chart-3" />~
+          {(
+            (data.totalActiveHours / Math.max(data.totalSessions, 1)) *
+            60
+          ).toFixed(0)}{" "}
+          min/session
         </span>
       </div>
     </div>

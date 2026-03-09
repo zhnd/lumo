@@ -1,8 +1,8 @@
 export {
-  TimeRange,
-  type SummaryStats,
   type ModelStats,
   type Session,
+  type SummaryStats,
+  TimeRange,
 } from "@/generated/typeshare-types";
 
 export type RestStatus = "rested" | "heads-up" | "take-a-break";

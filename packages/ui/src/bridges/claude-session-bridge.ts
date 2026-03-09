@@ -24,7 +24,7 @@ export class ClaudeSessionBridge {
    * Get Claude Code session detail with messages
    */
   static async getSessionDetail(
-    sessionPath: string
+    sessionPath: string,
   ): Promise<ClaudeSessionDetail> {
     return invoke<ClaudeSessionDetail>("get_claude_session_detail", {
       sessionPath,

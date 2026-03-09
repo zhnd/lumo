@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { SkillsBridge } from "@/bridges/skills-bridge";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 import { ProjectsBridge } from "@/bridges/projects-bridge";
+import { SkillsBridge } from "@/bridges/skills-bridge";
 import { useProjects } from "@/hooks/use-projects";
 import type { SkillsScope } from "./types";
 
@@ -12,7 +12,10 @@ export function useService() {
   const [scope, setScope] = useState<SkillsScope>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<{ path: string; name: string } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    path: string;
+    name: string;
+  } | null>(null);
 
   const { projects } = useProjects();
 
@@ -38,10 +41,13 @@ export function useService() {
     },
   });
 
-  const handleRequestDelete = useCallback((path: string) => {
-    const skill = skillsQuery.data?.find((s) => s.path === path);
-    setPendingDelete({ path, name: skill?.name ?? path });
-  }, [skillsQuery.data]);
+  const handleRequestDelete = useCallback(
+    (path: string) => {
+      const skill = skillsQuery.data?.find((s) => s.path === path);
+      setPendingDelete({ path, name: skill?.name ?? path });
+    },
+    [skillsQuery.data],
+  );
 
   const handleConfirmDelete = useCallback(() => {
     if (pendingDelete) {
@@ -54,7 +60,8 @@ export function useService() {
   }, []);
 
   const skillCounts = useMemo(
-    () => Object.fromEntries(projects.map((p) => [p.projectPath, p.skillCount])),
+    () =>
+      Object.fromEntries(projects.map((p) => [p.projectPath, p.skillCount])),
     [projects],
   );
   const globalCount = globalCountQuery.data ?? 0;

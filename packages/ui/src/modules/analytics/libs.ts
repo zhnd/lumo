@@ -1,21 +1,21 @@
+import { CONTINUOUS_GAP_THRESHOLD_MIN } from "./constants";
 import type {
+  CostInsight,
+  EfficiencyScores,
+  HealthInsight,
+  HealthStats,
+  HourlyData,
+  ModelStats,
+  RestPreferences,
+  RestState,
   Session,
   SummaryStats,
-  ModelStats,
-  RestState,
-  RestPreferences,
-  HourlyData,
-  EfficiencyScores,
-  CostInsight,
   WeekDelta,
-  HealthStats,
-  HealthInsight,
 } from "./types";
-import { CONTINUOUS_GAP_THRESHOLD_MIN } from "./constants";
 
 export function computeRestState(
   sessions: Session[],
-  prefs: RestPreferences
+  prefs: RestPreferences,
 ): RestState {
   if (sessions.length === 0) {
     return { continuousCodingMinutes: 0, status: "rested", progressPercent: 0 };
@@ -47,10 +47,7 @@ export function computeRestState(
       : minutes >= prefs.headsUpMinutes
         ? "heads-up"
         : "rested";
-  const progressPercent = Math.min(
-    100,
-    (minutes / prefs.breakMinutes) * 100
-  );
+  const progressPercent = Math.min(100, (minutes / prefs.breakMinutes) * 100);
 
   return {
     continuousCodingMinutes: Math.round(minutes),
@@ -94,13 +91,14 @@ export function computeEfficiency(stats: SummaryStats): EfficiencyScores {
     cacheRate: stats.cachePercentage,
     costPerSession:
       stats.totalSessions > 0 ? stats.totalCost / stats.totalSessions : 0,
-    editAcceptRate: totalEdits > 0 ? (stats.codeEditAccepts / totalEdits) * 100 : 0,
+    editAcceptRate:
+      totalEdits > 0 ? (stats.codeEditAccepts / totalEdits) * 100 : 0,
   };
 }
 
 export function computeCostInsights(
   stats: SummaryStats,
-  models: ModelStats[]
+  models: ModelStats[],
 ): CostInsight[] {
   const insights: CostInsight[] = [];
 
@@ -229,7 +227,8 @@ export function computeHealthInsights(sessions: Session[]): HealthStats {
     insights.push({
       icon: "trophy",
       title: "Good work-life balance",
-      detail: "You're wrapping up before 21:00 — great habit for long-term productivity.",
+      detail:
+        "You're wrapping up before 21:00 — great habit for long-term productivity.",
       severity: "success",
     });
   }
@@ -258,7 +257,7 @@ function formatMinutes(min: number): string {
 
 export function computeWeeklyDelta(
   current: SummaryStats,
-  previous: SummaryStats
+  previous: SummaryStats,
 ): WeekDelta[] {
   function pct(cur: number, prev: number): number {
     if (prev === 0) return cur > 0 ? 100 : 0;

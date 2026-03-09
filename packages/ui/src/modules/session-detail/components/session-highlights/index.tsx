@@ -1,6 +1,6 @@
 "use client";
 
-import { FilePenLine, Wrench, ListChecks, TriangleAlert } from "lucide-react";
+import { FilePenLine, ListChecks, TriangleAlert, Wrench } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SessionHighlightsProps } from "./types";
 
@@ -27,7 +27,9 @@ function HighlightMetric({
 export function SessionHighlights({ highlights }: SessionHighlightsProps) {
   return (
     <section className="border-b px-4 py-3">
-      <div className="mb-2 text-xs font-medium text-muted-foreground">Session Highlights</div>
+      <div className="mb-2 text-xs font-medium text-muted-foreground">
+        Session Highlights
+      </div>
 
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
         <HighlightMetric

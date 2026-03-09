@@ -1,9 +1,9 @@
 "use client";
 
-import Editor from "react-simple-code-editor";
 import hljs from "highlight.js/lib/core";
 import markdown from "highlight.js/lib/languages/markdown";
 import yaml from "highlight.js/lib/languages/yaml";
+import Editor from "react-simple-code-editor";
 import "highlight.js/styles/github.css";
 
 hljs.registerLanguage("markdown", markdown);

@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { DiffViewer } from "../../viewers/diff-viewer";
-import { ImageViewer } from "../../viewers/image-viewer";
 import {
   isImagePath,
   parseRichContent,
   tryBuildSvgPreview,
 } from "../../shared/content-parser";
+import { DiffViewer } from "../../viewers/diff-viewer";
+import { ImageViewer } from "../../viewers/image-viewer";
 
 interface ToolEditProps {
   input?: string;
@@ -16,7 +16,12 @@ interface ToolEditProps {
   fileContent?: string;
 }
 
-export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps) {
+export function ToolEdit({
+  input,
+  output,
+  filePath,
+  fileContent,
+}: ToolEditProps) {
   const parsed = useMemo(() => {
     try {
       return JSON.parse(input ?? "{}") as Record<string, unknown>;
@@ -27,10 +32,13 @@ export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps
 
   if (!parsed) return null;
 
-  const inputFilePath = typeof parsed.file_path === "string" ? parsed.file_path : undefined;
+  const inputFilePath =
+    typeof parsed.file_path === "string" ? parsed.file_path : undefined;
   const resolvedPath = filePath ?? inputFilePath;
-  const oldString = typeof parsed.old_string === "string" ? parsed.old_string : "";
-  const newString = typeof parsed.new_string === "string" ? parsed.new_string : "";
+  const oldString =
+    typeof parsed.old_string === "string" ? parsed.old_string : "";
+  const newString =
+    typeof parsed.new_string === "string" ? parsed.new_string : "";
 
   // Image file: try to render the image directly
   if (isImagePath(resolvedPath)) {
@@ -43,7 +51,9 @@ export function ToolEdit({ input, output, filePath, fileContent }: ToolEditProps
     );
 
     if (svgSrc) {
-      return <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />;
+      return (
+        <ImageViewer images={[{ src: svgSrc, alt: resolvedPath ?? "image" }]} />
+      );
     }
 
     const parsedOutput = parseRichContent(output);

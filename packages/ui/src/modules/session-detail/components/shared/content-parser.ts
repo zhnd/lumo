@@ -1,5 +1,5 @@
-import { renderXmlLikeMetaTags } from "./text-utils";
 import { languageFromPath } from "./language-map";
+import { renderXmlLikeMetaTags } from "./text-utils";
 
 export interface RichContent {
   markdown: string;
@@ -46,7 +46,11 @@ function extractRichContent(value: unknown): RichContent {
       return { markdown: "", images: [asImage] };
     }
 
-    if (typeof obj.type === "string" && obj.type === "text" && typeof obj.text === "string") {
+    if (
+      typeof obj.type === "string" &&
+      obj.type === "text" &&
+      typeof obj.text === "string"
+    ) {
       return { markdown: postProcessText(obj.text), images: [] };
     }
 
@@ -61,10 +65,15 @@ function extractRichContent(value: unknown): RichContent {
       const contentPart = extractRichContent(obj.content);
       const messagePart =
         typeof obj.message === "string" && obj.message.trim()
-          ? { markdown: postProcessText(obj.message), images: [] as ImageData[] }
+          ? {
+              markdown: postProcessText(obj.message),
+              images: [] as ImageData[],
+            }
           : null;
       return {
-        markdown: [contentPart.markdown, messagePart?.markdown ?? ""].filter(Boolean).join("\n\n"),
+        markdown: [contentPart.markdown, messagePart?.markdown ?? ""]
+          .filter(Boolean)
+          .join("\n\n"),
         images: [...contentPart.images, ...(messagePart?.images ?? [])],
       };
     }
@@ -78,7 +87,7 @@ function extractRichContent(value: unknown): RichContent {
     }
 
     return {
-      markdown: "```json\n" + JSON.stringify(value, null, 2) + "\n```",
+      markdown: `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``,
       images: [],
     };
   }
@@ -86,10 +95,14 @@ function extractRichContent(value: unknown): RichContent {
   return { markdown: String(value ?? ""), images: [] };
 }
 
-export function extractImageFromObject(obj: Record<string, unknown>): ImageData | null {
+export function extractImageFromObject(
+  obj: Record<string, unknown>,
+): ImageData | null {
   const type = typeof obj.type === "string" ? obj.type.toLowerCase() : "";
   const source =
-    obj.source && typeof obj.source === "object" ? (obj.source as Record<string, unknown>) : null;
+    obj.source && typeof obj.source === "object"
+      ? (obj.source as Record<string, unknown>)
+      : null;
   const alt = typeof obj.alt === "string" ? obj.alt : "image";
 
   if (type === "image" && source) {
@@ -117,7 +130,10 @@ export function extractImageFromObject(obj: Record<string, unknown>): ImageData 
 
 function isLikelyImageUrl(value: string): boolean {
   const lower = value.toLowerCase();
-  return lower.startsWith("data:image/") || /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/.test(lower);
+  return (
+    lower.startsWith("data:image/") ||
+    /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/.test(lower)
+  );
 }
 
 function normalizeText(text: string): string {
@@ -142,7 +158,10 @@ export function postProcessText(text: string): string {
   return cleaned;
 }
 
-export function buildSvgPreviewSrc(filePath: string, content: string): string | null {
+export function buildSvgPreviewSrc(
+  filePath: string,
+  content: string,
+): string | null {
   const looksLikeSvgPath = filePath.toLowerCase().endsWith(".svg");
   const trimmed = content.trim();
   const looksLikeSvgContent =
@@ -167,7 +186,16 @@ function extractSvgContent(text: string): string | null {
 }
 
 const IMAGE_EXTENSIONS = new Set([
-  "png", "jpg", "jpeg", "gif", "webp", "svg", "ico", "bmp", "tiff", "avif",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "svg",
+  "ico",
+  "bmp",
+  "tiff",
+  "avif",
 ]);
 
 export function isImagePath(filePath?: string): boolean {
@@ -192,7 +220,10 @@ export function tryBuildSvgPreview(
   return null;
 }
 
-export function buildImagePreviewSrc(filePath: string, content: string): string | null {
+export function buildImagePreviewSrc(
+  filePath: string,
+  content: string,
+): string | null {
   // SVG: render from text content
   const svgSrc = buildSvgPreviewSrc(filePath, content);
   if (svgSrc) return svgSrc;
@@ -203,7 +234,10 @@ export function buildImagePreviewSrc(filePath: string, content: string): string 
   return null;
 }
 
-export function formatFileContentForRender(content: string, filePath: string): string {
+export function formatFileContentForRender(
+  content: string,
+  filePath: string,
+): string {
   const trimmed = content.trim();
   if (!trimmed) return content;
   if (trimmed.startsWith("```")) return content;

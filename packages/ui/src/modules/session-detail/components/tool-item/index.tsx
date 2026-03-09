@@ -1,29 +1,29 @@
 "use client";
 
-import { useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
-  FileText,
+  Clock3,
   FilePen,
   FilePlus,
-  Terminal,
   FileSearch,
+  FileText,
   Globe,
-  Wrench,
   Search,
-  Clock3,
+  Terminal,
+  Wrench,
 } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatMessageTime } from "../../libs";
-import { formatToolInput } from "../shared/text-utils";
-import { ToolRead } from "../tool-viewers/tool-read";
-import { ToolEdit } from "../tool-viewers/tool-edit";
-import { ToolWrite } from "../tool-viewers/tool-write";
-import { ToolBash } from "../tool-viewers/tool-bash";
-import { ToolSearch } from "../tool-viewers/tool-search";
-import { ToolGeneric } from "../tool-viewers/tool-generic";
 import type { TimelineToolItem } from "../../types";
+import { formatToolInput } from "../shared/text-utils";
+import { ToolBash } from "../tool-viewers/tool-bash";
+import { ToolEdit } from "../tool-viewers/tool-edit";
+import { ToolGeneric } from "../tool-viewers/tool-generic";
+import { ToolRead } from "../tool-viewers/tool-read";
+import { ToolSearch } from "../tool-viewers/tool-search";
+import { ToolWrite } from "../tool-viewers/tool-write";
 
 const TOOL_ICONS: Record<string, React.ReactNode> = {
   Read: <FileText className="size-3.5" />,
@@ -48,7 +48,9 @@ export function ToolItem({ item }: ToolItemProps) {
   const [expanded, setExpanded] = useState(!!item.isError);
 
   const icon = TOOL_ICONS[item.toolName] ?? <Wrench className="size-3.5" />;
-  const summary = item.input ? formatToolInput(item.input) : item.filePath ?? "";
+  const summary = item.input
+    ? formatToolInput(item.input)
+    : (item.filePath ?? "");
 
   return (
     <section className="px-4 py-1 md:px-6">

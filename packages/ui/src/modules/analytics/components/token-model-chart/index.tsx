@@ -1,18 +1,13 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
 import { CardChartEmpty } from "@/components/card-chart-empty";
-import { useService } from "./use-service";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TokenModelChartProps } from "./types";
+import { useService } from "./use-service";
 
 export function TokenModelChart({ timeRange }: TokenModelChartProps) {
   const { data, isLoading, error, refetch } = useService(timeRange);
@@ -50,7 +45,10 @@ export function TokenModelChart({ timeRange }: TokenModelChartProps) {
     },
     legend: {
       bottom: 0,
-      textStyle: { color: resolveChartColor("--muted-foreground"), fontSize: 11 },
+      textStyle: {
+        color: resolveChartColor("--muted-foreground"),
+        fontSize: 11,
+      },
       itemWidth: 12,
       itemHeight: 12,
     },

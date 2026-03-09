@@ -1,21 +1,21 @@
 "use client";
 
+import { FolderInput, Github, Loader2, Plug } from "lucide-react";
+import { CardEmpty } from "@/components/card-empty";
+import { CardError } from "@/components/card-error";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { CardEmpty } from "@/components/card-empty";
-import { CardError } from "@/components/card-error";
-import { Loader2, Github, FolderInput, Plug } from "lucide-react";
-import { useService } from "./use-service";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AddSkillDialogProps } from "./types";
+import { useService } from "./use-service";
 
 export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
   const {
@@ -44,8 +44,8 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
         <SheetHeader>
           <SheetTitle>Add Skill</SheetTitle>
           <SheetDescription>
-            Install a skill from GitHub, import from Codex, or use Claude
-            Plugin CLI.
+            Install a skill from GitHub, import from Codex, or use Claude Plugin
+            CLI.
           </SheetDescription>
         </SheetHeader>
 
@@ -64,10 +64,12 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 <Github className="size-3.5" />
                 GitHub
               </TabsTrigger>
-
             </TabsList>
 
-            <TabsContent value="github" className="mt-4 space-y-3 overflow-y-auto">
+            <TabsContent
+              value="github"
+              className="mt-4 space-y-3 overflow-y-auto"
+            >
               <p className="text-xs text-muted-foreground">
                 Enter a GitHub repository (e.g. owner/repo or
                 owner/repo/skills/name) to install via{" "}
@@ -105,7 +107,10 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
               </Button>
             </TabsContent>
 
-            <TabsContent value="codex" className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto">
+            <TabsContent
+              value="codex"
+              className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto"
+            >
               <p className="text-xs text-muted-foreground">
                 Import skills from{" "}
                 <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
@@ -169,7 +174,10 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 })}
             </TabsContent>
 
-            <TabsContent value="plugin" className="mt-4 space-y-3 overflow-y-auto">
+            <TabsContent
+              value="plugin"
+              className="mt-4 space-y-3 overflow-y-auto"
+            >
               <p className="text-xs text-muted-foreground">
                 Install a plugin via{" "}
                 <code className="rounded bg-muted px-1 py-0.5 text-[11px]">

@@ -1,12 +1,12 @@
 import {
-  LayoutDashboard,
-  History,
-  Wrench,
   BarChart3,
   Gauge,
-  Sparkles,
+  History,
+  LayoutDashboard,
   Puzzle,
+  Sparkles,
   Store,
+  Wrench,
 } from "lucide-react";
 import type { NavItem } from "./types";
 

@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  MarketplacePlugin,
-  MarketplaceInfo,
   MarketplaceCommandResult,
+  MarketplaceInfo,
+  MarketplacePlugin,
 } from "../generated/typeshare-types";
 
 /**

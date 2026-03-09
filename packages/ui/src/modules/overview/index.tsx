@@ -2,10 +2,10 @@
 
 import { PageHeader } from "@/components/page-header";
 import {
-  TimeRangeTabs,
-  StatCards,
-  CostChart,
   ActivityHeatmap,
+  CostChart,
+  StatCards,
+  TimeRangeTabs,
 } from "./components";
 import { useService } from "./use-service";
 

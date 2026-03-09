@@ -58,9 +58,7 @@ export const markdownComponents: Partial<Components> = {
     </th>
   ),
   td: ({ children }) => (
-    <td className="border-b border-border px-3 py-1.5 text-xs">
-      {children}
-    </td>
+    <td className="border-b border-border px-3 py-1.5 text-xs">{children}</td>
   ),
   hr: () => <hr className="my-4 border-border" />,
   strong: ({ children }) => (

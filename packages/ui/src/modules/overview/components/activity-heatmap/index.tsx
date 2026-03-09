@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState, useCallback } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
 import {
   Card,
   CardContent,
@@ -14,8 +16,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
 import { useService } from "./use-service";
 
 const ROWS = 7;
@@ -24,8 +24,18 @@ const GAP = 3;
 const LABEL_WIDTH = 20;
 const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 function getLevel(count: number, max: number): number {
@@ -50,7 +60,10 @@ export function ActivityHeatmap() {
 
     const measure = () => {
       const available = el.clientWidth - LABEL_WIDTH - GAP;
-      const cols = Math.max(1, Math.floor((available + GAP) / (CELL_SIZE + GAP)));
+      const cols = Math.max(
+        1,
+        Math.floor((available + GAP) / (CELL_SIZE + GAP)),
+      );
       setMaxCols(cols);
     };
 
@@ -124,7 +137,14 @@ export function ActivityHeatmap() {
 
   const { visibleCells, visibleMonths, colCount, maxCount, totalSessions } =
     useMemo(() => {
-      if (maxCols === null) return { visibleCells: [], visibleMonths: [], colCount: 0, maxCount: 0, totalSessions: 0 };
+      if (maxCols === null)
+        return {
+          visibleCells: [],
+          visibleMonths: [],
+          colCount: 0,
+          maxCount: 0,
+          totalSessions: 0,
+        };
 
       const { cells, totalCols, months, totalSessions } = fullYear;
 
@@ -191,72 +211,87 @@ export function ActivityHeatmap() {
       <CardContent className="px-6" ref={containerRef}>
         {renderHeatmap && (
           <div className="flex flex-col items-center">
-          <TooltipProvider delayDuration={0}>
-            <div className="inline-flex gap-[3px]">
-              {/* Day labels */}
-              <div className="flex flex-col gap-[3px]" style={{ width: LABEL_WIDTH }}>
-                {DAY_LABELS.map((label, i) => (
-                  <span
-                    key={i}
-                    className="text-[10px] leading-none text-muted-foreground flex items-center justify-end"
-                    style={{ height: CELL_SIZE }}
-                  >
-                    {label}
-                  </span>
+            <TooltipProvider delayDuration={0}>
+              <div className="inline-flex gap-[3px]">
+                {/* Day labels */}
+                <div
+                  className="flex flex-col gap-[3px]"
+                  style={{ width: LABEL_WIDTH }}
+                >
+                  {DAY_LABELS.map((label, i) => (
+                    <span
+                      key={i}
+                      className="text-[10px] leading-none text-muted-foreground flex items-center justify-end"
+                      style={{ height: CELL_SIZE }}
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Week columns */}
+                {Array.from({ length: colCount }, (_, col) => (
+                  <div key={col} className="flex flex-col gap-[3px]">
+                    {Array.from({ length: ROWS }, (_, row) => {
+                      const cell = cellMap.get(`${col}-${row}`);
+                      if (!cell) {
+                        return (
+                          <span
+                            key={row}
+                            style={{ width: CELL_SIZE, height: CELL_SIZE }}
+                          />
+                        );
+                      }
+                      const level = getLevel(cell.count, maxCount);
+                      return (
+                        <Tooltip key={row}>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="rounded-[2px]"
+                              style={{
+                                width: CELL_SIZE,
+                                height: CELL_SIZE,
+                                backgroundColor: `var(--heatmap-${level})`,
+                              }}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">
+                            <p className="font-medium">{cell.date}</p>
+                            <p className="text-muted-foreground">
+                              {cell.count}{" "}
+                              {cell.count === 1 ? "session" : "sessions"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
                 ))}
               </div>
 
-              {/* Week columns */}
-              {Array.from({ length: colCount }, (_, col) => (
-                <div key={col} className="flex flex-col gap-[3px]">
-                  {Array.from({ length: ROWS }, (_, row) => {
-                    const cell = cellMap.get(`${col}-${row}`);
-                    if (!cell) {
-                      return <span key={row} style={{ width: CELL_SIZE, height: CELL_SIZE }} />;
-                    }
-                    const level = getLevel(cell.count, maxCount);
-                    return (
-                      <Tooltip key={row}>
-                        <TooltipTrigger asChild>
-                          <span
-                            className="rounded-[2px]"
-                            style={{
-                              width: CELL_SIZE,
-                              height: CELL_SIZE,
-                              backgroundColor: `var(--heatmap-${level})`,
-                            }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">
-                          <p className="font-medium">{cell.date}</p>
-                          <p className="text-muted-foreground">
-                            {cell.count} {cell.count === 1 ? "session" : "sessions"}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-
-            {/* Month labels */}
-            <div className="flex mt-1" style={{ paddingLeft: LABEL_WIDTH + GAP }}>
-              {visibleMonths.map((m, i) => {
-                const nextCol = i < visibleMonths.length - 1 ? visibleMonths[i + 1].col : colCount;
-                const span = nextCol - m.col;
-                return (
-                  <span
-                    key={i}
-                    className="text-[10px] text-muted-foreground"
-                    style={{ width: span * (CELL_SIZE + GAP) }}
-                  >
-                    {span >= 3 ? m.label : ""}
-                  </span>
-                );
-              })}
-            </div>
-          </TooltipProvider>
+              {/* Month labels */}
+              <div
+                className="flex mt-1"
+                style={{ paddingLeft: LABEL_WIDTH + GAP }}
+              >
+                {visibleMonths.map((m, i) => {
+                  const nextCol =
+                    i < visibleMonths.length - 1
+                      ? visibleMonths[i + 1].col
+                      : colCount;
+                  const span = nextCol - m.col;
+                  return (
+                    <span
+                      key={i}
+                      className="text-[10px] text-muted-foreground"
+                      style={{ width: span * (CELL_SIZE + GAP) }}
+                    >
+                      {span >= 3 ? m.label : ""}
+                    </span>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
           </div>
         )}
       </CardContent>

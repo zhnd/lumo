@@ -1,28 +1,28 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import * as echarts from "echarts/core";
+import type { EChartsOption } from "echarts";
 import {
   BarChart,
+  GaugeChart,
+  HeatmapChart,
   LineChart,
   PieChart,
   RadarChart,
   SankeyChart,
   TreemapChart,
-  GaugeChart,
-  HeatmapChart,
 } from "echarts/charts";
 import {
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
   CalendarComponent,
-  VisualMapComponent,
-  RadarComponent,
   GraphicComponent,
+  GridComponent,
+  LegendComponent,
+  RadarComponent,
+  TooltipComponent,
+  VisualMapComponent,
 } from "echarts/components";
+import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
-import type { EChartsOption } from "echarts";
+import { useEffect, useRef } from "react";
 
 echarts.use([
   BarChart,
@@ -76,9 +76,7 @@ export function resolveChartColorAlpha(cssVar: string, alpha: number): string {
  *
  * Both variants show a centered "No data" label.
  */
-export function emptyChartOption(
-  type: "axis" | "pie" = "axis",
-): EChartsOption {
+export function emptyChartOption(type: "axis" | "pie" = "axis"): EChartsOption {
   const mutedColor = resolveChartColor("--muted-foreground");
   const borderColor = resolveChartColorAlpha("--border", 0.4);
 

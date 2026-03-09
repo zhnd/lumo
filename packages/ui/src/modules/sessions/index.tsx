@@ -2,17 +2,17 @@
 
 import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/page-header";
 import { CardError } from "@/components/card-error";
+import { PageHeader } from "@/components/page-header";
 import { ProjectNav } from "@/components/project-nav";
+import { Button } from "@/components/ui/button";
 import {
+  ProjectListSkeleton,
   SessionList,
   SessionListSkeleton,
-  ProjectListSkeleton,
 } from "./components";
-import { useService } from "./use-service";
 import type { ClaudeSession } from "./types";
+import { useService } from "./use-service";
 
 export function Sessions() {
   const router = useRouter();
@@ -39,7 +39,9 @@ export function Sessions() {
 
   return (
     <>
-      <PageHeader title={`${selectedProjectName} (${filteredSessions.length}/${totalSessions})`}>
+      <PageHeader
+        title={`${selectedProjectName} (${filteredSessions.length}/${totalSessions})`}
+      >
         <Button
           variant="ghost"
           size="icon"

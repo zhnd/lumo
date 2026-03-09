@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const THRESHOLD = 200;
 
@@ -56,7 +56,7 @@ export function useScrollToBottom({
     handleScroll();
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
-  }, [scrollRef, itemCount]);
+  }, [scrollRef]);
 
   const scrollToBottom = useCallback(() => {
     onScrollToBottom();

@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { UseServiceReturn, UpdateProgress } from "./types";
-import { UPDATE_STATUS } from "./types";
+import { useCallback, useRef, useState } from "react";
 import { QUERY_KEY, UPDATE_CHECK_INTERVAL_MS } from "./constants";
+import type { UpdateProgress, UseServiceReturn } from "./types";
+import { UPDATE_STATUS } from "./types";
 
 async function downloadUpdate(
   update: NonNullable<
     Awaited<ReturnType<typeof import("@tauri-apps/plugin-updater").check>>
   >,
   setStatus: (s: UseServiceReturn["status"]) => void,
-  setProgress: React.Dispatch<React.SetStateAction<UpdateProgress>>
+  setProgress: React.Dispatch<React.SetStateAction<UpdateProgress>>,
 ) {
   setStatus(UPDATE_STATUS.Downloading);
   setProgress({ contentLength: undefined, downloaded: 0 });
@@ -33,15 +33,14 @@ async function downloadUpdate(
 
 export function useService(): UseServiceReturn {
   const [status, setStatus] = useState<UseServiceReturn["status"]>(
-    UPDATE_STATUS.Idle
+    UPDATE_STATUS.Idle,
   );
   const [progress, setProgress] = useState<UpdateProgress>({
     contentLength: undefined,
     downloaded: 0,
   });
-  const [updateInfo, setUpdateInfo] = useState<UseServiceReturn["updateInfo"]>(
-    null
-  );
+  const [updateInfo, setUpdateInfo] =
+    useState<UseServiceReturn["updateInfo"]>(null);
   const downloadingRef = useRef(false);
 
   useQuery({

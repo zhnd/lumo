@@ -13,8 +13,7 @@ function derivePersona(data: WrappedData): Persona {
     (data.totalActiveHours / Math.max(data.totalSessions, 1)) * 60;
   const isNight = data.peakHour >= 22 || data.peakHour < 5;
   const isEarlyBird = data.peakHour >= 5 && data.peakHour < 9;
-  const hasHighOutput =
-    data.linesOfCodeAdded + data.linesOfCodeRemoved > 5000;
+  const hasHighOutput = data.linesOfCodeAdded + data.linesOfCodeRemoved > 5000;
   const hasLongSessions = avgMinPerSession > 40;
   const hasShortSessions = avgMinPerSession < 15 && data.totalSessions > 5;
   const hasLongStreak = data.longestStreakDays >= 5;

@@ -1,8 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ExternalLink, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { LoginPromptProps } from "./types";
 
 export function LoginPrompt({ onLogin, isLoading }: LoginPromptProps) {

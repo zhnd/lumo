@@ -1,15 +1,15 @@
 "use client";
 
+import { Link2, Terminal, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Popover,
-  PopoverTrigger,
   PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
-import { Link2, Trash2, Terminal } from "lucide-react";
 import { SkillScope } from "@/generated/typeshare-types";
 import type { SkillCardProps } from "./types";
 

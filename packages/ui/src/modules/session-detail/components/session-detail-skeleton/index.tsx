@@ -58,9 +58,7 @@ function MessageSkeleton({
     <div
       className={`flex ${align === "right" ? "justify-end" : "justify-start"}`}
     >
-      <div
-        className={`space-y-1.5 ${align === "right" ? "w-2/3" : "w-3/4"}`}
-      >
+      <div className={`space-y-1.5 ${align === "right" ? "w-2/3" : "w-3/4"}`}>
         {/* Role + avatar */}
         <div className="flex items-center gap-2">
           <Skeleton className="size-5 rounded-full" />
@@ -68,10 +66,7 @@ function MessageSkeleton({
         </div>
         {/* Text lines */}
         {Array.from({ length: lines }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className={`h-3.5 ${widths[i % widths.length]}`}
-          />
+          <Skeleton key={i} className={`h-3.5 ${widths[i % widths.length]}`} />
         ))}
       </div>
     </div>

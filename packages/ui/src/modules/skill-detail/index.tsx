@@ -1,27 +1,27 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DetailHeader } from "@/components/detail-header";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
-import { MarkdownViewer } from "@/components/markdown-viewer";
-import { CodeEditor } from "@/components/code-editor";
-import { DeleteSkillDialog } from "@/modules/skills/components/delete-dialog";
 import {
-  Save,
-  Undo2,
-  Trash2,
-  Loader2,
-  Link2,
-  Terminal,
   Bot,
-  Wrench,
   GitFork,
+  Link2,
+  Loader2,
+  Save,
+  Terminal,
+  Trash2,
+  Undo2,
+  Wrench,
 } from "lucide-react";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import { CodeEditor } from "@/components/code-editor";
+import { DetailHeader } from "@/components/detail-header";
+import { MarkdownViewer } from "@/components/markdown-viewer";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { SkillScope } from "@/generated/typeshare-types";
-import { useService } from "./use-service";
+import { DeleteSkillDialog } from "@/modules/skills/components/delete-dialog";
 import type { SkillDetailProps } from "./types";
+import { useService } from "./use-service";
 
 export function SkillDetail({ skillPath }: SkillDetailProps) {
   const {
@@ -102,11 +102,7 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
                   <Undo2 className="mr-1.5 size-3.5" />
                   Discard
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onSave()}
-                  disabled={isSaving}
-                >
+                <Button size="sm" onClick={() => onSave()} disabled={isSaving}>
                   {isSaving ? (
                     <Loader2 className="mr-1.5 size-3.5 animate-spin" />
                   ) : (
@@ -128,9 +124,8 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
           </>
         }
         meta={
-          metaBadges.length > 0 ? (
-            <>
-              {metaBadges.map((badge) => (
+          metaBadges.length > 0
+            ? metaBadges.map((badge) => (
                 <Badge
                   key={badge.label}
                   variant="secondary"
@@ -141,9 +136,8 @@ export function SkillDetail({ skillPath }: SkillDetailProps) {
                   {badge.icon === "context" && <GitFork className="size-3" />}
                   {badge.label}
                 </Badge>
-              ))}
-            </>
-          ) : undefined
+              ))
+            : undefined
         }
       />
 

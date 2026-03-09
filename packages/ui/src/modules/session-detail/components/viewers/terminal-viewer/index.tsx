@@ -9,7 +9,12 @@ interface TerminalViewerProps {
   className?: string;
 }
 
-export function TerminalViewer({ command, output, isError, className }: TerminalViewerProps) {
+export function TerminalViewer({
+  command,
+  output,
+  isError,
+  className,
+}: TerminalViewerProps) {
   return (
     <div
       className={cn(

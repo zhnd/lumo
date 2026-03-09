@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  ToolUsageStats,
   CodeEditLanguageStats,
-  ToolTrend,
   TimeRange,
+  ToolTrend,
+  ToolUsageStats,
 } from "../generated/typeshare-types";
 
 /**

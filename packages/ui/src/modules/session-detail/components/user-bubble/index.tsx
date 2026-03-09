@@ -1,9 +1,9 @@
 "use client";
 
 import { Clock3, User } from "lucide-react";
-import { MarkdownViewer } from "../viewers/markdown-viewer";
 import { formatMessageTime } from "../../libs";
 import type { TimelineUserItem } from "../../types";
+import { MarkdownViewer } from "../viewers/markdown-viewer";
 
 interface UserBubbleProps {
   item: TimelineUserItem;

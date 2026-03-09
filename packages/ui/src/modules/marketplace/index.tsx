@@ -1,32 +1,25 @@
 "use client";
 
-import {
-  Search,
-  Store,
-  Plus,
-  RefreshCw,
-  Trash2,
-  Loader2,
-} from "lucide-react";
-import { PageHeader } from "@/components/page-header";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
+import { Loader2, Plus, RefreshCw, Search, Store, Trash2 } from "lucide-react";
 import { CardEmpty } from "@/components/card-empty";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import { PageHeader } from "@/components/page-header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
 import { PluginCard, PluginDetail } from "./components";
-import { useService } from "./use-service";
 import { CATEGORY_LABELS } from "./types";
+import { useService } from "./use-service";
 
 export function Marketplace() {
   const {

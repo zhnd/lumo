@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { SkillsBridge } from "@/bridges/skills-bridge";
 
 export function useService(onClose: () => void) {

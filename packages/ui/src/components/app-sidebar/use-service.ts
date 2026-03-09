@@ -28,7 +28,7 @@ const NAV_ROUTES = [
 function resolveActiveItem(pathname: string): string {
   if (pathname === "/") return "overview";
   for (const route of NAV_ROUTES) {
-    if (pathname === route.prefix || pathname.startsWith(route.prefix + "/")) {
+    if (pathname === route.prefix || pathname.startsWith(`${route.prefix}/`)) {
       return route.id;
     }
   }

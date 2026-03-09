@@ -1,4 +1,7 @@
-import type { ClaudeProjectSummary, PluginInstalledScope } from "@/generated/typeshare-types";
+import type {
+  ClaudeProjectSummary,
+  PluginInstalledScope,
+} from "@/generated/typeshare-types";
 
 export const CATEGORY_LABELS: Record<string, string> = {
   all: "All",

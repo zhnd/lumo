@@ -1,14 +1,11 @@
 "use client";
 
+import { Clock, MessageSquare } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { MessageSquare, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatTimeAgo, truncate } from "../../libs";
 import type { SessionListProps } from "./types";
-import {
-  formatTimeAgo,
-  truncate,
-} from "../../libs";
 
 export function SessionList({
   sessions,
@@ -77,7 +74,9 @@ export function SessionList({
                   </p>
                   <div className="mt-0.5 flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
                     <Clock className="size-3" />
-                    <span>{formatTimeAgo(session.lastUpdated || session.modified)}</span>
+                    <span>
+                      {formatTimeAgo(session.lastUpdated || session.modified)}
+                    </span>
                   </div>
                 </div>
               </CardContent>

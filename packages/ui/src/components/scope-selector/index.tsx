@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, FolderOpen } from "lucide-react";
+import { FolderOpen, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -54,7 +54,10 @@ export function ScopeSelector({
           <Globe className="size-3.5" />
           <span>Global</span>
           {globalCount != null && (
-            <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
+            <Badge
+              variant="secondary"
+              className="ml-auto h-4 px-1.5 text-[10px]"
+            >
               {globalCount}
             </Badge>
           )}

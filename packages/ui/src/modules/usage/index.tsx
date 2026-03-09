@@ -1,7 +1,8 @@
 "use client";
 
-import { PageHeader } from "@/components/page-header";
+import { ArrowRightLeft, Clock, RefreshCw } from "lucide-react";
 import { CardError } from "@/components/card-error";
+import { PageHeader } from "@/components/page-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,12 +16,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { RefreshCw, Clock, ArrowRightLeft } from "lucide-react";
 import type { SubscriptionUsageCategory } from "@/generated/typeshare-types";
 import {
-  UsageCategoryCard,
   LoginPrompt,
   NoSubscriptionPrompt,
+  UsageCategoryCard,
   UsageSkeleton,
 } from "./components";
 import { useService } from "./use-service";
@@ -68,7 +68,7 @@ export function Usage() {
   const categories = data?.usage?.categories ?? [];
   const sessionCats = categories.filter((c) => c.name === "current_session");
   const weeklyCats = categories.filter(
-    (c) => c.name === "all_models" || c.name === "sonnet_only"
+    (c) => c.name === "all_models" || c.name === "sonnet_only",
   );
   const extraCats = categories.filter((c) => c.name === "extra_usage");
 

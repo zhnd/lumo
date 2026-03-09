@@ -1,13 +1,13 @@
 "use client";
 
-import { Loader2, RotateCcw, CircleAlert } from "lucide-react";
+import { CircleAlert, Loader2, RotateCcw } from "lucide-react";
 import {
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useService } from "./use-service";
 import { UPDATE_STATUS } from "./types";
+import { useService } from "./use-service";
 
 export function UpdateIndicator() {
   const { status, downloadPercent, updateInfo, relaunchApp } = useService();

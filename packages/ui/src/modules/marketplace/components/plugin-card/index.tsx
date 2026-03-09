@@ -1,15 +1,24 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Check,
+  ChevronDown,
+  Download,
+  FolderOpen,
+  Globe,
+  Loader2,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader2, Check, Download, Users, Trash2, Globe, FolderOpen, ChevronDown } from "lucide-react";
 import { CATEGORY_LABELS, scopeLabel } from "../../types";
 import type { PluginCardProps } from "./types";
 

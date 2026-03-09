@@ -1,17 +1,16 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
 import { CardError } from "@/components/card-error";
-import { useService } from "./use-service";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import {
+  EChart,
+  resolveChartColor,
+  resolveChartColorAlpha,
+} from "@/components/echarts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CostEfficiencyTrendProps } from "./types";
+import { useService } from "./use-service";
 
 export function CostEfficiencyTrend({ timeRange }: CostEfficiencyTrendProps) {
   const { data, isLoading, error, refetch } = useService(timeRange);

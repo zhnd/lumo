@@ -1,19 +1,18 @@
 "use client";
 
+import { Plus, Puzzle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Puzzle } from "lucide-react";
-import { PageHeader } from "@/components/page-header";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
 import { CardEmpty } from "@/components/card-empty";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import { PageHeader } from "@/components/page-header";
 import { ScopeSelector } from "@/components/scope-selector";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import {
-  SkillList,
   AddSkillDialog,
   CreateDialog,
   DeleteSkillDialog,
+  SkillList,
 } from "./components";
 import { useService } from "./use-service";
 
@@ -52,7 +51,11 @@ export function Skills() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <PageHeader title="Skills">
-        <Button className="cursor-pointer" size="sm" onClick={() => setIsAddDialogOpen(true)}>
+        <Button
+          className="cursor-pointer"
+          size="sm"
+          onClick={() => setIsAddDialogOpen(true)}
+        >
           <Plus className="size-4" />
           Add Skill
         </Button>

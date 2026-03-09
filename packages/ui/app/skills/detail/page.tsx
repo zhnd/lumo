@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { SkillDetail } from "@/modules/skill-detail";
+import { Suspense } from "react";
 import { CardLoading } from "@/components/card-loading";
+import { SkillDetail } from "@/modules/skill-detail";
 
 function SkillDetailContent() {
   const searchParams = useSearchParams();

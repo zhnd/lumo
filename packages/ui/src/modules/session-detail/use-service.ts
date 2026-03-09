@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClaudeSessionBridge } from "@/bridges/claude-session-bridge";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { watcherBackedQueryOptions } from "@/lib/query-options";
 import { useTauriEvent } from "@/hooks/use-tauri-event";
+import { watcherBackedQueryOptions } from "@/lib/query-options";
 import { buildFlatTimeline, buildSessionHighlights } from "./libs";
 import type { UseServiceReturn } from "./types";
 
@@ -52,7 +51,10 @@ export function useService(sessionPath: string): UseServiceReturn {
     };
   }, []);
 
-  useTauriEvent<SessionFileChangedPayload>("session-file-changed", invalidateDetail);
+  useTauriEvent<SessionFileChangedPayload>(
+    "session-file-changed",
+    invalidateDetail,
+  );
 
   const detailQuery = useQuery({
     ...watcherBackedQueryOptions,
@@ -106,12 +108,13 @@ export function useService(sessionPath: string): UseServiceReturn {
     });
   }, [virtualizer, timelineItems.length]);
 
-  const { showScrollToBottom, isNearBottom, scrollToBottom } = useScrollToBottom({
-    scrollRef,
-    itemCount: timelineItems.length,
-    onScrollToBottom: handleScrollToBottom,
-    autoScrollOnInitialLoad: false,
-  });
+  const { showScrollToBottom, isNearBottom, scrollToBottom } =
+    useScrollToBottom({
+      scrollRef,
+      itemCount: timelineItems.length,
+      onScrollToBottom: handleScrollToBottom,
+      autoScrollOnInitialLoad: false,
+    });
 
   const onBack = useCallback(() => {
     router.push("/sessions");
@@ -121,7 +124,7 @@ export function useService(sessionPath: string): UseServiceReturn {
     hasPreparedInitialRenderRef.current = false;
     previousItemCountRef.current = 0;
     setIsInitialRenderReady(false);
-  }, [sessionPath]);
+  }, []);
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -131,7 +134,8 @@ export function useService(sessionPath: string): UseServiceReturn {
     }
 
     const handleScroll = () => {
-      const remaining = element.scrollHeight - element.clientHeight - element.scrollTop;
+      const remaining =
+        element.scrollHeight - element.clientHeight - element.scrollTop;
       setIsTopCollapsed((prev) => {
         if (prev) {
           return !(remaining <= TOP_PANEL_SHOW_THRESHOLD);
@@ -145,7 +149,7 @@ export function useService(sessionPath: string): UseServiceReturn {
     return () => {
       element.removeEventListener("scroll", handleScroll);
     };
-  }, [timelineItems.length, detailQuery.isLoading]);
+  }, []);
 
   useEffect(() => {
     if (detailQuery.isLoading && !hasPreparedInitialRenderRef.current) {
@@ -201,7 +205,8 @@ export function useService(sessionPath: string): UseServiceReturn {
 
       requestAnimationFrame(() => {
         if (cancelled) return;
-        const remaining = element.scrollHeight - element.clientHeight - element.scrollTop;
+        const remaining =
+          element.scrollHeight - element.clientHeight - element.scrollTop;
         if (remaining > LIVE_FOLLOW_THRESHOLD_PX) {
           virtualizer.scrollToIndex(timelineItems.length - 1, {
             align: "end",
@@ -227,7 +232,6 @@ export function useService(sessionPath: string): UseServiceReturn {
     detailQuery.data,
     timelineItems.length,
     isNearBottom,
-    scrollRef,
     virtualizer,
   ]);
 

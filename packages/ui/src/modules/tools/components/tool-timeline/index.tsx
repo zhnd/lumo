@@ -1,19 +1,18 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
 import { CardChartEmpty } from "@/components/card-chart-empty";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import {
+  EChart,
+  resolveChartColor,
+  resolveChartColorAlpha,
+} from "@/components/echarts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TimeRange } from "@/generated/typeshare-types";
-import { useService } from "./use-service";
 import type { ToolTimelineProps } from "./types";
+import { useService } from "./use-service";
 
 export function ToolTimeline({ timeRange }: ToolTimelineProps) {
   const COLORS = [

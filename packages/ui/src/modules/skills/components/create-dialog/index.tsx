@@ -1,18 +1,18 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetDescription,
   SheetFooter,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
-import { useService } from "./use-service";
 import type { CreateDialogProps } from "./types";
+import { useService } from "./use-service";
 
 export function CreateDialog({
   open,
@@ -60,13 +60,8 @@ export function CreateDialog({
           >
             Cancel
           </Button>
-          <Button
-            onClick={onCreate}
-            disabled={isCreating || !skillName.trim()}
-          >
-            {isCreating && (
-              <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-            )}
+          <Button onClick={onCreate} disabled={isCreating || !skillName.trim()}>
+            {isCreating && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
             Create
           </Button>
         </SheetFooter>

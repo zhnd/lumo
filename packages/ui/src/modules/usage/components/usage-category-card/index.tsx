@@ -37,9 +37,7 @@ export function UsageCategoryCard({ category }: UsageCategoryCardProps) {
               </p>
             )}
           </div>
-          <span
-            className={cn("shrink-0 text-sm tabular-nums", textColor)}
-          >
+          <span className={cn("shrink-0 text-sm tabular-nums", textColor)}>
             {category.percentUsed}% used
           </span>
         </div>
@@ -48,7 +46,7 @@ export function UsageCategoryCard({ category }: UsageCategoryCardProps) {
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
-              barColor
+              barColor,
             )}
             style={{
               width: `${Math.max(Math.min(category.percentUsed, 100), 1)}%`,

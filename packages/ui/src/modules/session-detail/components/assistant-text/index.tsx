@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Bot, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MarkdownViewer } from "../viewers/markdown-viewer";
 import { formatMessageTime, getModelDisplayName } from "../../libs";
 import type { TimelineAssistantItem } from "../../types";
+import { MarkdownViewer } from "../viewers/markdown-viewer";
 
 const COLLAPSE_THRESHOLD = 1200;
 const PREVIEW_LENGTH = 600;
@@ -20,7 +20,9 @@ export function AssistantText({ item }: AssistantTextProps) {
   const isLong = item.text.length > COLLAPSE_THRESHOLD;
   const [expanded, setExpanded] = useState(!isLong);
   const displayModel = getModelDisplayName(item.model);
-  const displayText = !expanded ? item.text.slice(0, PREVIEW_LENGTH) : item.text;
+  const displayText = !expanded
+    ? item.text.slice(0, PREVIEW_LENGTH)
+    : item.text;
 
   return (
     <section className="px-4 py-2 md:px-6">
@@ -29,13 +31,21 @@ export function AssistantText({ item }: AssistantTextProps) {
           <Bot className="size-3.5" />
           <span className="font-medium text-foreground">Claude</span>
           {displayModel && (
-            <Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">
+            <Badge
+              variant="outline"
+              className="h-5 rounded-full px-2 text-[10px]"
+            >
               {displayModel}
             </Badge>
           )}
           <span className="ml-auto">{formatMessageTime(item.timestamp)}</span>
         </div>
-        <div className={cn("text-sm leading-relaxed break-words", !expanded && "max-h-[360px] overflow-hidden")}>
+        <div
+          className={cn(
+            "text-sm leading-relaxed break-words",
+            !expanded && "max-h-[360px] overflow-hidden",
+          )}
+        >
           <MarkdownViewer content={displayText} />
         </div>
         {isLong && (

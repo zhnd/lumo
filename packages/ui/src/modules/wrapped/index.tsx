@@ -1,10 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { PageHeader } from "@/components/page-header";
 import { CardError } from "@/components/card-error";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/components/page-header";
 import {
   Select,
   SelectContent,
@@ -12,18 +10,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { WrappedPeriod } from "@/generated/typeshare-types";
 import {
-  HeroStat,
-  CodingPersona,
-  FunFacts,
-  TopModel,
-  FavoriteTool,
-  CostCard,
   CodeOutput,
+  CodingPersona,
   CodingStreak,
+  CostCard,
+  FavoriteTool,
+  FunFacts,
+  HeroStat,
   PeakHour,
   ShareButton,
+  TopModel,
 } from "./components";
 import { useService } from "./use-service";
 
@@ -160,7 +160,9 @@ export function Wrapped() {
           )}
           {data && !hasMeaningfulData && (
             <div className="w-full max-w-md rounded-xl border border-border bg-card p-6">
-              <p className="text-center text-sm font-medium">No wrapped data yet</p>
+              <p className="text-center text-sm font-medium">
+                No wrapped data yet
+              </p>
               <p className="mt-2 text-center text-xs text-muted-foreground">
                 Run more Claude Code sessions in this period, then come back to
                 see your summary.

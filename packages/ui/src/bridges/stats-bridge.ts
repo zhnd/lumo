@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  SummaryStats,
   ModelStats,
-  TokenStats,
+  SummaryStats,
   TimeRange,
+  TokenStats,
 } from "../generated/typeshare-types";
 
 /**

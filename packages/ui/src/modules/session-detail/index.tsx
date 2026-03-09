@@ -4,13 +4,13 @@ import { CardError } from "@/components/card-error";
 import { ScrollToBottomButton } from "@/components/scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import {
-  TimelineItem,
-  SessionHeader,
   SessionDetailSkeleton,
+  SessionHeader,
   SessionHighlights,
+  TimelineItem,
 } from "./components";
-import { useService } from "./use-service";
 import type { SessionDetailModuleProps } from "./types";
+import { useService } from "./use-service";
 
 export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
   const {
@@ -50,7 +50,12 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
 
   return (
     <div className="relative h-full">
-      <div className={cn("flex h-full flex-col", !isInitialRenderReady && "invisible")}>
+      <div
+        className={cn(
+          "flex h-full flex-col",
+          !isInitialRenderReady && "invisible",
+        )}
+      >
         <div className="z-20">
           <SessionHeader
             session={session}
@@ -60,7 +65,9 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
             collapsed={isTopCollapsed}
             onBack={onBack}
           />
-          {!isTopCollapsed && highlights && <SessionHighlights highlights={highlights} />}
+          {!isTopCollapsed && highlights && (
+            <SessionHighlights highlights={highlights} />
+          )}
         </div>
 
         {timelineItems.length === 0 ? (
@@ -103,7 +110,9 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
                   <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
                   <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60" />
                 </span>
-                <span className="text-xs text-muted-foreground">Session active</span>
+                <span className="text-xs text-muted-foreground">
+                  Session active
+                </span>
               </div>
             )}
 

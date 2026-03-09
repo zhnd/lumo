@@ -1,5 +1,9 @@
 "use client";
 
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
 import {
   Card,
   CardContent,
@@ -7,12 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
-import { useService } from "./use-service";
 import type { ErrorRateCardProps } from "./types";
+import { useService } from "./use-service";
 
 export function ErrorRateCard({ timeRange }: ErrorRateCardProps) {
   const { data, isLoading, error, refetch } = useService(timeRange);
@@ -60,7 +60,8 @@ export function ErrorRateCard({ timeRange }: ErrorRateCardProps) {
       <CardHeader className="px-4">
         <CardTitle>Error Rate</CardTitle>
         <CardDescription>
-          {(data.errorRate * 100).toFixed(2)}% ({data.totalErrors}/{data.totalRequests})
+          {(data.errorRate * 100).toFixed(2)}% ({data.totalErrors}/
+          {data.totalRequests})
         </CardDescription>
       </CardHeader>
       <CardContent className="px-4">

@@ -1,19 +1,19 @@
 "use client";
 
+import { CardChartEmpty } from "@/components/card-chart-empty";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
-import { CardChartEmpty } from "@/components/card-chart-empty";
-import { useService } from "./use-service";
 import type { CodeEditDecisionsProps } from "./types";
+import { useService } from "./use-service";
 
 export function CodeEditDecisions({ timeRange }: CodeEditDecisionsProps) {
   const { data, totalAccepts, totalRejects, isLoading, error, refetch } =
@@ -29,7 +29,13 @@ export function CodeEditDecisions({ timeRange }: CodeEditDecisionsProps) {
       />
     );
   if (totalAccepts + totalRejects === 0) {
-    return <CardChartEmpty title="Code Edit Decisions" chartType="pie" height={200} />;
+    return (
+      <CardChartEmpty
+        title="Code Edit Decisions"
+        chartType="pie"
+        height={200}
+      />
+    );
   }
 
   const donutOption: EChartsOption = {
@@ -74,7 +80,10 @@ export function CodeEditDecisions({ timeRange }: CodeEditDecisionsProps) {
               const total = d.accepts + d.rejects;
               const rate = total > 0 ? (d.accepts / total) * 100 : 0;
               return (
-                <div key={d.language} className="flex items-center justify-between text-sm">
+                <div
+                  key={d.language}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span>{d.language}</span>
                   <div className="flex gap-3 text-muted-foreground">
                     <span className="text-green-500">{d.accepts}</span>

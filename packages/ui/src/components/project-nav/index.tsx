@@ -1,8 +1,8 @@
 "use client";
 
 import { FolderOpen, Layers } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { ProjectNavProps } from "./types";
 
@@ -25,7 +25,7 @@ function formatTimeAgo(timestamp: string): string {
 
 function truncatePath(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + "...";
+  return `${text.slice(0, maxLength - 3)}...`;
 }
 
 export function ProjectNav({
@@ -39,8 +39,12 @@ export function ProjectNav({
   showDetails = true,
   widthClass = "md:w-72",
 }: ProjectNavProps) {
-  const AllIcon = allIcon ?? <Layers className="size-3.5 text-muted-foreground" />;
-  const AllIconDesktop = allIcon ?? <Layers className="size-4 text-muted-foreground" />;
+  const AllIcon = allIcon ?? (
+    <Layers className="size-3.5 text-muted-foreground" />
+  );
+  const AllIconDesktop = allIcon ?? (
+    <Layers className="size-4 text-muted-foreground" />
+  );
 
   return (
     <div

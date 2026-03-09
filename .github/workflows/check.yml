@@ -92,8 +92,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: ESLint
+      - name: Biome lint
         run: pnpm lint
 
+      - name: Biome format check
+        run: pnpm format:check
+
       - name: Type check
-        run: pnpm -F @lumo/ui check-types
+        run: pnpm check-types

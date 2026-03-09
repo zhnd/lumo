@@ -1,5 +1,10 @@
 "use client";
 
+import { CardChartEmpty } from "@/components/card-chart-empty";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
 import {
   Card,
   CardContent,
@@ -7,15 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
-import { CardChartEmpty } from "@/components/card-chart-empty";
-import { useService } from "./use-service";
-import type { CostChartProps } from "./types";
 import { TimeRange } from "@/generated/typeshare-types";
 import { fmt } from "@/lib/format";
+import type { CostChartProps } from "./types";
+import { useService } from "./use-service";
 
 function shortenModel(model: string): string {
   const match = model.match(/claude-(\w+)-([\d-]+)/);
@@ -45,7 +45,9 @@ export function CostChart({ timeRange }: CostChartProps) {
   }
 
   if (dates.length === 0) {
-    return <CardChartEmpty title="Cost Trends" height={250} className="h-full" />;
+    return (
+      <CardChartEmpty title="Cost Trends" height={250} className="h-full" />
+    );
   }
 
   const mutedColor = resolveChartColor("--muted-foreground");
@@ -85,9 +87,7 @@ export function CostChart({ timeRange }: CostChartProps) {
     },
     xAxis: {
       type: "category",
-      data: dates.map((d) =>
-        timeRange === TimeRange.Today ? d : d.slice(5),
-      ),
+      data: dates.map((d) => (timeRange === TimeRange.Today ? d : d.slice(5))),
     },
     yAxis: {
       type: "value",

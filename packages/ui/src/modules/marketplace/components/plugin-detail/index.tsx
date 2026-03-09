@@ -2,33 +2,33 @@
 
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+  AlertTriangle,
+  ChevronDown,
+  Download,
+  ExternalLink,
+  FolderOpen,
+  Globe,
+  Loader2,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import {
-  Download,
-  Trash2,
-  Loader2,
-  ExternalLink,
-  Users,
-  AlertTriangle,
-  Globe,
-  FolderOpen,
-  ChevronDown,
-} from "lucide-react";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { CATEGORY_LABELS, scopeLabel } from "../../types";
 import type { PluginDetailProps } from "./types";
 
@@ -59,7 +59,13 @@ export function PluginDetail({
   const availableScopes = [
     // Global if not installed globally
     ...(!plugin.installedScopes.some((s) => s.scope === "user")
-      ? [{ label: "Global", path: null as string | null, icon: "globe" as const }]
+      ? [
+          {
+            label: "Global",
+            path: null as string | null,
+            icon: "globe" as const,
+          },
+        ]
       : []),
     // Projects not yet installed
     ...projects
@@ -220,7 +226,10 @@ export function PluginDetail({
                   <ChevronDown className="size-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[var(--radix-dropdown-menu-trigger-width)]">
+              <DropdownMenuContent
+                align="end"
+                className="w-[var(--radix-dropdown-menu-trigger-width)]"
+              >
                 {availableScopes.map((s) => (
                   <DropdownMenuItem
                     key={s.path ?? "__global__"}

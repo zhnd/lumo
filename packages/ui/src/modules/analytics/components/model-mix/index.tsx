@@ -1,19 +1,14 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EChart, resolveChartColor } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
 import { CardChartEmpty } from "@/components/card-chart-empty";
-import { useService } from "./use-service";
-import type { ModelMixProps } from "./types";
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import { EChart, resolveChartColor } from "@/components/echarts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fmt } from "@/lib/format";
+import type { ModelMixProps } from "./types";
+import { useService } from "./use-service";
 
 export function ModelMix({ timeRange }: ModelMixProps) {
   const COLORS = [
@@ -35,7 +30,9 @@ export function ModelMix({ timeRange }: ModelMixProps) {
       />
     );
   if (data.length === 0) {
-    return <CardChartEmpty title="Model Mix" chartType="pie" className="h-full" />;
+    return (
+      <CardChartEmpty title="Model Mix" chartType="pie" className="h-full" />
+    );
   }
 
   const option: EChartsOption = {
@@ -82,7 +79,10 @@ export function ModelMix({ timeRange }: ModelMixProps) {
         <EChart option={option} style={{ height: 220 }} />
         <div className="mt-4 space-y-2">
           {data.map((d, i) => (
-            <div key={d.model} className="flex items-center justify-between text-sm">
+            <div
+              key={d.model}
+              className="flex items-center justify-between text-sm"
+            >
               <div className="flex items-center gap-2">
                 <div
                   className="size-3 rounded-full"

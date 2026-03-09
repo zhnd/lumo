@@ -1,10 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
-  HourlyActivity,
-  SessionBucket,
-  ErrorRateStats,
   ActivityDay,
   CacheHitTrend,
+  ErrorRateStats,
+  HourlyActivity,
+  SessionBucket,
   TimeRange,
 } from "../generated/typeshare-types";
 

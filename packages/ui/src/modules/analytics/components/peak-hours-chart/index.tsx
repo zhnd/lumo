@@ -1,5 +1,13 @@
 "use client";
 
+import { CardError } from "@/components/card-error";
+import { CardLoading } from "@/components/card-loading";
+import type { EChartsOption } from "@/components/echarts";
+import {
+  EChart,
+  resolveChartColor,
+  resolveChartColorAlpha,
+} from "@/components/echarts";
 import {
   Card,
   CardContent,
@@ -7,12 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EChart, resolveChartColor, resolveChartColorAlpha } from "@/components/echarts";
-import type { EChartsOption } from "@/components/echarts";
-import { CardLoading } from "@/components/card-loading";
-import { CardError } from "@/components/card-error";
-import { useService } from "./use-service";
 import type { PeakHoursChartProps } from "./types";
+import { useService } from "./use-service";
 
 export function PeakHoursChart({ timeRange }: PeakHoursChartProps) {
   const { data, peakHour, isLoading, error, refetch } = useService(timeRange);
@@ -44,9 +48,7 @@ export function PeakHoursChart({ timeRange }: PeakHoursChartProps) {
     grid: { top: 10, right: 10, bottom: 0, left: 0, outerBoundsMode: "same" },
     xAxis: {
       type: "category",
-      data: data.map((d) =>
-        `${d.hour.toString().padStart(2, "0")}:00`,
-      ),
+      data: data.map((d) => `${d.hour.toString().padStart(2, "0")}:00`),
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {

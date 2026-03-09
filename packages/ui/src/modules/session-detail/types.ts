@@ -1,15 +1,21 @@
+import type { Virtualizer } from "@tanstack/react-virtual";
+import type { RefObject } from "react";
 import type {
+  ClaudeMessage,
+  ClaudeSession,
+  ClaudeSessionDetail,
+  ClaudeSessionStats,
+  ClaudeToolUse,
+} from "@/generated/typeshare-types";
+import type { SessionHighlights } from "./libs";
+
+export type {
   ClaudeSession,
   ClaudeSessionDetail,
   ClaudeSessionStats,
   ClaudeMessage,
   ClaudeToolUse,
-} from "@/generated/typeshare-types";
-import type { Virtualizer } from "@tanstack/react-virtual";
-import type { RefObject } from "react";
-import type { SessionHighlights } from "./libs";
-
-export type { ClaudeSession, ClaudeSessionDetail, ClaudeSessionStats, ClaudeMessage, ClaudeToolUse };
+};
 
 export interface TimelineUserItem {
   id: string;

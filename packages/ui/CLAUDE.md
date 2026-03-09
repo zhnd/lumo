@@ -308,7 +308,7 @@ packages/ui/
 ```bash
 pnpm dev              # Start Next.js dev server on localhost:3000
 pnpm build            # Build Next.js static export to out/
-pnpm lint             # Run ESLint
+pnpm lint             # Run Biome linter
 pnpm generate-types   # Generate TypeScript types from Rust structs
 ```
 

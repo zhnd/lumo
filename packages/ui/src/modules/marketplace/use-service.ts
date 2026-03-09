@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { MarketplaceBridge } from "@/bridges/marketplace-bridge";
-import { useProjects } from "@/hooks/use-projects";
 import type { MarketplacePlugin } from "@/generated/typeshare-types";
+import { useProjects } from "@/hooks/use-projects";
 
 export type PluginFilter = "all" | "installed";
 
@@ -15,7 +15,8 @@ export function useService() {
   const [filter, setFilter] = useState<PluginFilter>("all");
   const [installingName, setInstallingName] = useState<string | null>(null);
   const [uninstallingName, setUninstallingName] = useState<string | null>(null);
-  const [selectedPlugin, setSelectedPlugin] = useState<MarketplacePlugin | null>(null);
+  const [selectedPlugin, setSelectedPlugin] =
+    useState<MarketplacePlugin | null>(null);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [addSourceValue, setAddSourceValue] = useState("");
 
@@ -39,8 +40,13 @@ export function useService() {
   };
 
   const installMutation = useMutation({
-    mutationFn: ({ name, projectPath }: { name: string; projectPath: string | null }) =>
-      MarketplaceBridge.installPlugin(name, projectPath),
+    mutationFn: ({
+      name,
+      projectPath,
+    }: {
+      name: string;
+      projectPath: string | null;
+    }) => MarketplaceBridge.installPlugin(name, projectPath),
     onMutate: ({ name }) => {
       setInstallingName(name);
     },
@@ -56,8 +62,13 @@ export function useService() {
   });
 
   const uninstallMutation = useMutation({
-    mutationFn: ({ name, projectPath }: { name: string; projectPath: string | null }) =>
-      MarketplaceBridge.uninstallPlugin(name, projectPath),
+    mutationFn: ({
+      name,
+      projectPath,
+    }: {
+      name: string;
+      projectPath: string | null;
+    }) => MarketplaceBridge.uninstallPlugin(name, projectPath),
     onMutate: ({ name }) => {
       setUninstallingName(name);
     },
@@ -142,14 +153,22 @@ export function useService() {
   // Keep selectedPlugin in sync with fresh query data
   const resolvedSelectedPlugin = useMemo(() => {
     if (!selectedPlugin) return null;
-    return plugins.find((p) => p.name === selectedPlugin.name) ?? selectedPlugin;
+    return (
+      plugins.find((p) => p.name === selectedPlugin.name) ?? selectedPlugin
+    );
   }, [selectedPlugin, plugins]);
 
-  const handleInstall = (plugin: MarketplacePlugin, projectPath: string | null) => {
+  const handleInstall = (
+    plugin: MarketplacePlugin,
+    projectPath: string | null,
+  ) => {
     installMutation.mutate({ name: plugin.name, projectPath });
   };
 
-  const handleUninstall = (plugin: MarketplacePlugin, projectPath: string | null) => {
+  const handleUninstall = (
+    plugin: MarketplacePlugin,
+    projectPath: string | null,
+  ) => {
     uninstallMutation.mutate({ name: plugin.name, projectPath });
   };
 
