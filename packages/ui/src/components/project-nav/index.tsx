@@ -2,7 +2,6 @@
 
 import { FolderOpen, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { ProjectNavProps } from "./types";
 
@@ -23,9 +22,13 @@ function formatTimeAgo(timestamp: string): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function truncatePath(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength - 3)}...`;
+function abbreviatePath(fullPath: string): string {
+  const home = "/Users/";
+  if (fullPath.startsWith(home)) {
+    const afterHome = fullPath.slice(home.length);
+    return `~/${afterHome.slice(afterHome.indexOf("/") + 1)}`;
+  }
+  return fullPath;
 }
 
 export function ProjectNav({
@@ -49,70 +52,68 @@ export function ProjectNav({
   return (
     <div
       className={cn(
-        "sticky top-0 z-20 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 md:static md:z-auto md:border-r md:border-b-0 md:bg-muted/20 md:backdrop-blur-0",
+        "sticky top-0 z-20 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 md:static md:z-auto md:shrink-0 md:overflow-hidden md:border-r md:border-b-0 md:bg-muted/20 md:backdrop-blur-0",
         widthClass,
       )}
     >
-      {/* Mobile: horizontal scroll pills */}
+      {/* Mobile: wrapped pills */}
       <div className="border-b px-3 py-2 md:hidden">
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-2 pb-1">
-            <button
-              className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:bg-accent",
-                selected === null
-                  ? "border-primary/40 bg-accent"
-                  : "border-border bg-background",
-              )}
-              onClick={() => onSelect(null)}
-              type="button"
-            >
-              {AllIcon}
-              <span className="font-medium">{allLabel}</span>
-              {allBadge != null && (
-                <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
-                  {allBadge}
-                </Badge>
-              )}
-            </button>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:bg-accent",
+              selected === null
+                ? "border-primary/40 bg-accent"
+                : "border-border bg-background",
+            )}
+            onClick={() => onSelect(null)}
+            type="button"
+          >
+            {AllIcon}
+            <span className="font-medium">{allLabel}</span>
+            {allBadge != null && (
+              <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                {allBadge}
+              </Badge>
+            )}
+          </button>
 
-            {projects.map((project) => {
-              const isActive = selected === project.projectPath;
-              const count = counts?.[project.projectPath];
-              return (
-                <button
-                  key={project.projectPath}
-                  className={cn(
-                    "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:bg-accent",
-                    isActive
-                      ? "border-primary/40 bg-accent"
-                      : "border-border bg-background",
-                  )}
-                  onClick={() => onSelect(project.projectPath)}
-                  type="button"
-                  title={project.projectPath}
-                >
-                  <FolderOpen className="size-3.5 text-muted-foreground" />
-                  <span className="max-w-28 truncate font-medium">
-                    {project.projectName}
-                  </span>
-                  {count != null && (
-                    <Badge
-                      variant="secondary"
-                      className="h-4 px-1.5 text-[10px]"
-                    >
-                      {count}
-                    </Badge>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </ScrollArea>
+          {projects.map((project) => {
+            const isActive = selected === project.projectPath;
+            const count = counts?.[project.projectPath];
+            return (
+              <button
+                key={project.projectPath}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors hover:bg-accent",
+                  isActive
+                    ? "border-primary/40 bg-accent"
+                    : "border-border bg-background",
+                )}
+                onClick={() => onSelect(project.projectPath)}
+                type="button"
+                title={project.projectPath}
+              >
+                <FolderOpen className="size-3.5 text-muted-foreground" />
+                <span className="max-w-28 truncate font-medium">
+                  {project.projectName}
+                </span>
+                {count != null && (
+                  <Badge
+                    variant="secondary"
+                    className="h-4 px-1.5 text-[10px]"
+                  >
+                    {count}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Desktop: vertical sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden overflow-hidden md:block">
         <div className="border-b px-3 py-2">
           <button
             className={cn(
@@ -130,7 +131,7 @@ export function ProjectNav({
           </button>
         </div>
 
-        <ScrollArea className="h-[calc(100%-49px)]">
+        <div className="h-[calc(100%-49px)] overflow-y-auto">
           <div className="space-y-1 p-2">
             {projects.length === 0 && (
               <p className="px-2 py-3 text-xs text-muted-foreground">
@@ -144,14 +145,13 @@ export function ProjectNav({
                 <button
                   key={project.projectPath}
                   className={cn(
-                    "w-full rounded-md border px-2 py-2 text-left transition-colors hover:bg-accent/60",
+                    "w-full min-w-0 rounded-md border px-2 py-2 text-left transition-colors hover:bg-accent/60",
                     isActive
                       ? "border-primary/40 bg-accent"
                       : "border-transparent",
                   )}
                   onClick={() => onSelect(project.projectPath)}
                   type="button"
-                  title={project.projectPath}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
@@ -169,8 +169,11 @@ export function ProjectNav({
 
                   {showDetails && (
                     <>
-                      <p className="mt-1 truncate text-xs text-muted-foreground">
-                        {truncatePath(project.projectPath, 56)}
+                      <p
+                        className="mt-1 truncate text-xs text-muted-foreground"
+                        title={project.projectPath}
+                      >
+                        {abbreviatePath(project.projectPath)}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {formatTimeAgo(project.lastUpdated)}
@@ -181,7 +184,7 @@ export function ProjectNav({
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );
