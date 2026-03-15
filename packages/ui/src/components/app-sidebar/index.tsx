@@ -1,13 +1,6 @@
 "use client";
 
-import { invoke } from "@tauri-apps/api/core";
-import { FileText, Settings } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -51,20 +44,15 @@ export function AppSidebar() {
         <UpdateIndicator />
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton tooltip="Settings" className="h-9">
-                  <Settings className="size-4" />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end" className="w-48">
-                <DropdownMenuItem onClick={() => invoke("open_log_directory")}>
-                  <FileText className="size-4" />
-                  <span>Open log files</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SidebarMenuButton
+              isActive={activeItem === "settings"}
+              tooltip="Settings"
+              className="h-9"
+              onClick={() => onNavItemClick("settings")}
+            >
+              <Settings className="size-4" />
+              <span>Settings</span>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

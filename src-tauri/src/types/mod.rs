@@ -5,7 +5,7 @@
 mod analytics;
 mod claude_session;
 mod entities;
-
+pub mod notification_settings;
 mod stats;
 mod subscription_usage;
 mod tools;
@@ -18,7 +18,7 @@ mod wrapped;
 pub use analytics::*;
 pub use claude_session::*;
 pub use entities::*;
-
+pub use notification_settings::*;
 pub use stats::*;
 pub use subscription_usage::*;
 pub use tools::*;

@@ -14,6 +14,7 @@ pub struct NotificationRow {
     pub notification_type: Option<String>,
     pub title: String,
     pub message: String,
+    pub agent_type: Option<String>,
     pub cwd: Option<String>,
     pub transcript_path: Option<String>,
     pub notified: i32,
@@ -33,6 +34,8 @@ pub struct Notification {
     pub title: String,
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub agent_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cwd: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub transcript_path: Option<String>,
@@ -41,14 +44,17 @@ pub struct Notification {
     pub created_at: i64,
 }
 
-/// New notification for insertion
+/// New notification for insertion.
+/// Stores raw hook data. title/message are optional for events like
+/// Stop/SubagentStop that don't provide them.
 #[derive(Debug, Clone)]
 pub struct NewNotification {
     pub session_id: String,
     pub hook_event: String,
     pub notification_type: Option<String>,
-    pub title: String,
-    pub message: String,
+    pub title: Option<String>,
+    pub message: Option<String>,
+    pub agent_type: Option<String>,
     pub cwd: Option<String>,
     pub transcript_path: Option<String>,
 }
@@ -62,6 +68,7 @@ impl From<NotificationRow> for Notification {
             notification_type: row.notification_type,
             title: row.title,
             message: row.message,
+            agent_type: row.agent_type,
             cwd: row.cwd,
             transcript_path: row.transcript_path,
             notified: row.notified != 0,

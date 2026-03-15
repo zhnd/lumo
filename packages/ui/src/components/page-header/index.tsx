@@ -28,7 +28,9 @@ export function PageHeader({ title, children }: PageHeaderProps) {
             <Circle
               className={`size-2 fill-current ${STATUS_CONFIG[daemonStatus].color}`}
             />
-            <span className="hidden sm:inline">{STATUS_CONFIG[daemonStatus].label}</span>
+            <span className="hidden sm:inline">
+              {STATUS_CONFIG[daemonStatus].label}
+            </span>
           </Badge>
         </div>
       </div>
