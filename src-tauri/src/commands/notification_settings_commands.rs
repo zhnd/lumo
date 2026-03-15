@@ -6,7 +6,7 @@ use sqlx::SqlitePool;
 use tauri::{command, AppHandle, Manager};
 
 use crate::services::{ClaudeConfigService, NotificationSettingsService};
-use crate::types::notification_settings::{
+use crate::types::{
     NotificationSettingResponse, TerminalNotifChannel, UpdateNotificationSettingRequest,
 };
 

@@ -1,1 +1,6 @@
 pnpm exec lint-staged
+
+# Check Rust code only if Rust files are staged
+if git diff --cached --name-only | grep -qE '\.(rs|toml)$'; then
+  cargo clippy --workspace -- -D warnings
+fi

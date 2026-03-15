@@ -5,7 +5,7 @@
 mod analytics;
 mod claude_session;
 mod entities;
-pub mod notification_settings;
+mod notification_settings;
 mod stats;
 mod subscription_usage;
 mod tools;

@@ -6,9 +6,7 @@ use anyhow::Result;
 use shared::{NewNotificationSetting, NotificationSettingRepository};
 use sqlx::SqlitePool;
 
-use crate::types::notification_settings::{
-    NotificationSettingResponse, UpdateNotificationSettingRequest,
-};
+use crate::types::{NotificationSettingResponse, UpdateNotificationSettingRequest};
 
 pub struct NotificationSettingsService;
 
