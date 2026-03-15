@@ -13,6 +13,7 @@ const ROUTE_MAP: Record<string, string> = {
   skills: "/skills",
   marketplace: "/marketplace",
   wrapped: "/wrapped",
+  settings: "/settings",
 } as const;
 
 const NAV_ROUTES = [
@@ -23,6 +24,7 @@ const NAV_ROUTES = [
   { prefix: "/skills", id: "skills" },
   { prefix: "/marketplace", id: "marketplace" },
   { prefix: "/wrapped", id: "wrapped" },
+  { prefix: "/settings", id: "settings" },
 ] as const;
 
 function resolveActiveItem(pathname: string): string {

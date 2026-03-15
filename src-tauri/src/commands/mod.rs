@@ -2,7 +2,7 @@ pub mod analytics_commands;
 pub mod claude_session_commands;
 pub mod daemon_commands;
 pub mod export_commands;
-
+pub mod notification_settings_commands;
 pub mod session_commands;
 pub mod stats_commands;
 pub mod subscription_usage_commands;
@@ -20,7 +20,7 @@ pub use analytics_commands::*;
 pub use claude_session_commands::*;
 pub use daemon_commands::*;
 pub use export_commands::*;
-
+pub use notification_settings_commands::*;
 pub use session_commands::*;
 pub use stats_commands::*;
 pub use subscription_usage_commands::*;
@@ -107,6 +107,11 @@ macro_rules! app_commands {
             commands::add_marketplace,
             commands::remove_marketplace,
             commands::update_marketplaces,
+            // Notification settings commands
+            commands::get_notification_settings,
+            commands::update_notification_setting,
+            commands::get_terminal_notif_channel,
+            commands::set_terminal_notif_channel,
             // System commands
             commands::open_log_directory,
         ]

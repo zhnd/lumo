@@ -11,21 +11,26 @@ use crate::error::Result;
 pub struct NotificationRepository;
 
 impl NotificationRepository {
-    /// Insert a new notification, returning its ID
+    /// Insert a new notification, returning its ID.
+    /// Title and message default to empty string if not provided (column is NOT NULL).
     pub async fn insert(pool: &SqlitePool, notif: &NewNotification) -> Result<i64> {
+        let title = notif.title.as_deref().unwrap_or("");
+        let message = notif.message.as_deref().unwrap_or("");
+
         let result = sqlx::query(
             r#"
             INSERT INTO notifications (
                 session_id, hook_event, notification_type,
-                title, message, cwd, transcript_path
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                title, message, agent_type, cwd, transcript_path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(&notif.session_id)
         .bind(&notif.hook_event)
         .bind(&notif.notification_type)
-        .bind(&notif.title)
-        .bind(&notif.message)
+        .bind(title)
+        .bind(message)
+        .bind(&notif.agent_type)
         .bind(&notif.cwd)
         .bind(&notif.transcript_path)
         .execute(pool)

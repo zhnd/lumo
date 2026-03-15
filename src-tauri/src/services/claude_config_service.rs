@@ -37,6 +37,12 @@ impl ClaudeConfigService {
         Ok(home.join(".claude").join("settings.json"))
     }
 
+    /// Path to ~/.claude.json (Claude Code's user preferences file).
+    fn user_prefs_path() -> Result<PathBuf> {
+        let home = dirs::home_dir().context("Could not find home directory")?;
+        Ok(home.join(".claude.json"))
+    }
+
     fn read_settings(path: &PathBuf) -> Result<Map<String, Value>> {
         if path.exists() {
             let content = fs::read_to_string(path).context("Failed to read Claude settings")?;
@@ -53,6 +59,39 @@ impl ClaudeConfigService {
         let content =
             serde_json::to_string_pretty(root).context("Failed to serialize Claude settings")?;
         fs::write(path, content).context("Failed to write Claude settings")?;
+        Ok(())
+    }
+
+    /// Read the `preferredNotifChannel` value from ~/.claude.json.
+    /// Returns the raw string value, or None if not set.
+    pub fn get_preferred_notif_channel() -> Result<Option<String>> {
+        let path = Self::user_prefs_path()?;
+        let prefs = Self::read_settings(&path)?;
+        Ok(prefs
+            .get("preferredNotifChannel")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string()))
+    }
+
+    /// Write the `preferredNotifChannel` value to ~/.claude.json.
+    /// None removes the key entirely (Claude Code's default/auto behavior).
+    pub fn set_preferred_notif_channel(channel: Option<&str>) -> Result<()> {
+        let path = Self::user_prefs_path()?;
+        let mut prefs = Self::read_settings(&path)?;
+        match channel {
+            Some(value) => {
+                prefs.insert(
+                    "preferredNotifChannel".to_string(),
+                    Value::String(value.to_string()),
+                );
+                log::info!("Set preferredNotifChannel to '{}'", value);
+            }
+            None => {
+                prefs.remove("preferredNotifChannel");
+                log::info!("Removed preferredNotifChannel (auto)");
+            }
+        }
+        Self::write_settings(&path, &prefs)?;
         Ok(())
     }
 
