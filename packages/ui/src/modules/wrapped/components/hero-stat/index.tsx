@@ -20,7 +20,7 @@ export function HeroStat({ data }: { data: WrappedData }) {
         You&apos;ve collaborated with Claude for
       </p>
       <div className="flex items-baseline gap-2">
-        <span className="text-5xl font-extrabold tabular-nums bg-gradient-to-r from-chart-1 to-chart-2 bg-clip-text text-transparent">
+        <span className="text-4xl font-extrabold tabular-nums bg-gradient-to-r from-chart-1 to-chart-2 bg-clip-text text-transparent sm:text-5xl">
           {time.value}
         </span>
         <span className="text-xl font-medium text-muted-foreground">

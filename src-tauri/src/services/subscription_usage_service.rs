@@ -39,7 +39,7 @@ fn build_extraction_js(request_id: &str) -> String {
     if (window.__LUMO_EXTRACT_ID === REQUEST_ID) return;
     window.__LUMO_EXTRACT_ID = REQUEST_ID;
     var attempts = 0;
-    var maxAttempts = 30;
+    var maxAttempts = 120;
 
     function emit(tag, payload) {{
         window.location.hash = tag + ':' + REQUEST_ID + ':' + encodeURIComponent(JSON.stringify(payload));
@@ -189,16 +189,25 @@ pub struct SubscriptionUsageService;
 impl SubscriptionUsageService {
     /// Fetch subscription usage by navigating a hidden webview to claude.ai/settings/usage.
     pub async fn fetch_usage(app_handle: &AppHandle) -> Result<SubscriptionUsageResult> {
+        // Check if webview already exists and is on the usage page (skip navigation wait)
+        let already_on_usage = app_handle
+            .get_webview_window(WEBVIEW_LABEL)
+            .and_then(|w| w.url().ok())
+            .map(|u| u.as_str().starts_with(USAGE_URL))
+            .unwrap_or(false);
+
         let webview = Self::get_or_create_webview(app_handle, USAGE_URL)?;
 
         // Ensure webview is hidden (may still be visible from a previous login flow)
         let _ = webview.hide();
 
-        // Wait for navigation, polling URL until it settles (up to 5s)
-        let target_settled = Self::wait_for_navigation(&webview, 10).await;
+        // Only wait for navigation if we actually navigated to a new page
+        if !already_on_usage {
+            let target_settled = Self::wait_for_navigation(&webview, 10).await;
 
-        if !target_settled {
-            log::warn!("Navigation did not settle within timeout, proceeding anyway");
+            if !target_settled {
+                log::warn!("Navigation did not settle within timeout, proceeding anyway");
+            }
         }
 
         // Check if we got redirected to login (unified check)
@@ -233,9 +242,26 @@ impl SubscriptionUsageService {
         // Re-inject the extraction script periodically in case the initial
         // injection was lost during page navigation (the script guards against
         // duplicate execution via window.__LUMO_EXTRACT_ID).
+        // Timeout: 3 minutes (360 × 500ms). UI shows loading during this time.
         let mut last_inject = std::time::Instant::now();
-        for i in 0..40 {
+        for i in 0..360 {
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+
+            let url = webview.url().context("Failed to get webview URL")?;
+            let url_str = url.as_str();
+
+            // Detect network errors early: webview stuck on blank/error page
+            if i == 20 {
+                // After 10s, if URL is still blank or an error page, network is likely down
+                if url_str == "about:blank" || url_str.starts_with("about:") {
+                    return Ok(SubscriptionUsageResult {
+                        needs_login: false,
+                        usage: None,
+                        error: Some("Unable to connect to claude.ai. Please check your network connection.".to_string()),
+                        parse_error: false,
+                    });
+                }
+            }
 
             // Re-inject every ~5s if no result yet
             if i > 0 && last_inject.elapsed() > std::time::Duration::from_secs(5) {
@@ -246,7 +272,6 @@ impl SubscriptionUsageService {
                 last_inject = std::time::Instant::now();
             }
 
-            let url = webview.url().context("Failed to get webview URL")?;
             let fragment = url.fragment().unwrap_or("");
 
             // Expected format: TAG:REQUEST_ID:ENCODED_JSON
@@ -299,7 +324,7 @@ impl SubscriptionUsageService {
         Ok(SubscriptionUsageResult {
             needs_login: false,
             usage: None,
-            error: Some("Timed out waiting for usage data extraction".to_string()),
+            error: Some("Unable to load usage data. Please try again later.".to_string()),
             parse_error: false,
         })
     }
@@ -376,11 +401,18 @@ impl SubscriptionUsageService {
 
     fn get_or_create_webview(app_handle: &AppHandle, url: &str) -> Result<tauri::WebviewWindow> {
         if let Some(existing) = app_handle.get_webview_window(WEBVIEW_LABEL) {
-            // Use native navigate() instead of eval-based navigation
-            let parsed: tauri::Url = url.parse().context("Invalid URL")?;
-            existing
-                .navigate(parsed)
-                .context("Failed to navigate existing webview")?;
+            // Skip navigation if already on the target page (avoids full reload)
+            let already_there = existing
+                .url()
+                .map(|u| u.as_str().starts_with(url))
+                .unwrap_or(false);
+
+            if !already_there {
+                let parsed: tauri::Url = url.parse().context("Invalid URL")?;
+                existing
+                    .navigate(parsed)
+                    .context("Failed to navigate existing webview")?;
+            }
             return Ok(existing);
         }
 

@@ -143,3 +143,8 @@
   height: 100%;
   overflow: hidden;
 }
+
+/* Mobile sidebar (Sheet) — offset for macOS traffic light buttons */
+[data-slot="sidebar"][data-mobile="true"] > div:last-of-type {
+  padding-top: var(--titlebar-height);
+}
