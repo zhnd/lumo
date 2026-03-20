@@ -59,4 +59,5 @@ export const TERMINAL_NOTIF_OPTIONS = [
 export const SETTINGS_SECTIONS = [
   { id: "notifications", label: "Notifications" },
   { id: "system", label: "System" },
+  { id: "uninstall", label: "Uninstall" },
 ] as const;

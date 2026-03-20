@@ -1,20 +1,21 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
-import { Bell, FileText, Monitor } from "lucide-react";
+import { Bell, FileText, Monitor, Trash2 } from "lucide-react";
 import { CardError } from "@/components/card-error";
 import { CardLoading } from "@/components/card-loading";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { NotificationSettings } from "./components";
+import { NotificationSettings, UninstallDialog } from "./components";
 import { SETTINGS_SECTIONS } from "./constants";
 import { useService } from "./use-service";
 
 const SECTION_ICONS = {
   notifications: Bell,
   system: Monitor,
+  uninstall: Trash2,
 } as const;
 
 export function Settings() {
@@ -28,6 +29,9 @@ export function Settings() {
     terminalNotifChannel,
     isTerminalNotifLoading,
     setTerminalNotifChannel,
+    uninstallDialogOpen,
+    setUninstallDialogOpen,
+    handleUninstall,
   } = useService();
 
   return (
@@ -103,6 +107,35 @@ export function Settings() {
                 </CardContent>
               </Card>
             )}
+
+            {activeSection === "uninstall" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Uninstall</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Remove Lumo from your system. This will stop the daemon,
+                    remove the service configuration, and delete the daemon
+                    binary.
+                  </p>
+                  <Button
+                    variant="destructive"
+                    className="gap-2"
+                    onClick={() => setUninstallDialogOpen(true)}
+                  >
+                    <Trash2 className="size-4" />
+                    Uninstall Lumo
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            <UninstallDialog
+              open={uninstallDialogOpen}
+              onOpenChange={setUninstallDialogOpen}
+              onConfirm={handleUninstall}
+            />
           </div>
         </div>
       </div>

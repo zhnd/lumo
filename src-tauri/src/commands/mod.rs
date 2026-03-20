@@ -14,6 +14,7 @@ pub mod user_commands;
 pub mod projects_commands;
 pub mod marketplace_commands;
 pub mod skills_commands;
+pub mod uninstall_commands;
 pub mod wrapped_commands;
 
 pub use analytics_commands::*;
@@ -32,6 +33,7 @@ pub use user_commands::*;
 pub use projects_commands::*;
 pub use marketplace_commands::*;
 pub use skills_commands::*;
+pub use uninstall_commands::*;
 pub use wrapped_commands::*;
 
 /// Macro to generate the Tauri command handler with all registered commands
@@ -112,6 +114,8 @@ macro_rules! app_commands {
             commands::update_notification_setting,
             commands::get_terminal_notif_channel,
             commands::set_terminal_notif_channel,
+            // Uninstall commands
+            commands::uninstall_app,
             // System commands
             commands::open_log_directory,
         ]

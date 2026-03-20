@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { NotificationSettingsBridge } from "@/bridges/notification-settings-bridge";
+import { UninstallBridge } from "@/bridges/uninstall-bridge";
 import {
   type NotificationSettingResponse,
   TerminalNotifChannel,
@@ -12,6 +13,7 @@ import type { UseServiceReturn } from "./types";
 export function useService(): UseServiceReturn {
   const queryClient = useQueryClient();
   const [activeSection, setActiveSection] = useState("notifications");
+  const [uninstallDialogOpen, setUninstallDialogOpen] = useState(false);
 
   const settingsQuery = useQuery({
     queryKey: ["notification_settings"],
@@ -76,6 +78,15 @@ export function useService(): UseServiceReturn {
     },
   });
 
+  const uninstallMutation = useMutation({
+    mutationFn: (deleteAllData: boolean) =>
+      UninstallBridge.uninstall(deleteAllData),
+  });
+
+  const handleUninstall = (deleteAllData: boolean) => {
+    uninstallMutation.mutate(deleteAllData);
+  };
+
   return {
     settings: settingsQuery.data ?? [],
     isLoading: settingsQuery.isLoading,
@@ -87,5 +98,8 @@ export function useService(): UseServiceReturn {
     terminalNotifChannel: terminalNotifQuery.data ?? TerminalNotifChannel.Auto,
     isTerminalNotifLoading: terminalNotifQuery.isLoading,
     setTerminalNotifChannel: terminalNotifMutation.mutate,
+    uninstallDialogOpen,
+    setUninstallDialogOpen,
+    handleUninstall,
   };
 }

@@ -20,4 +20,7 @@ export interface UseServiceReturn {
   terminalNotifChannel: TerminalNotifChannel;
   isTerminalNotifLoading: boolean;
   setTerminalNotifChannel: (channel: TerminalNotifChannel) => void;
+  uninstallDialogOpen: boolean;
+  setUninstallDialogOpen: (open: boolean) => void;
+  handleUninstall: (deleteAllData: boolean) => void;
 }

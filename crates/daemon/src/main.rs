@@ -3,6 +3,7 @@
 //! Receives OTLP telemetry data from Claude Code and stores it in SQLite.
 
 use anyhow::Result;
+use clap::{Parser, Subcommand};
 use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -11,12 +12,45 @@ mod handlers;
 mod routes;
 mod server;
 mod services;
+mod uninstall;
 
 use config::Config;
 use server::{create_app, shutdown_signal, AppState};
 
+#[derive(Parser)]
+#[command(name = "lumo-daemon", version, about = "Lumo daemon service")]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Command>,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Uninstall the daemon: stop service, remove files, optionally delete all data
+    Uninstall {
+        /// Also delete all user data (~/.lumo/ directory)
+        #[arg(long)]
+        delete_data: bool,
+    },
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    let cli = Cli::parse();
+
+    match cli.command {
+        Some(Command::Uninstall { delete_data }) => {
+            // Minimal logging for uninstall
+            tracing_subscriber::registry()
+                .with(tracing_subscriber::fmt::layer())
+                .init();
+            uninstall::run(delete_data).await
+        }
+        None => run_server().await,
+    }
+}
+
+async fn run_server() -> Result<()> {
     // Load configuration
     let config = Config::from_env()?;
     config.validate()?;
