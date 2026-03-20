@@ -1,0 +1,17 @@
+[Unit]
+Description=Lumo Daemon - Claude Code telemetry receiver
+After=network.target
+
+[Service]
+Type=simple
+ExecStart={{DAEMON_PATH}}
+Environment=HOME={{HOME}}
+WorkingDirectory={{HOME}}
+Restart=on-failure
+RestartSec=10
+Nice=5
+StandardOutput=append:{{LOG_DIR}}/stdout.log
+StandardError=append:{{LOG_DIR}}/stderr.log
+
+[Install]
+WantedBy=default.target

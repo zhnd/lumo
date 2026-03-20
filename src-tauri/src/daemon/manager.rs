@@ -1,11 +1,10 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use anyhow::{Context, Result};
 use tauri::Manager;
 
 use super::health::check_daemon_health;
-use super::plist;
 
 /// Expected daemon version — read from crates/daemon/Cargo.toml at compile time.
 const EXPECTED_VERSION: &str = env!("DAEMON_VERSION");
@@ -16,9 +15,13 @@ const DAEMON_BINARY: &str = "lumo-daemon";
 pub struct DaemonManager {
     /// ~/.lumo/bin/lumo-daemon
     binary_path: PathBuf,
-    /// ~/Library/LaunchAgents/com.lumo.daemon.plist
-    plist_path: PathBuf,
-    /// ~/Library/Logs/com.lumo.daemon/
+    /// Platform-specific service file path:
+    /// - macOS: ~/Library/LaunchAgents/com.lumo.daemon.plist
+    /// - Linux: ~/.config/systemd/user/lumo-daemon.service
+    service_file_path: PathBuf,
+    /// Platform-specific log directory:
+    /// - macOS: ~/Library/Logs/com.lumo.daemon/
+    /// - Linux: ~/.lumo/logs/
     log_dir: PathBuf,
     /// User home directory
     home_dir: PathBuf,
@@ -31,19 +34,46 @@ impl DaemonManager {
         let home_dir = dirs::home_dir().context("Could not determine home directory")?;
 
         let binary_path = home_dir.join(".lumo/bin").join(DAEMON_BINARY);
-        let plist_path = home_dir
-            .join("Library/LaunchAgents")
-            .join("com.lumo.daemon.plist");
-        let log_dir = home_dir.join("Library/Logs/com.lumo.daemon");
+
+        let (service_file_path, log_dir) = Self::platform_paths(&home_dir);
+
         let source_binary = Self::resolve_source_binary(app_handle)?;
 
         Ok(Self {
             binary_path,
-            plist_path,
+            service_file_path,
             log_dir,
             home_dir,
             source_binary,
         })
+    }
+
+    /// Return platform-specific (service_file_path, log_dir).
+    fn platform_paths(home_dir: &Path) -> (PathBuf, PathBuf) {
+        #[cfg(target_os = "macos")]
+        {
+            let service_file_path = home_dir
+                .join("Library/LaunchAgents")
+                .join("com.lumo.daemon.plist");
+            let log_dir = home_dir.join("Library/Logs/com.lumo.daemon");
+            (service_file_path, log_dir)
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let service_file_path = home_dir
+                .join(".config/systemd/user")
+                .join("lumo-daemon.service");
+            let log_dir = home_dir.join(".lumo/logs");
+            (service_file_path, log_dir)
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            let service_file_path = home_dir.join(".lumo").join("daemon.json");
+            let log_dir = home_dir.join(".lumo/logs");
+            (service_file_path, log_dir)
+        }
     }
 
     /// Main entry point: ensure the daemon is installed and running with the
@@ -68,8 +98,8 @@ impl DaemonManager {
         if self.binary_path.exists() && self.is_executable() {
             // Binary exists but service is not running — try to load.
             log::info!("Daemon binary found but not running. Starting...");
-            self.install_plist()?;
-            plist::load_service(&self.plist_path).await?;
+            self.install_service_file()?;
+            Self::start_service(&self.service_file_path).await?;
             return self.wait_for_health().await;
         }
 
@@ -78,7 +108,7 @@ impl DaemonManager {
         self.install().await
     }
 
-    /// Full install: copy binary, create plist, start service.
+    /// Full install: copy binary, create service file, start service.
     async fn install(&self) -> Result<()> {
         self.do_install().await
     }
@@ -86,23 +116,23 @@ impl DaemonManager {
     /// Upgrade: stop service, replace binary, restart.
     /// If installation fails, attempt to reload the old service.
     async fn upgrade(&self) -> Result<()> {
-        plist::unload_service(&self.plist_path).await?;
+        Self::stop_service(&self.service_file_path).await?;
 
         if let Err(e) = self.do_install().await {
             log::error!("Upgrade failed, reloading old service: {}", e);
-            let _ = plist::load_service(&self.plist_path).await;
+            let _ = Self::start_service(&self.service_file_path).await;
             return Err(e);
         }
 
         Ok(())
     }
 
-    /// Shared install steps: directories, binary, plist, load, health check.
+    /// Shared install steps: directories, binary, service file, start, health check.
     async fn do_install(&self) -> Result<()> {
         self.ensure_directories()?;
         self.install_binary()?;
-        self.install_plist()?;
-        plist::load_service(&self.plist_path).await?;
+        self.install_service_file()?;
+        Self::start_service(&self.service_file_path).await?;
         self.wait_for_health().await
     }
 
@@ -126,16 +156,76 @@ impl DaemonManager {
         Ok(())
     }
 
-    /// Write (or overwrite) the launchd plist file.
-    fn install_plist(&self) -> Result<()> {
-        let content = plist::render_plist(&self.binary_path, &self.log_dir, &self.home_dir);
+    /// Write (or overwrite) the platform-specific service file.
+    fn install_service_file(&self) -> Result<()> {
+        let content = self.render_service_file();
 
-        if let Some(parent) = self.plist_path.parent() {
+        if let Some(parent) = self.service_file_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
 
-        std::fs::write(&self.plist_path, content).context("Failed to write launchd plist")?;
+        std::fs::write(&self.service_file_path, content)
+            .context("Failed to write service file")?;
         Ok(())
+    }
+
+    /// Render the platform-specific service file content.
+    fn render_service_file(&self) -> String {
+        #[cfg(target_os = "macos")]
+        {
+            super::plist::render_plist(&self.binary_path, &self.log_dir, &self.home_dir)
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            super::systemd::render_unit(&self.binary_path, &self.log_dir, &self.home_dir)
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            // Windows is not yet supported for daemon management.
+            String::new()
+        }
+    }
+
+    /// Start the daemon service (platform-specific).
+    async fn start_service(_service_file_path: &PathBuf) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        {
+            super::plist::load_service(_service_file_path).await
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let _ = _service_file_path;
+            super::systemd::start_service().await
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            let _ = _service_file_path;
+            anyhow::bail!("Windows daemon management is not yet supported")
+        }
+    }
+
+    /// Stop the daemon service (platform-specific).
+    async fn stop_service(_service_file_path: &PathBuf) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        {
+            super::plist::unload_service(_service_file_path).await
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let _ = _service_file_path;
+            super::systemd::stop_service().await
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            let _ = _service_file_path;
+            anyhow::bail!("Windows daemon management is not yet supported")
+        }
     }
 
     /// Create required directories.
