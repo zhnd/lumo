@@ -12,6 +12,9 @@ pub async fn run(delete_data: bool) -> Result<()> {
     remove_service_file(&home_dir);
 
     // 3. Remove the daemon binary
+    #[cfg(windows)]
+    let binary_path = home_dir.join(".lumo/bin/lumo-daemon.exe");
+    #[cfg(not(windows))]
     let binary_path = home_dir.join(".lumo/bin/lumo-daemon");
     if binary_path.exists() {
         std::fs::remove_file(&binary_path)
@@ -91,6 +94,33 @@ async fn stop_service(home_dir: &Path) {
             Err(e) => info!("Failed to run systemctl: {}", e),
         }
     }
+
+    #[cfg(target_os = "windows")]
+    {
+        let _ = home_dir;
+        // End the running task, then delete it.
+        let _ = tokio::process::Command::new("schtasks")
+            .args(["/End", "/TN", "LumoDaemon"])
+            .output()
+            .await;
+        let result = tokio::process::Command::new("schtasks")
+            .args(["/Delete", "/TN", "LumoDaemon", "/F"])
+            .output()
+            .await;
+        match result {
+            Ok(output) if output.status.success() => {
+                info!("Deleted scheduled task LumoDaemon");
+            }
+            Ok(output) => {
+                info!(
+                    "schtasks /Delete exited with {}: {}",
+                    output.status,
+                    String::from_utf8_lossy(&output.stderr)
+                );
+            }
+            Err(e) => info!("Failed to run schtasks: {}", e),
+        }
+    }
 }
 
 fn remove_service_file(home_dir: &Path) {
@@ -124,5 +154,18 @@ fn remove_service_file(home_dir: &Path) {
         let _ = std::process::Command::new("systemctl")
             .args(["--user", "daemon-reload"])
             .output();
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        // Task Scheduler task is already deleted in stop_service; remove the XML file.
+        let task_xml = home_dir.join(".lumo").join("daemon.json");
+        if task_xml.exists() {
+            if let Err(e) = std::fs::remove_file(&task_xml) {
+                info!("Failed to remove task XML: {}", e);
+            } else {
+                info!("Removed task XML: {}", task_xml.display());
+            }
+        }
     }
 }

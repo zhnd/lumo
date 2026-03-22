@@ -3,6 +3,9 @@ use tauri::{command, AppHandle};
 #[command]
 pub async fn uninstall_app(app_handle: AppHandle, delete_all_data: bool) -> Result<(), String> {
     let home_dir = dirs::home_dir().ok_or("Could not determine home directory")?;
+    #[cfg(windows)]
+    let daemon_binary = home_dir.join(".lumo/bin/lumo-daemon.exe");
+    #[cfg(not(windows))]
     let daemon_binary = home_dir.join(".lumo/bin/lumo-daemon");
 
     if daemon_binary.exists() {

@@ -45,7 +45,7 @@ tauri-plugin-process = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-window-state = "2"
 reqwest = { version = "0.13", features = ["json", "rustls"], default-features = false }
-notify = { version = "8", default-features = false, features = ["macos_fsevent"] }
+notify = { version = "8" }
 urlencoding = "2"
 serde_yaml = "0.9"
 which = "8"

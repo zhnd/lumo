@@ -21,6 +21,9 @@ jobs:
           - platform: 'ubuntu-22.04'
             args: '--bundles appimage,deb'
             rust_target: 'x86_64-unknown-linux-gnu'
+          - platform: 'windows-latest'
+            args: '--target x86_64-pc-windows-msvc'
+            rust_target: 'x86_64-pc-windows-msvc'
 
     runs-on: ${{ matrix.platform }}
 
@@ -71,7 +74,8 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build daemon binary
+      - name: Build daemon binary (Unix)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           set -euo pipefail
@@ -80,12 +84,28 @@ jobs:
           cp target/${{ matrix.rust_target }}/release/lumo-daemon target/release/lumo-daemon
           chmod +x target/release/lumo-daemon
 
-      - name: Verify daemon artifact for bundling
+      - name: Build daemon binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cargo build -p lumo-daemon --release --target ${{ matrix.rust_target }}
+          New-Item -ItemType Directory -Force -Path target/release
+          Copy-Item "target/${{ matrix.rust_target }}/release/lumo-daemon.exe" target/release/lumo-daemon.exe
+
+      - name: Verify daemon artifact (Unix)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           set -euo pipefail
           test -f target/release/lumo-daemon
           ls -lh target/release/lumo-daemon
+
+      - name: Verify daemon artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path target/release/lumo-daemon.exe)) { throw "Daemon binary not found" }
+          Get-Item target/release/lumo-daemon.exe
 
       - uses: tauri-apps/tauri-action@v0
         env:

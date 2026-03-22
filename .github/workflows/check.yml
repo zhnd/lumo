@@ -14,13 +14,20 @@ env:
 jobs:
   backend:
     name: Cargo Check & Clippy
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-latest
+          - platform: windows-latest
+    runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Install system dependencies
+      - name: Install system dependencies (Linux)
+        if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev
@@ -36,11 +43,20 @@ jobs:
           shared-key: cargo-${{ runner.os }}
           save-if: true
 
-      - name: Build daemon (debug)
+      - name: Build daemon (debug, Linux)
+        if: matrix.platform == 'ubuntu-latest'
         run: |
           cargo build -p lumo-daemon
           mkdir -p target/release
           cp target/debug/lumo-daemon target/release/lumo-daemon
+
+      - name: Build daemon (debug, Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          cargo build -p lumo-daemon
+          New-Item -ItemType Directory -Force -Path target/release
+          Copy-Item target/debug/lumo-daemon.exe target/release/lumo-daemon.exe
 
       - name: Cargo check
         run: cargo check --workspace
@@ -49,9 +65,11 @@ jobs:
         run: cargo clippy --workspace -- -D warnings
 
       - name: Install typeshare-cli
+        if: matrix.platform == 'ubuntu-latest'
         run: cargo install typeshare-cli --locked
 
       - name: Generate TypeScript types
+        if: matrix.platform == 'ubuntu-latest'
         run: |
           typeshare -c src-tauri/typeshare.toml \
             --lang typescript \
@@ -59,6 +77,7 @@ jobs:
             src-tauri/src crates/shared/src
 
       - name: Upload generated types
+        if: matrix.platform == 'ubuntu-latest'
         uses: actions/upload-artifact@v7
         with:
           name: typeshare-types

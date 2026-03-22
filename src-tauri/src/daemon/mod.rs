@@ -7,5 +7,8 @@ mod plist;
 #[cfg(target_os = "linux")]
 mod systemd;
 
+#[cfg(target_os = "windows")]
+mod task_scheduler;
+
 pub use health::check_daemon_health;
 pub use manager::DaemonManager;

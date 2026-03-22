@@ -10,6 +10,9 @@ use super::health::check_daemon_health;
 const EXPECTED_VERSION: &str = env!("DAEMON_VERSION");
 
 /// Daemon binary name.
+#[cfg(windows)]
+const DAEMON_BINARY: &str = "lumo-daemon.exe";
+#[cfg(not(windows))]
 const DAEMON_BINARY: &str = "lumo-daemon";
 
 pub struct DaemonManager {
@@ -183,8 +186,11 @@ impl DaemonManager {
 
         #[cfg(target_os = "windows")]
         {
-            // Windows is not yet supported for daemon management.
-            String::new()
+            super::task_scheduler::render_task_xml(
+                &self.binary_path,
+                &self.log_dir,
+                &self.home_dir,
+            )
         }
     }
 
@@ -203,8 +209,7 @@ impl DaemonManager {
 
         #[cfg(target_os = "windows")]
         {
-            let _ = _service_file_path;
-            anyhow::bail!("Windows daemon management is not yet supported")
+            super::task_scheduler::start_service(_service_file_path).await
         }
     }
 
@@ -224,7 +229,7 @@ impl DaemonManager {
         #[cfg(target_os = "windows")]
         {
             let _ = _service_file_path;
-            anyhow::bail!("Windows daemon management is not yet supported")
+            super::task_scheduler::stop_service().await
         }
     }
 
