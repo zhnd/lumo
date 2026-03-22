@@ -38,6 +38,10 @@ chrono.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
 
+# CLI
+clap = { version = "4", features = ["derive"] }
+dirs = "6"
+
 # Logging
 tracing.workspace = true
 tracing-subscriber.workspace = true
