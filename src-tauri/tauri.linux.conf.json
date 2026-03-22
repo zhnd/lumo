@@ -1,0 +1,7 @@
+{
+  "bundle": {
+    "resources": {
+      "../target/release/lumo-daemon": "lumo-daemon"
+    }
+  }
+}
