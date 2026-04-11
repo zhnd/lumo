@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderInput, Github, Loader2, Plug } from "lucide-react";
+import { FolderInput, GitBranch, Loader2, Plug } from "lucide-react";
 import { CardEmpty } from "@/components/card-empty";
 import { CardError } from "@/components/card-error";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ export function AddSkillDialog({ open, onOpenChange }: AddSkillDialogProps) {
                 Plugin
               </TabsTrigger>
               <TabsTrigger value="github">
-                <Github className="size-3.5" />
+                <GitBranch className="size-3.5" />
                 GitHub
               </TabsTrigger>
             </TabsList>
