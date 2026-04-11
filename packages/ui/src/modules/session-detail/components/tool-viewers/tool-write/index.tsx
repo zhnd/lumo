@@ -6,9 +6,12 @@ import {
   parseRichContent,
   tryBuildSvgPreview,
 } from "../../shared/content-parser";
+import { inferLang } from "../../shared/language-map";
+import { isPlanFile } from "../../tool-item/constants";
 import { CodeViewer } from "../../viewers/code-viewer";
 import { DiffViewer } from "../../viewers/diff-viewer";
 import { ImageViewer } from "../../viewers/image-viewer";
+import { MarkdownViewer } from "../../viewers/markdown-viewer";
 
 interface ToolWriteProps {
   input?: string;
@@ -46,6 +49,21 @@ export function ToolWrite({
   const writeContent = content ?? newSource;
 
   if (!writeContent) return null;
+
+  const isMarkdown = resolvedPath
+    ? isPlanFile(resolvedPath) || inferLang(resolvedPath) === "markdown"
+    : false;
+
+  // Markdown file (plan, README, etc.): render as formatted markdown
+  if (isMarkdown) {
+    return (
+      <div className="space-y-2">
+        <div className="max-h-[600px] overflow-auto rounded-lg border border-border bg-muted/10 px-4 py-3 text-sm leading-relaxed">
+          <MarkdownViewer content={writeContent} />
+        </div>
+      </div>
+    );
+  }
 
   // Image file: always show image, never diff/code
   if (isImagePath(resolvedPath)) {

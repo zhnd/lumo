@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,9 @@ export function AssistantText({ item }: AssistantTextProps) {
     : item.text;
 
   return (
-    <section className="px-4 py-2 md:px-6">
-      <div className="border-l-2 border-primary/20 pl-4">
+    <section className="px-4 py-3 md:px-6">
+      <div>
         <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <Bot className="size-3.5" />
           <span className="font-medium text-foreground">Claude</span>
           {displayModel && (
             <Badge

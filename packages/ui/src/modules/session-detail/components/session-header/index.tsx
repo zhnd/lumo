@@ -7,11 +7,13 @@ import {
   FolderOpen,
   GitBranch,
   MessageSquare,
+  Play,
   Timer,
   Zap,
 } from "lucide-react";
 import { DetailHeader } from "@/components/detail-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { fmt, formatDurationMixed } from "@/lib/format";
 import {
   formatDate,
@@ -19,6 +21,7 @@ import {
   getProjectName,
   getShortId,
 } from "../../libs";
+import { cleanDisplayText } from "../shared/text-utils";
 import type { SessionHeaderProps } from "./types";
 
 export function SessionHeader({
@@ -28,11 +31,11 @@ export function SessionHeader({
   stats,
   collapsed = false,
   onBack,
+  onReplay,
 }: SessionHeaderProps) {
+  const rawTitle = session.summary || session.firstPrompt || "";
   const title =
-    session.summary ||
-    session.firstPrompt ||
-    `Session ${getShortId(session.sessionId)}`;
+    cleanDisplayText(rawTitle) || `Session ${getShortId(session.sessionId)}`;
 
   return (
     <DetailHeader
@@ -43,7 +46,18 @@ export function SessionHeader({
           {getShortId(session.sessionId)}
         </Badge>
       }
-      actions={undefined}
+      actions={
+        onReplay ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={onReplay}
+          >
+            <Play className="size-3.5" />
+          </Button>
+        ) : undefined
+      }
       meta={
         !collapsed ? (
           <>
