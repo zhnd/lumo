@@ -2,6 +2,7 @@ pub mod analytics_commands;
 pub mod claude_session_commands;
 pub mod daemon_commands;
 pub mod export_commands;
+pub mod insights_commands;
 pub mod notification_settings_commands;
 pub mod session_commands;
 pub mod stats_commands;
@@ -21,6 +22,7 @@ pub use analytics_commands::*;
 pub use claude_session_commands::*;
 pub use daemon_commands::*;
 pub use export_commands::*;
+pub use insights_commands::*;
 pub use notification_settings_commands::*;
 pub use session_commands::*;
 pub use stats_commands::*;
@@ -85,6 +87,10 @@ macro_rules! app_commands {
             commands::save_api_key,
             commands::has_api_key,
             commands::delete_api_key,
+            // Insights commands
+            commands::list_insights_reports,
+            commands::generate_insights_report,
+            commands::read_insights_report,
             // Subscription usage commands
             commands::fetch_subscription_usage,
             // Skills commands
