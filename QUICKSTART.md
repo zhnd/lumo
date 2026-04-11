@@ -1,147 +1,89 @@
-# Lumo OTLP Daemon - 快速启动指南
+# Lumo — 开发快速入门
 
-## 5 分钟快速开始
+## 环境要求
 
-### 1. 安装 Daemon
+| 工具 | 最低版本 | 安装方式 |
+|------|---------|---------|
+| Node.js | >= 24.12 | [nodejs.org](https://nodejs.org/) |
+| pnpm | >= 10.26 | `npm install -g pnpm` |
+| Rust (stable) | >= 1.77.2 | [rustup.rs](https://rustup.rs/) |
+| typeshare-cli | latest | `cargo install typeshare-cli` |
+| Tauri 平台依赖 | — | [Tauri v2 Prerequisites](https://v2.tauri.app/start/prerequisites/) |
 
-```bash
-# 在项目根目录执行
-./scripts/install-daemon.sh
-```
-
-这会自动：
-- ✅ 编译 daemon
-- ✅ 安装到 `/usr/local/bin/lumo-daemon`
-- ✅ 配置 launchd 自动启动
-- ✅ 启动服务
-
-### 2. 验证运行
+## 首次启动
 
 ```bash
-# 检查健康状态
-curl http://localhost:4318/health
+# 1. 安装前端依赖
+pnpm install
 
-# 应返回：
-# {"status":"healthy","service":"lumo-daemon","version":"0.1.0"}
+# 2. 编译 daemon（首次必须，后续 daemon 代码变更后也需要重新编译）
+cargo build -p lumo-daemon
+
+# 3. 启动开发环境（会自动生成 TypeScript 类型 + 启动前端 dev server + 启动 Tauri 应用）
+pnpm tauri:dev
 ```
 
-### 3. 配置 Claude Code
+> **注意**：`pnpm tauri:dev` 会自动运行 `pnpm generate-types`（Rust → TypeScript 类型生成）和 `pnpm dev`（Next.js dev server），但**不会**自动编译 daemon。首次或 daemon 代码变更后需要手动执行 `cargo build -p lumo-daemon`。
+
+## 日常开发
+
+### 全栈开发（推荐）
 
 ```bash
-# 设置环境变量
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-
-# 然后正常使用 Claude Code
-claude code
+pnpm tauri:dev    # 启动 Tauri 应用 + 前端 dev server
 ```
 
-### 4. 查看接收到的数据
+### 仅前端
 
 ```bash
-# 实时查看日志
-tail -f ~/Library/Logs/com.lumo.daemon/stdout.log
+pnpm dev          # Next.js dev server (localhost:3000)
+pnpm build        # 构建静态站点到 packages/ui/out/
+pnpm lint         # Biome 代码检查
+pnpm check        # Biome 代码检查 + 格式化（自动修复）
 ```
 
-当你使用 Claude Code 执行命令时，会看到类似这样的输出：
-
-```
-2026-01-25T12:00:00.000Z INFO lumo_daemon: Received OTLP trace export request
-2026-01-25T12:00:00.000Z INFO lumo_daemon: Service: claude-code
-2026-01-25T12:00:00.000Z INFO lumo_daemon:   Scope: claude-code-instrumentation
-2026-01-25T12:00:00.000Z INFO lumo_daemon:     Span[5B8EFFF7]: name='tool.Read', kind=Internal, duration=125000ns, attributes=[tool.name=Read, file.path=/path/to/file]
-2026-01-25T12:00:00.000Z INFO lumo_daemon: Processed 1 spans successfully
-```
-
-## 常用命令
-
-### 服务管理
+### 仅 Rust
 
 ```bash
-# 查看状态
-launchctl list | grep com.lumo.daemon
-
-# 停止服务
-launchctl unload ~/Library/LaunchAgents/com.lumo.daemon.plist
-
-# 启动服务
-launchctl load ~/Library/LaunchAgents/com.lumo.daemon.plist
-
-# 卸载
-./scripts/uninstall-daemon.sh
+cargo check                      # 检查所有 crate
+cargo check -p app               # 检查 Tauri 应用（包名是 "app"）
+cargo check -p lumo-daemon       # 检查 daemon
+cargo check -p shared            # 检查共享库
+cargo run -p lumo-daemon         # 直接运行 daemon
 ```
 
-### 日志查看
+### 类型生成
 
 ```bash
-# 标准输出（主要日志）
-tail -f ~/Library/Logs/com.lumo.daemon/stdout.log
-
-# 错误日志
-tail -f ~/Library/Logs/com.lumo.daemon/stderr.log
+pnpm generate-types   # 从 Rust #[typeshare] 结构体生成 TypeScript 类型
 ```
 
-### 测试端点
+修改了 `src-tauri/src/types/` 中的 `#[typeshare]` 结构体后需要重新生成。`pnpm tauri:dev` 启动时会自动运行。
+
+## 何时需要重新编译 Daemon
+
+Daemon 是独立的 HTTP 服务，通过 Tauri 应用管理其生命周期。以下情况需要重新编译：
 
 ```bash
-# 健康检查
-curl http://localhost:4318/health
-
-# 发送测试 trace
-curl -X POST http://localhost:4318/v1/traces \
-  -H "Content-Type: application/json" \
-  -d '{"resourceSpans":[{"scopeSpans":[{"spans":[{"traceId":"TEST123","spanId":"SPAN456","name":"test","kind":1,"startTimeUnixNano":"1000000000"}]}]}]}'
+cargo build -p lumo-daemon
 ```
 
-## 故障排查
+- 修改了 `crates/daemon/` 下的代码
+- 修改了 `crates/shared/` 下的代码（daemon 和 Tauri app 共用）
+- 修改了 `crates/shared/migrations/` 中的数据库迁移
 
-### 问题：端口已被占用
+> `pnpm tauri build`（生产构建）会自动编译 daemon，但 `pnpm tauri:dev`（开发模式）不会。
 
-```bash
-# 查看谁在使用 4318 端口
-lsof -i :4318
+## 项目结构概览
 
-# 如需更换端口，编辑 plist
-nano ~/Library/LaunchAgents/com.lumo.daemon.plist
-# 修改 LUMO_SERVER_ADDRESS 环境变量
-# 然后重新加载服务
+```
+lumo/
+├── packages/ui/          # Next.js 前端（SSG 模式）
+├── crates/
+│   ├── daemon/           # OTLP 遥测接收服务（Axum HTTP）
+│   └── shared/           # 共享库（数据库实体、仓库、迁移）
+├── src-tauri/            # Tauri 桌面应用（命令、服务、类型）
+└── scripts/              # 构建和安装脚本
 ```
 
-### 问题：服务无法启动
-
-```bash
-# 查看错误日志
-cat ~/Library/Logs/com.lumo.daemon/stderr.log
-
-# 手动运行 daemon 查看详细错误
-/usr/local/bin/lumo-daemon
-```
-
-### 问题：收不到 Claude Code 数据
-
-1. 确认环境变量已设置：
-```bash
-echo $OTEL_EXPORTER_OTLP_ENDPOINT
-# 应输出：http://localhost:4318
-```
-
-2. 确认 daemon 正在运行：
-```bash
-curl http://localhost:4318/health
-```
-
-3. 查看 daemon 日志是否有请求进来
-
-## 下一步
-
-- 📖 查看 [daemon/README.md](daemon/README.md) 了解详细文档
-- 🔍 探索接收到的 trace 数据结构
-- 🚀 等待后续版本支持数据库存储和可视化
-
-## 当前限制（MVP 版本）
-
-- ✅ 接收并打印 OTLP 数据
-- ❌ 暂不支持数据持久化
-- ❌ 暂无 UI 查看器
-- ❌ 仅支持 macOS
-
-后续版本会逐步添加这些功能。
+详细架构说明见 [CLAUDE.md](CLAUDE.md)。
