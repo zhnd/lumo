@@ -11,6 +11,7 @@ mod notification_settings_service;
 pub mod session_cache;
 pub mod session_watcher;
 mod stats_service;
+mod claude_credentials;
 mod subscription_usage_service;
 pub mod time_range;
 mod tools_service;

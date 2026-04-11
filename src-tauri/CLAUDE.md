@@ -4,90 +4,25 @@ The Tauri backend provides the desktop application shell with native OS integrat
 
 ## Architecture
 
-The Tauri app follows a layered architecture:
-
 ```
 Frontend (React) --> invoke() --> Commands --> Services --> Repositories --> SQLite
                                                  |
                                           Types (typeshare)
 ```
 
-### Layer Responsibilities
+### Layers
 
-1. **Commands** (`src/commands/`): IPC handlers exposed to frontend via `#[command]`
-2. **Services** (`src/services/`): Business logic, data aggregation, calculations
-3. **Types** (`src/types/`): Response types with `#[typeshare]` for TypeScript generation
-4. **Daemon** (`src/daemon/`): Daemon binary lifecycle (install, health, launchd)
-5. **Database** (`src/database/`): DB setup (delegates to shared crate)
-
-## Directory Structure
-
-```
-src/
-├── main.rs                  # Entry point with Tokio runtime
-├── lib.rs                   # App setup, plugin registration, startup sequence
-├── commands/
-│   ├── mod.rs               # app_commands! macro with all registered commands
-│   ├── analytics_commands.rs
-│   ├── claude_session_commands.rs
-│   ├── daemon_commands.rs
-│   ├── export_commands.rs
-│   ├── session_commands.rs
-│   ├── stats_commands.rs
-│   ├── subscription_usage_commands.rs
-│   ├── system_commands.rs
-│   ├── tools_commands.rs
-│   ├── trends_commands.rs
-│   ├── usage_commands.rs
-│   ├── user_commands.rs
-│   └── wrapped_commands.rs
-├── services/
-│   ├── mod.rs
-│   ├── analytics_service.rs    # Hourly activity, session distribution, cache hit, heatmap
-│   ├── claude_config_service.rs # Auto-configure ~/.claude/settings.json
-│   ├── claude_session_service.rs # Read Claude session JSONL files from disk
-│   ├── config_service.rs       # App configuration (API keys, paths)
-│   ├── notification_poller.rs  # Background poller for OS notifications
-│   ├── session_cache.rs        # In-memory LRU cache for session details
-│   ├── session_watcher.rs      # File watcher for Claude session changes
-│   ├── stats_service.rs        # Summary stats, model stats, token stats
-│   ├── subscription_usage_service.rs # Claude Pro/Max usage scraping via hidden webview
-│   ├── time_range.rs           # Time range helpers (today/week/month)
-│   ├── tools_service.rs        # Tool usage stats, code edit decisions
-│   ├── trends_service.rs       # Usage trends, cost by model, cost efficiency
-│   ├── usage_service.rs        # API usage limits via Anthropic API
-│   └── wrapped_service.rs      # "Wrapped" summary data aggregation
-├── types/
-│   ├── mod.rs
-│   ├── analytics.rs            # Analytics response types
-│   ├── claude_session.rs       # Session detail types
-│   ├── entities.rs             # Re-exported entity types
-│   ├── stats.rs                # Summary/model/token stats types
-│   ├── subscription_usage.rs   # Subscription usage types
-│   ├── tools.rs                # Tool usage types
-│   ├── trends.rs               # Trends response types
-│   ├── usage.rs                # API usage types
-│   └── wrapped.rs              # Wrapped data types
-├── daemon/
-│   ├── mod.rs
-│   ├── manager.rs              # DaemonManager: install, ensure_running
-│   ├── health.rs               # Health check (HTTP GET /health)
-│   └── plist.rs                # macOS launchd plist generation
-└── database/
-    ├── mod.rs                  # setup() function
-    ├── connection.rs           # Pool creation
-    ├── entities/               # Local entity types (user_entity)
-    └── repositories/           # Local repositories (user_repo)
-```
+| Directory | Responsibility |
+|-----------|---------------|
+| `src/commands/` | IPC handlers exposed to frontend via `#[command]` |
+| `src/services/` | Business logic, data aggregation, calculations |
+| `src/types/` | Response types with `#[typeshare]` for TypeScript generation |
+| `src/daemon/` | Daemon binary lifecycle (install, health, launchd) |
+| `src/database/` | DB setup (delegates to shared crate) |
 
 ## Command Pattern
 
-Commands are the IPC bridge between frontend and backend:
-
 ```rust
-use tauri::{command, AppHandle, Manager};
-use sqlx::SqlitePool;
-
 #[command]
 pub async fn get_summary_stats(
     app_handle: AppHandle,
@@ -100,10 +35,10 @@ pub async fn get_summary_stats(
 }
 ```
 
-### Command Conventions
+### Conventions
 
 - Always async (`pub async fn`)
-- First parameter: `app_handle: AppHandle` for state access
+- `app_handle: AppHandle` as first parameter when state access is needed
 - Return `Result<T, String>` for serialization
 - Access pool via `app_handle.state::<SqlitePool>()`
 - Delegate to service methods (not directly to repositories)
@@ -133,10 +68,8 @@ impl StatsService {
 Response types live in `src/types/` with `#[typeshare]` annotation for TypeScript generation:
 
 ```rust
-use serde::{Deserialize, Serialize};
-use typeshare::typeshare;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[typeshare]
 pub struct SummaryStats {
     pub total_sessions: f64,    // Use f64, NOT i64 (typeshare limitation)
@@ -149,56 +82,11 @@ pub struct SummaryStats {
 
 ## Adding New Functionality
 
-### 1. Define Response Types
-
-```rust
-// src/types/my_types.rs
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[typeshare]
-pub struct MyResponse { ... }
-```
-
-Export in `src/types/mod.rs`.
-
-### 2. Create Service
-
-```rust
-// src/services/my_service.rs
-pub struct MyService;
-impl MyService {
-    pub async fn get_data(pool: &SqlitePool, ...) -> anyhow::Result<MyResponse> { ... }
-}
-```
-
-Export in `src/services/mod.rs`.
-
-### 3. Create Commands
-
-```rust
-// src/commands/my_commands.rs
-#[command]
-pub async fn get_my_data(app_handle: AppHandle, ...) -> Result<MyResponse, String> {
-    let pool = app_handle.state::<SqlitePool>();
-    MyService::get_data(&pool, ...).await.map_err(|e| e.to_string())
-}
-```
-
-### 4. Register Commands
-
-Update `src/commands/mod.rs`:
-```rust
-pub mod my_commands;
-pub use my_commands::*;
-
-// Add to app_commands! macro:
-commands::get_my_data,
-```
-
-### 5. Generate TypeScript Types
-
-```bash
-pnpm generate-types
-```
+1. Define response types in `src/types/` with `#[typeshare]`, export in `mod.rs`
+2. Create service in `src/services/`, export in `mod.rs`
+3. Create commands in `src/commands/` with `#[command]`, export in `mod.rs`
+4. Register commands in `app_commands!` macro in `commands/mod.rs`
+5. Run `pnpm generate-types` to generate TypeScript types
 
 ## App Startup Sequence
 

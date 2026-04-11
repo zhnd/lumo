@@ -1,4 +1,1 @@
-export interface LoginPromptProps {
-  onLogin: () => void;
-  isLoading: boolean;
-}
+export type LoginPromptProps = {};
