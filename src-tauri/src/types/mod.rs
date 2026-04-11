@@ -13,6 +13,7 @@ mod trends;
 mod usage;
 mod marketplace;
 mod skills;
+mod insights;
 mod wrapped;
 
 pub use analytics::*;
@@ -26,4 +27,5 @@ pub use trends::*;
 pub use usage::*;
 pub use marketplace::*;
 pub use skills::*;
+pub use insights::*;
 pub use wrapped::*;

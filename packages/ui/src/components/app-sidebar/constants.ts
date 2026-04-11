@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  FileText,
   Gauge,
   History,
   LayoutDashboard,
@@ -45,6 +46,11 @@ export const NAV_ITEMS = [
     id: "marketplace",
     label: "Marketplace",
     icon: Store,
+  },
+  {
+    id: "insights",
+    label: "Insights",
+    icon: FileText,
   },
   {
     id: "wrapped",
