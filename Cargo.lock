@@ -142,6 +142,7 @@ dependencies = [
  "log",
  "notify",
  "reqwest",
+ "security-framework",
  "serde",
  "serde_json",
  "serde_yaml",

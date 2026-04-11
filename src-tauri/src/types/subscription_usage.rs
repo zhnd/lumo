@@ -50,4 +50,6 @@ pub struct SubscriptionUsageResult {
     pub needs_login: bool,
     pub usage: Option<SubscriptionUsageResponse>,
     pub error: Option<String>,
+    /// Subscription tier badge (e.g. "MAX", "PRO", "API")
+    pub subscription_type: Option<String>,
 }
