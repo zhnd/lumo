@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::Instant;
 
+#[cfg(target_os = "macos")]
 const KEYCHAIN_SERVICE: &str = "Claude Code-credentials";
 const CREDENTIALS_FILE: &str = ".claude/.credentials.json";
 const ENV_TOKEN: &str = "CLAUDE_CODE_OAUTH_TOKEN";
@@ -25,12 +26,14 @@ pub struct ClaudeCredentials {
     /// Raw JSON data for persisting updates back to the source.
     pub full_data: serde_json::Value,
     /// macOS Keychain account name (preserved for writes to avoid creating duplicate entries).
+    #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
     pub keychain_account: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CredentialSource {
     File,
+    #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
     Keychain,
     Environment,
 }
