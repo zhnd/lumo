@@ -247,60 +247,18 @@ Size convention: Use `size-4` (16px) for most icons, `size-5` (20px) for larger 
 
 ```
 packages/ui/
-├── app/                    # Next.js App Router (route definitions only)
-│   ├── page.tsx            # / → Overview module
-│   ├── sessions/
-│   │   ├── page.tsx        # /sessions → Sessions module
-│   │   └── detail/
-│   │       └── page.tsx    # /sessions/detail → SessionDetail module
-│   ├── tools/page.tsx      # /tools → Tools module
-│   ├── analytics/page.tsx  # /analytics → Analytics module
-│   ├── usage/page.tsx      # /usage → Usage module
-│   ├── wrapped/page.tsx    # /wrapped → Wrapped module
-│   ├── layout.tsx          # Root layout
+├── app/                    # Next.js App Router (route definitions only, each route has page.tsx)
 │   └── globals.css         # Theme variables (shadcn)
 ├── src/                    # All business code (tsconfig @/* → ./src/*)
-│   ├── bridges/            # Tauri IPC wrappers
-│   │   ├── session-bridge.ts
-│   │   ├── stats-bridge.ts
-│   │   ├── trends-bridge.ts
-│   │   ├── tools-bridge.ts
-│   │   ├── analytics-bridge.ts
-│   │   ├── claude-session-bridge.ts
-│   │   ├── wrapped-bridge.ts
-│   │   ├── subscription-usage-bridge.ts
-│   │   └── ...
+│   ├── bridges/            # Tauri IPC wrappers (one per backend domain)
 │   ├── components/         # Shared React components
-│   │   ├── ui/             # shadcn/ui base components (READ-ONLY)
-│   │   ├── app-sidebar/    # Global sidebar with navigation
-│   │   ├── page-header/    # Page header with daemon status
-│   │   ├── titlebar/       # Window titlebar
-│   │   ├── stat-card/      # Statistics card
-│   │   ├── card-empty/     # Empty state card
-│   │   ├── card-error/     # Error state card
-│   │   ├── card-loading/   # Loading state card
-│   │   ├── echarts/        # ECharts wrapper component
-│   │   ├── update-indicator/ # App update indicator
-│   │   └── scroll-to-bottom/ # Scroll-to-bottom button
+│   │   └── ui/             # shadcn/ui base components (READ-ONLY)
 │   ├── generated/          # Auto-generated TypeScript types (typeshare-types.ts)
 │   ├── hooks/              # Global React hooks
-│   │   ├── use-tauri-event.ts
-│   │   ├── use-scroll-to-bottom.ts
-│   │   └── use-mobile.ts
-│   ├── lib/                # Utilities
-│   │   ├── query-options.ts # TanStack Query option factories
-│   │   ├── format.ts       # Number/date formatting
-│   │   └── utils.ts        # cn() helper, etc.
-│   └── modules/            # Page-level business logic
-│       ├── overview/
-│       ├── sessions/
-│       ├── session-detail/
-│       ├── tools/
-│       ├── usage/
-│       └── wrapped/
-├── scripts/
-│   └── generate-types.js   # Typeshare runner
-└── package.json
+│   ├── lib/                # Utilities (query-client, format, cn() helper)
+│   └── modules/            # Page-level business logic (one per route)
+└── scripts/
+    └── generate-types.js   # Typeshare runner
 ```
 
 ## Development Commands

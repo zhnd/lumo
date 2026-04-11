@@ -1,5 +1,6 @@
-import type { SubscriptionUsageCategory } from "@/generated/typeshare-types";
+import type { UsageBucket } from "@/generated/typeshare-types";
 
-export interface UsageCategoryCardProps {
-  category: SubscriptionUsageCategory;
+export interface UsageBucketCardProps {
+  label: string;
+  bucket: UsageBucket;
 }

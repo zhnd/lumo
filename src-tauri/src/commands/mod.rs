@@ -87,9 +87,6 @@ macro_rules! app_commands {
             commands::delete_api_key,
             // Subscription usage commands
             commands::fetch_subscription_usage,
-            commands::show_claude_login,
-            commands::hide_claude_login,
-            commands::logout_claude,
             // Skills commands
             commands::list_skills,
             commands::get_skill_detail,

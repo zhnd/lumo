@@ -211,9 +211,9 @@ lumo/
 │       └── migrations/            # SQL migration files
 ├── src-tauri/                     # Tauri desktop app
 │   └── src/
-│       ├── commands/              # IPC handlers (13 modules)
-│       ├── services/              # Business logic (10 services)
-│       ├── types/                 # Response types with #[typeshare] (8 modules)
+│       ├── commands/              # IPC handlers
+│       ├── services/              # Business logic
+│       ├── types/                 # Response types with #[typeshare]
 │       ├── daemon/                # Daemon lifecycle management
 │       ├── database/              # DB setup (delegates to shared)
 │       └── lib.rs                 # App setup, plugin registration
