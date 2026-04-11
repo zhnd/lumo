@@ -15,11 +15,10 @@
 
 <p align="center">
   <a href="#why-lumo">Why</a> &bull;
-  <a href="#screenshots">Screenshots</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#how-it-works">How It Works</a> &bull;
   <a href="#installing-lumo">Install</a> &bull;
-  <a href="#getting-started">Getting Started</a> &bull;
+  <a href="#developing-from-source">Develop</a> &bull;
   <a href="#macos-installation-troubleshooting">macOS Troubleshooting</a> &bull;
   <a href="#tech-stack">Tech Stack</a>
 </p>
@@ -142,6 +141,40 @@ Usage insights derived directly from local telemetry:
 
 ---
 
+### Usage
+
+Monitor your Claude Pro/Max subscription usage in real time:
+
+- Session limit (5-hour window) and weekly limits
+- Per-model breakdown (Opus, Sonnet)
+- Extra usage spend tracking
+- Data fetched from Anthropic's official OAuth API using your existing Claude Code credentials
+- Auto-refreshes every 30 minutes to avoid rate limits
+
+---
+
+### Insights
+
+Generate and view Claude Code `/insights` reports directly within Lumo:
+
+- One-click report generation (invokes `claude /insights` CLI)
+- Browse previously generated reports
+- View interactive HTML reports in an embedded viewer
+- Reports analyze your session patterns, friction points, and suggest CLAUDE.md improvements
+
+---
+
+### Skills & Marketplace
+
+Manage Claude Code skills and plugins:
+
+- Browse, install, and uninstall skills
+- View skill details and configuration
+- Browse the plugin marketplace
+- Install community plugins
+
+---
+
 ### Claude Code Wrapped
 
 A lightweight "wrapped" summary for your Claude Code habits:
@@ -220,33 +253,37 @@ Use this if you want to develop or modify Lumo locally.
 
 ---
 
-## Getting Started
+## Developing from Source
 
 ### Prerequisites
 
-- Node.js >= 24.12
-- pnpm >= 10.26
-- Rust (stable)
-- Platform dependencies for Tauri v2
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Node.js | >= 24.12 | Frontend runtime |
+| pnpm | >= 10.26 | Package manager |
+| Rust (stable) | >= 1.77.2 | Backend + daemon |
+| typeshare-cli | latest | Rust → TypeScript type generation (`cargo install typeshare-cli`) |
+| [Tauri v2 deps](https://v2.tauri.app/start/prerequisites/) | — | Platform-specific build dependencies |
 
-### Install & Run
+### First-time Setup
 
 ```bash
 git clone https://github.com/zhnd/lumo.git
 cd lumo
 pnpm install
+
+# Build the daemon (required before first launch)
+cargo build -p lumo-daemon
+
+# Start the app
 pnpm tauri:dev
 ```
 
-This starts the daemon, builds the frontend, and launches the desktop app.
+> **Important**: `pnpm tauri:dev` does NOT automatically compile the daemon. You must run `cargo build -p lumo-daemon` before the first launch, and again whenever you modify code under `crates/daemon/` or `crates/shared/`.
 
-When the app starts, it will also try to configure Claude Code OTEL/hook settings in:
+On startup, the app will configure Claude Code OTEL/hook settings in `~/.claude/settings.json` automatically.
 
-```bash
-~/.claude/settings.json
-```
-
-You can review or edit that file at any time.
+See [QUICKSTART.md](QUICKSTART.md) for a more detailed development guide.
 
 ---
 
@@ -301,13 +338,16 @@ Then try launching the app again.
 
 ```
 lumo/
-├── crates/daemon/      # OTLP receiver service
+├── crates/daemon/      # OTLP receiver service (Axum HTTP)
 ├── crates/shared/      # Database entities, repositories, migrations
-├── src-tauri/          # Tauri backend (IPC commands)
-└── packages/ui/        # Desktop UI
-    ├── app/            # Next.js routes
-    ├── modules/        # Overview, Sessions, Tools, Performance, Wrapped
-    └── components/    # Shared UI components
+├── src-tauri/          # Tauri backend (commands, services, types)
+└── packages/ui/        # Desktop UI (Next.js SSG)
+    ├── app/            # Routes
+    └── src/
+        ├── modules/    # Page modules (Overview, Sessions, Tools, Performance,
+        │               #   Usage, Insights, Skills, Marketplace, Wrapped)
+        ├── bridges/    # Tauri IPC wrappers
+        └── components/ # Shared UI components
 ```
 
 ---

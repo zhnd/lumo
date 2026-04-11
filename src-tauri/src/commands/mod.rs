@@ -10,7 +10,6 @@ pub mod subscription_usage_commands;
 pub mod system_commands;
 pub mod tools_commands;
 pub mod trends_commands;
-pub mod usage_commands;
 pub mod user_commands;
 pub mod projects_commands;
 pub mod marketplace_commands;
@@ -30,7 +29,6 @@ pub use subscription_usage_commands::*;
 pub use system_commands::*;
 pub use tools_commands::*;
 pub use trends_commands::*;
-pub use usage_commands::*;
 pub use user_commands::*;
 pub use projects_commands::*;
 pub use marketplace_commands::*;
@@ -82,11 +80,6 @@ macro_rules! app_commands {
             commands::save_image_to_path,
             // Daemon commands
             commands::get_daemon_status,
-            // Usage commands
-            commands::get_usage_limits,
-            commands::save_api_key,
-            commands::has_api_key,
-            commands::delete_api_key,
             // Insights commands
             commands::list_insights_reports,
             commands::generate_insights_report,
