@@ -40,7 +40,8 @@ export function useScrollToBottom({
     }
   }, [itemCount, onScrollToBottom, autoScrollOnInitialLoad]);
 
-  // Track scroll position — depend on itemCount so listener attaches after content renders
+  // Track scroll position — itemCount in deps ensures re-attach when content first renders
+  // biome-ignore lint/correctness/useExhaustiveDependencies: itemCount triggers re-attach when scroll container mounts
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -56,7 +57,7 @@ export function useScrollToBottom({
     handleScroll();
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
-  }, [scrollRef]);
+  }, [scrollRef, itemCount]);
 
   const scrollToBottom = useCallback(() => {
     onScrollToBottom();

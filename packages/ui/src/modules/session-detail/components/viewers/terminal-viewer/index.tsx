@@ -18,24 +18,22 @@ export function TerminalViewer({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-border bg-zinc-950 dark:bg-zinc-950",
+        "overflow-hidden rounded-xl bg-muted/20 px-4 py-3",
         className,
       )}
     >
       {command && (
-        <div className="border-b border-zinc-800 px-3 py-2">
-          <pre className="whitespace-pre-wrap break-all font-mono text-[11px] text-zinc-300">
-            <span className="select-none text-green-400">$ </span>
-            {command}
-          </pre>
-        </div>
+        <pre className="whitespace-pre-wrap break-all font-mono text-xs text-foreground">
+          <span className="select-none text-primary/60">$ </span>
+          {command}
+        </pre>
       )}
       {output && (
-        <div className="max-h-[400px] overflow-auto px-3 py-2">
+        <div className={cn("max-h-[400px] overflow-auto", command && "mt-2")}>
           <pre
             className={cn(
-              "whitespace-pre-wrap break-words font-mono text-[11px]",
-              isError ? "text-red-400" : "text-zinc-400",
+              "whitespace-pre-wrap break-words font-mono text-xs",
+              isError ? "text-destructive/80" : "text-muted-foreground",
             )}
           >
             {output}

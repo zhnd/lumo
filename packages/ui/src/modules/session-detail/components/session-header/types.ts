@@ -7,4 +7,5 @@ export interface SessionHeaderProps {
   stats: ClaudeSessionStats;
   collapsed?: boolean;
   onBack: () => void;
+  onReplay?: () => void;
 }

@@ -7,8 +7,10 @@ import {
   parseRichContent,
   postProcessText,
 } from "../../shared/content-parser";
+import { inferLang } from "../../shared/language-map";
 import { CodeViewer } from "../../viewers/code-viewer";
 import { ImageViewer } from "../../viewers/image-viewer";
+import { MarkdownViewer } from "../../viewers/markdown-viewer";
 
 interface ToolReadProps {
   input?: string;
@@ -68,10 +70,19 @@ export function ToolRead({
     );
   }
 
+  const isMarkdown = resolvedPath
+    ? inferLang(resolvedPath) === "markdown"
+    : false;
+
   return (
     <div className="space-y-2">
       {svgSrc && <ImageViewer images={[{ src: svgSrc, alt: "SVG preview" }]} />}
-      {cleanContent && !svgSrc && (
+      {cleanContent && !svgSrc && isMarkdown && (
+        <div className="max-h-[600px] overflow-auto rounded-lg border border-border bg-muted/10 px-4 py-3 text-sm leading-relaxed">
+          <MarkdownViewer content={cleanContent} />
+        </div>
+      )}
+      {cleanContent && !svgSrc && !isMarkdown && (
         <CodeViewer
           code={cleanContent}
           filePath={resolvedPath}

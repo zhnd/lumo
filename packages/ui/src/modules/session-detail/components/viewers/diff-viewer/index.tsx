@@ -65,12 +65,7 @@ export function DiffViewer({
   if (!diffFile) return null;
 
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-lg border border-border text-[11px]",
-        className,
-      )}
-    >
+    <div className={cn("overflow-hidden rounded-xl text-[11px]", className)}>
       <div
         className="overflow-x-auto"
         style={
@@ -88,7 +83,7 @@ export function DiffViewer({
         />
       </div>
       {collapsible && (
-        <div className="flex justify-center border-t bg-muted/30 py-0.5">
+        <div className="flex justify-center bg-muted/20 py-0.5">
           <Button
             variant="ghost"
             size="sm"

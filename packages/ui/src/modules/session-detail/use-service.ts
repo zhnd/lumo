@@ -8,8 +8,13 @@ import { ClaudeSessionBridge } from "@/bridges/claude-session-bridge";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { useTauriEvent } from "@/hooks/use-tauri-event";
 import { watcherBackedQueryOptions } from "@/lib/query-options";
-import { buildFlatTimeline, buildSessionHighlights } from "./libs";
+import {
+  buildFlatTimeline,
+  buildSessionHighlights,
+  groupConsecutiveTools,
+} from "./libs";
 import type { UseServiceReturn } from "./types";
+import { useReplay } from "./use-replay";
 
 const TOP_PANEL_SHOW_THRESHOLD = 24;
 const TOP_PANEL_HIDE_THRESHOLD = 260;
@@ -69,7 +74,10 @@ export function useService(sessionPath: string): UseServiceReturn {
   const previousItemCountRef = useRef(0);
 
   const timelineItems = useMemo(
-    () => buildFlatTimeline(detailQuery.data?.messages ?? []),
+    () =>
+      groupConsecutiveTools(
+        buildFlatTimeline(detailQuery.data?.messages ?? []),
+      ),
     [detailQuery.data?.messages],
   );
 
@@ -78,11 +86,18 @@ export function useService(sessionPath: string): UseServiceReturn {
     return buildSessionHighlights(detailQuery.data.messages ?? []);
   }, [detailQuery.data]);
 
+  const replay = useReplay(timelineItems);
+
+  // During replay, only show items up to visibleCount
+  const displayItems = replay.isReplaying
+    ? timelineItems.slice(0, replay.visibleCount)
+    : timelineItems;
+
   const virtualizer = useVirtualizer({
-    count: timelineItems.length,
+    count: displayItems.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: (index) => {
-      const item = timelineItems[index];
+      const item = displayItems[index];
       if (!item) return 90;
       switch (item.kind) {
         case "user":
@@ -90,9 +105,16 @@ export function useService(sessionPath: string): UseServiceReturn {
         case "assistant":
           return 120;
         case "tool":
-          return 52;
+          // Inline tools (Edit/Write/Bash) are taller; compact tools (Read/Search) are tiny
+          return item.toolName === "Edit" ||
+            item.toolName === "Write" ||
+            item.toolName === "Bash"
+            ? 160
+            : 24;
         case "thinking":
-          return 44;
+          return 24;
+        case "tool-group":
+          return 24;
         default:
           return 90;
       }
@@ -101,24 +123,38 @@ export function useService(sessionPath: string): UseServiceReturn {
   });
 
   const handleScrollToBottom = useCallback(() => {
-    if (timelineItems.length === 0) return;
-    virtualizer.scrollToIndex(timelineItems.length - 1, {
-      align: "end",
-      behavior: "smooth",
-    });
-  }, [virtualizer, timelineItems.length]);
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, []);
 
-  const { showScrollToBottom, isNearBottom, scrollToBottom } =
-    useScrollToBottom({
-      scrollRef,
-      itemCount: timelineItems.length,
-      onScrollToBottom: handleScrollToBottom,
-      autoScrollOnInitialLoad: false,
-    });
+  const { showScrollToBottom, scrollToBottom } = useScrollToBottom({
+    scrollRef,
+    itemCount: timelineItems.length,
+    onScrollToBottom: handleScrollToBottom,
+    autoScrollOnInitialLoad: false,
+  });
+
+  /** Check if user is near bottom RIGHT NOW (not from stale state). */
+  const checkIsNearBottom = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return true;
+    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+    return distance <= LIVE_FOLLOW_THRESHOLD_PX;
+  }, []);
 
   const onBack = useCallback(() => {
     router.push("/sessions");
   }, [router]);
+
+  // Auto-scroll during replay as items are revealed
+  useEffect(() => {
+    if (!replay.isReplaying || !replay.isPlaying) return;
+    if (displayItems.length === 0) return;
+    requestAnimationFrame(() => {
+      virtualizer.scrollToIndex(displayItems.length - 1, { align: "end" });
+    });
+  }, [replay.isReplaying, replay.isPlaying, displayItems.length, virtualizer]);
 
   useEffect(() => {
     hasPreparedInitialRenderRef.current = false;
@@ -179,7 +215,7 @@ export function useService(sessionPath: string): UseServiceReturn {
     previousItemCountRef.current = timelineItems.length;
 
     if (!isFirstRender) {
-      if (timelineItems.length > previousCount && isNearBottom) {
+      if (timelineItems.length > previousCount && checkIsNearBottom()) {
         requestAnimationFrame(() => {
           virtualizer.scrollToIndex(timelineItems.length - 1, {
             align: "end",
@@ -231,13 +267,13 @@ export function useService(sessionPath: string): UseServiceReturn {
     detailQuery.error,
     detailQuery.data,
     timelineItems.length,
-    isNearBottom,
+    checkIsNearBottom,
     virtualizer,
   ]);
 
   return {
     sessionDetail: detailQuery.data ?? null,
-    timelineItems,
+    timelineItems: displayItems,
     totalMessageCount: detailQuery.data?.messages.length ?? 0,
     totalTurnCount: timelineItems.filter((item) => item.kind === "user").length,
     highlights,
@@ -251,5 +287,18 @@ export function useService(sessionPath: string): UseServiceReturn {
     isSessionActive,
     isLoading: detailQuery.isLoading,
     error: detailQuery.error as Error | null,
+    replay: {
+      isReplaying: replay.isReplaying,
+      isPlaying: replay.isPlaying,
+      progress: replay.progress,
+      speed: replay.speed,
+      visibleCount: replay.visibleCount,
+      totalCount: timelineItems.length,
+      startReplay: replay.startReplay,
+      stopReplay: replay.stopReplay,
+      togglePlay: replay.togglePlay,
+      setSpeed: replay.setSpeed,
+      seek: replay.seek,
+    },
   };
 }

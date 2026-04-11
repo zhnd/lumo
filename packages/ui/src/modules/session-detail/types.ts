@@ -22,6 +22,8 @@ export interface TimelineUserItem {
   kind: "user";
   timestamp: string;
   text: string;
+  /** Output from a slash command (e.g. /compact), ANSI-stripped. */
+  commandOutput?: string;
 }
 
 export interface TimelineAssistantItem {
@@ -54,14 +56,39 @@ export interface TimelineThinkingItem {
   redacted: boolean;
 }
 
+export type ToolGroupCategory = "read" | "search";
+
+export interface TimelineToolGroupItem {
+  id: string;
+  kind: "tool-group";
+  timestamp: string;
+  category: ToolGroupCategory;
+  items: TimelineToolItem[];
+}
+
 export type TimelineItem =
   | TimelineUserItem
   | TimelineAssistantItem
   | TimelineToolItem
-  | TimelineThinkingItem;
+  | TimelineThinkingItem
+  | TimelineToolGroupItem;
 
 export interface SessionDetailModuleProps {
   sessionPath: string;
+}
+
+export interface ReplayControls {
+  isReplaying: boolean;
+  isPlaying: boolean;
+  progress: number;
+  speed: import("./use-replay").ReplaySpeed;
+  visibleCount: number;
+  totalCount: number;
+  startReplay: () => void;
+  stopReplay: () => void;
+  togglePlay: () => void;
+  setSpeed: (speed: import("./use-replay").ReplaySpeed) => void;
+  seek: (progress: number) => void;
 }
 
 export interface UseServiceReturn {
@@ -80,4 +107,5 @@ export interface UseServiceReturn {
   isSessionActive: boolean;
   isLoading: boolean;
   error: Error | null;
+  replay: ReplayControls;
 }

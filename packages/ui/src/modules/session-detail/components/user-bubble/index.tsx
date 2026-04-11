@@ -3,7 +3,6 @@
 import { Clock3, User } from "lucide-react";
 import { formatMessageTime } from "../../libs";
 import type { TimelineUserItem } from "../../types";
-import { MarkdownViewer } from "../viewers/markdown-viewer";
 
 interface UserBubbleProps {
   item: TimelineUserItem;
@@ -24,8 +23,15 @@ export function UserBubble({ item }: UserBubbleProps) {
           </span>
         </div>
         <div className="max-h-[220px] overflow-auto pr-2 text-sm leading-6">
-          <MarkdownViewer content={item.text} />
+          <p className="whitespace-pre-wrap break-words">{item.text}</p>
         </div>
+        {item.commandOutput && (
+          <div className="mt-2 rounded-md bg-muted/50 px-3 py-2">
+            <pre className="whitespace-pre-wrap break-words font-mono text-[11px] text-muted-foreground">
+              {item.commandOutput}
+            </pre>
+          </div>
+        )}
       </div>
     </section>
   );

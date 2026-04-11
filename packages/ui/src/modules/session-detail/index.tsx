@@ -9,6 +9,7 @@ import {
   SessionHighlights,
   TimelineItem,
 } from "./components";
+import { ReplayBar } from "./components/replay-bar";
 import type { SessionDetailModuleProps } from "./types";
 import { useService } from "./use-service";
 
@@ -29,6 +30,7 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
     onBack,
     isLoading,
     error,
+    replay,
   } = useService(sessionPath);
 
   if (error && !isLoading) {
@@ -64,6 +66,7 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
             stats={sessionDetail.stats}
             collapsed={isTopCollapsed}
             onBack={onBack}
+            onReplay={replay.isReplaying ? undefined : replay.startReplay}
           />
           {!isTopCollapsed && highlights && (
             <SessionHighlights highlights={highlights} />
@@ -103,7 +106,7 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
               </div>
             </div>
 
-            {isSessionActive && (
+            {isSessionActive && !replay.isReplaying && (
               <div className="flex items-center gap-1.5 px-4 py-3">
                 <span className="inline-flex gap-1">
                   <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
@@ -116,10 +119,24 @@ export function SessionDetail({ sessionPath }: SessionDetailModuleProps) {
               </div>
             )}
 
-            <ScrollToBottomButton
-              visible={showScrollToBottom}
-              onClick={scrollToBottom}
-            />
+            {replay.isReplaying ? (
+              <ReplayBar
+                isPlaying={replay.isPlaying}
+                progress={replay.progress}
+                speed={replay.speed}
+                visibleCount={replay.visibleCount}
+                totalCount={replay.totalCount}
+                onTogglePlay={replay.togglePlay}
+                onStop={replay.stopReplay}
+                onSpeedChange={replay.setSpeed}
+                onSeek={replay.seek}
+              />
+            ) : (
+              <ScrollToBottomButton
+                visible={showScrollToBottom}
+                onClick={scrollToBottom}
+              />
+            )}
           </div>
         )}
       </div>

@@ -5,8 +5,15 @@ import type {
 import {
   extractSlashCommand,
   sanitizeMessageText,
+  stripAnsiCodes,
 } from "./components/shared/text-utils";
-import type { TimelineItem, TimelineUserItem } from "./types";
+import type {
+  TimelineItem,
+  TimelineToolGroupItem,
+  TimelineToolItem,
+  TimelineUserItem,
+  ToolGroupCategory,
+} from "./types";
 
 export interface SessionHighlights {
   toolCalls: number;
@@ -161,28 +168,11 @@ function buildFlatMessageItems(
     }
 
     if (block.type === "text") {
-      const text = block.text?.trim();
-      if (!text || isInterruptionText(text)) continue;
+      const rawText = block.text?.trim();
+      if (!rawText || isInterruptionText(rawText)) continue;
 
-      if (role === "user") {
-        // User text in a tool-result message — still show as assistant context
-        items.push({
-          id: `${message.uuid}-text-${index}`,
-          kind: "assistant",
-          timestamp: message.timestamp,
-          text,
-          model: message.model,
-        });
-      } else {
-        items.push({
-          id: `${message.uuid}-text-${index}`,
-          kind: "assistant",
-          timestamp: message.timestamp,
-          text,
-          model: message.model,
-        });
-      }
-      continue;
+      const handled = routeTextBlock(rawText, message, index, items);
+      if (handled) continue;
     }
 
     if (block.type === "tool_use" && block.name?.trim() && block.toolUseId) {
@@ -230,28 +220,22 @@ function buildFlatMessageItems(
 }
 
 function extractUserItem(message: ClaudeMessage): TimelineUserItem | null {
+  // Use routeTextBlock for consistent handling of all text formats.
+  // Collect items, then return the first user item (if any).
+  const items: TimelineItem[] = [];
+
   for (const [index, block] of (message.blocks ?? []).entries()) {
     if (block.type !== "text" || !block.text?.trim()) continue;
 
     const rawText = block.text.trim();
     if (isInterruptionText(rawText)) continue;
 
-    const command = extractSlashCommand(rawText);
-    const text = command
-      ? `/${command.name}${command.args ? ` ${command.args}` : ""}`
-      : sanitizeMessageText(rawText);
-
-    if (!text.trim()) continue;
-
-    return {
-      id: `${message.uuid}-prompt-${index}`,
-      kind: "user",
-      timestamp: message.timestamp,
-      text: text.trim(),
-    };
+    routeTextBlock(rawText, message, index, items);
   }
 
-  return null;
+  // Return the first user item, with any commandOutput attached
+  const firstUser = items.find((i) => i.kind === "user");
+  return (firstUser as TimelineUserItem) ?? null;
 }
 
 function mergeAdjacentAssistantItems(items: TimelineItem[]): TimelineItem[] {
@@ -339,4 +323,171 @@ function normalizeRole(
 ): "user" | "assistant" | "system" {
   if (type === "assistant" || type === "system") return type;
   return "user";
+}
+
+/**
+ * Route a text block to the correct timeline item type.
+ * Handles all Claude Code special message formats:
+ * - caveat messages (hidden)
+ * - slash commands (/config, /exit)
+ * - command stdout/stderr output
+ * - regular user text
+ * - assistant/system text with metadata sanitization
+ *
+ * Returns true if handled (item pushed or skipped), false if caller should handle.
+ */
+function routeTextBlock(
+  rawText: string,
+  message: ClaudeMessage,
+  blockIndex: number,
+  items: TimelineItem[],
+): boolean {
+  const role = normalizeRole(message.type);
+
+  // 1. Caveat messages — always hide
+  if (rawText.startsWith("<local-command-caveat>")) {
+    return true; // skip
+  }
+
+  // 2. Slash command metadata — parse as /command
+  const command = extractSlashCommand(rawText);
+  if (command) {
+    const commandOutput = command.stdout
+      ? stripAnsiCodes(command.stdout).trim() || undefined
+      : undefined;
+    const name = command.name.startsWith("/")
+      ? command.name
+      : `/${command.name}`;
+    items.push({
+      id: `${message.uuid}-prompt-${blockIndex}`,
+      kind: "user",
+      timestamp: message.timestamp,
+      text: `${name}${command.args ? ` ${command.args}` : ""}`,
+      commandOutput,
+    });
+    return true;
+  }
+
+  // 3. Command stdout/stderr — attach to previous command or show inline
+  if (
+    rawText.startsWith("<local-command-stdout>") ||
+    rawText.startsWith("<local-command-stderr>") ||
+    rawText.startsWith("<bash-stdout>") ||
+    rawText.startsWith("<bash-stderr>")
+  ) {
+    const content = extractTagContent(rawText);
+    if (!content) return true; // empty output, skip
+
+    const cleaned = stripAnsiCodes(content).trim();
+    if (!cleaned) return true;
+
+    // Try to attach to the previous user item as commandOutput
+    const lastItem = items[items.length - 1];
+    if (lastItem?.kind === "user" && !lastItem.commandOutput) {
+      lastItem.commandOutput = cleaned;
+      return true;
+    }
+
+    // Otherwise show as standalone muted output
+    items.push({
+      id: `${message.uuid}-text-${blockIndex}`,
+      kind: "user",
+      timestamp: message.timestamp,
+      text: cleaned,
+    });
+    return true;
+  }
+
+  // 4. User text — show as-is (plain text, no markdown processing)
+  if (role === "user") {
+    items.push({
+      id: `${message.uuid}-text-${blockIndex}`,
+      kind: "user",
+      timestamp: message.timestamp,
+      text: rawText,
+    });
+    return true;
+  }
+
+  // 5. Assistant/system text — sanitize metadata tags
+  const text = sanitizeMessageText(rawText);
+  if (!text) return true;
+
+  items.push({
+    id: `${message.uuid}-text-${blockIndex}`,
+    kind: "assistant",
+    timestamp: message.timestamp,
+    text,
+    model: message.model,
+  });
+  return true;
+}
+
+/** Extract content from a tag like `<local-command-stdout>content</local-command-stdout>` */
+function extractTagContent(text: string): string | null {
+  const match = text.match(/^<[^>]+>([\s\S]*)<\/[^>]+>$/);
+  return match?.[1] ?? null;
+}
+
+/* ── Consecutive tool grouping ─────────────────────────────────── */
+
+const READ_TOOLS = new Set(["Read", "Glob"]);
+const SEARCH_TOOLS = new Set(["Grep", "WebSearch", "WebFetch"]);
+
+function getGroupCategory(toolName: string): ToolGroupCategory | null {
+  if (READ_TOOLS.has(toolName)) return "read";
+  if (SEARCH_TOOLS.has(toolName)) return "search";
+  return null;
+}
+
+/**
+ * Post-process a flat timeline: merge consecutive read or search tool items
+ * into `tool-group` items (minimum 2 to form a group).
+ */
+export function groupConsecutiveTools(items: TimelineItem[]): TimelineItem[] {
+  const result: TimelineItem[] = [];
+  let pendingGroup: TimelineToolItem[] = [];
+  let pendingCategory: ToolGroupCategory | null = null;
+
+  const flushGroup = () => {
+    if (pendingGroup.length >= 2 && pendingCategory) {
+      const group: TimelineToolGroupItem = {
+        id: `group-${pendingGroup[0].id}`,
+        kind: "tool-group",
+        timestamp: pendingGroup[0].timestamp,
+        category: pendingCategory,
+        items: pendingGroup,
+      };
+      result.push(group);
+    } else {
+      result.push(...pendingGroup);
+    }
+    pendingGroup = [];
+    pendingCategory = null;
+  };
+
+  for (const item of items) {
+    if (item.kind === "tool" && !item.isError) {
+      const cat = getGroupCategory(item.toolName);
+      if (cat && (pendingCategory === null || pendingCategory === cat)) {
+        pendingCategory = cat;
+        pendingGroup.push(item);
+        continue;
+      }
+    }
+    // Item doesn't belong to current group — flush and push
+    flushGroup();
+    if (item.kind === "tool" && !item.isError) {
+      const cat = getGroupCategory(item.toolName);
+      if (cat) {
+        pendingCategory = cat;
+        pendingGroup.push(item);
+        continue;
+      }
+    }
+    result.push(item);
+  }
+
+  flushGroup();
+  return result;
 }

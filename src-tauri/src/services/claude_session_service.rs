@@ -19,6 +19,8 @@ struct SessionMeta {
     full_path: String,
     is_sidechain: bool,
     first_prompt: Option<String>,
+    /// AI-generated session title from `custom-title` JSONL entries.
+    custom_title: Option<String>,
     cwd: Option<String>,
     first_timestamp: Option<String>,
     mtime_ms: i64,
@@ -176,6 +178,34 @@ impl ClaudeSessionService {
         })
     }
 
+    /// Extract the AI-generated session title from `custom-title` JSONL entries.
+    /// Scans the file by searching for the literal string to avoid parsing every line.
+    fn extract_custom_title(jsonl_path: &Path) -> Option<String> {
+        let content = fs::read_to_string(jsonl_path).ok()?;
+        // Fast check: avoid JSON parsing if the marker isn't present at all
+        if !content.contains("\"custom-title\"") {
+            return None;
+        }
+        // Find the LAST custom-title entry (in case there are updates)
+        let mut title: Option<String> = None;
+        for line in content.lines().rev() {
+            if !line.contains("\"custom-title\"") {
+                continue;
+            }
+            if let Ok(val) = serde_json::from_str::<serde_json::Value>(line) {
+                if val.get("type").and_then(|v| v.as_str()) == Some("custom-title") {
+                    if let Some(t) = val.get("customTitle").and_then(|v| v.as_str()) {
+                        if !t.is_empty() {
+                            title = Some(t.to_string());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        title
+    }
+
     /// Extract lightweight metadata from a .jsonl session file.
     /// Reads only the first few conversational records to keep list loading fast.
     fn extract_session_meta(jsonl_path: &Path) -> Option<SessionMeta> {
@@ -281,11 +311,16 @@ impl ClaudeSessionService {
             }
         }
 
+        // Scan for AI-generated custom-title (can appear anywhere in the file).
+        // Read from the tail since it's typically written after the first turn.
+        let custom_title = Self::extract_custom_title(jsonl_path);
+
         Some(SessionMeta {
             session_id: file_name,
             full_path,
             is_sidechain,
             first_prompt: first_prompt.or(command_fallback),
+            custom_title,
             cwd,
             first_timestamp,
             mtime_ms,
@@ -425,7 +460,7 @@ impl ClaudeSessionService {
             session_id: meta.session_id.clone(),
             full_path: meta.full_path.clone(),
             first_prompt: meta.first_prompt.clone(),
-            summary: None,
+            summary: meta.custom_title.clone(),
             message_count: meta.message_count,
             created,
             modified,
