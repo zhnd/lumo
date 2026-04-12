@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, RefreshCw } from "lucide-react";
+import { Clock, Crown, RefreshCw } from "lucide-react";
 import { CardError } from "@/components/card-error";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,24 @@ import {
   UsageSkeleton,
 } from "./components";
 import { useService } from "./use-service";
+
+const TIER_CONFIG: Record<string, { label: string; color: string }> = {
+  MAX: {
+    label: "Claude Max",
+    color:
+      "from-violet-500/15 to-fuchsia-500/15 dark:from-violet-500/25 dark:to-fuchsia-500/25",
+  },
+  PRO: {
+    label: "Claude Pro",
+    color:
+      "from-sky-500/15 to-blue-500/15 dark:from-sky-500/25 dark:to-blue-500/25",
+  },
+  API: {
+    label: "API Usage",
+    color:
+      "from-emerald-500/15 to-teal-500/15 dark:from-emerald-500/25 dark:to-teal-500/25",
+  },
+} as const;
 
 function formatRelativeTime(fetchedAt: number, now: number): string {
   if (!fetchedAt) return "never";
@@ -26,6 +44,7 @@ export function Usage() {
     useService();
 
   const usage = data?.usage;
+  const subscriptionType = data?.subscriptionType;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -61,6 +80,11 @@ export function Usage() {
 
           {status === "success" && usage && (
             <div className="space-y-8">
+              {/* Subscription tier banner */}
+              {subscriptionType && (
+                <SubscriptionBanner type={subscriptionType} />
+              )}
+
               {/* Session limit (5-hour) */}
               {usage.fiveHour && (
                 <div className="space-y-5">
@@ -137,6 +161,30 @@ export function Usage() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function SubscriptionBanner({ type }: { type: string }) {
+  const config = TIER_CONFIG[type] ?? {
+    label: type,
+    color: "from-primary/10 to-primary/5",
+  };
+
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-xl bg-gradient-to-r p-4 ${config.color}`}
+    >
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-background/80 shadow-sm">
+        <Crown className="size-5 text-foreground" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold">{config.label}</p>
+        <p className="text-xs text-muted-foreground">Active subscription</p>
+      </div>
+      <span className="ml-auto shrink-0 rounded-md bg-background/80 px-2.5 py-1 text-xs font-bold tracking-wider shadow-sm">
+        {type}
+      </span>
     </div>
   );
 }
