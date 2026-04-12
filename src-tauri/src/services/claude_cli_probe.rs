@@ -15,13 +15,25 @@ use crate::types::{SubscriptionUsageResponse, UsageBucket};
 /// setup-tokens only have `user:inference` scope, which can't hit `/usage`.
 const ENV_EXCLUSION: &str = "CLAUDE_CODE_OAUTH_TOKEN";
 
+/// Result of a CLI probe run, combining parsed usage data with any
+/// metadata we could read from the CLI output itself (e.g. the account
+/// tier shown in the header row). Keeping these in one struct lets the
+/// caller avoid touching the Keychain just for a badge string.
+pub struct CliProbeResult {
+    pub usage: SubscriptionUsageResponse,
+    /// Normalized subscription badge: "MAX", "PRO", "API", or a
+    /// pass-through of whatever the header said. `None` means we didn't
+    /// recognize the header line.
+    pub subscription_badge: Option<String>,
+}
+
 pub struct ClaudeCliProbe;
 
 impl ClaudeCliProbe {
     /// Run `claude /usage` inside a PTY, render the ANSI output, and parse
     /// the usage buckets. Blocking I/O is offloaded via `spawn_blocking` so
     /// the async caller isn't held up by the PTY read loop.
-    pub async fn fetch_usage() -> Result<SubscriptionUsageResponse> {
+    pub async fn fetch_usage() -> Result<CliProbeResult> {
         let claude_path = which::which("claude")
             .context("Claude CLI binary not found in PATH")?;
         log::debug!("ClaudeCliProbe: using binary at {}", claude_path.display());
@@ -66,7 +78,13 @@ impl ClaudeCliProbe {
             rendered.len()
         );
 
-        parse_usage_output(&rendered)
+        let usage = parse_usage_output(&rendered)?;
+        let subscription_badge = detect_subscription_badge(&rendered);
+
+        Ok(CliProbeResult {
+            usage,
+            subscription_badge,
+        })
     }
 }
 
@@ -112,6 +130,25 @@ fn parse_usage_output(text: &str) -> Result<SubscriptionUsageResponse> {
         // what the UI uses to show the tier badge.
         extra_usage: None,
     })
+}
+
+/// Detect the subscription tier from the `claude /usage` header row.
+/// Example headers: `"Opus 4.5 · Claude Max"`, `"Sonnet 4.5 · Claude Pro"`,
+/// `"Sonnet 4.5 · API Usage Billing"`. We only scan the first ~6 rendered
+/// lines since the tier always appears at the top.
+fn detect_subscription_badge(text: &str) -> Option<String> {
+    let head: String = text.lines().take(6).collect::<Vec<_>>().join("\n");
+    let lower = head.to_lowercase();
+
+    if lower.contains("· claude max") || lower.contains("·claude max") {
+        Some("MAX".to_string())
+    } else if lower.contains("· claude pro") || lower.contains("·claude pro") {
+        Some("PRO".to_string())
+    } else if lower.contains("api usage billing") {
+        Some("API".to_string())
+    } else {
+        None
+    }
 }
 
 fn build_bucket(lines: &[&str], label_candidates: &[&str]) -> Option<UsageBucket> {
@@ -274,6 +311,23 @@ mod tests {
             "Resets 4:59pm",
         ];
         assert_eq!(extract_percent(&lines, "current session"), Some(35.0));
+    }
+
+    #[test]
+    fn detect_subscription_badge_matches_header() {
+        assert_eq!(
+            detect_subscription_badge("Opus 4.5 · Claude Max · Organization\n"),
+            Some("MAX".to_string())
+        );
+        assert_eq!(
+            detect_subscription_badge("Sonnet 4.5 · Claude Pro\n"),
+            Some("PRO".to_string())
+        );
+        assert_eq!(
+            detect_subscription_badge("Sonnet 4.5 · API Usage Billing\n"),
+            Some("API".to_string())
+        );
+        assert_eq!(detect_subscription_badge("Something else\n"), None);
     }
 
     #[test]

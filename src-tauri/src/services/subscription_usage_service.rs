@@ -77,44 +77,33 @@ enum AuthOrError {
 pub struct SubscriptionUsageService;
 
 impl SubscriptionUsageService {
+    /// Fetch subscription usage. Prefers the CLI path (`claude /usage` inside
+    /// a PTY) since it requires no direct Keychain access and matches what
+    /// ClaudeBar does by default. Falls back to the OAuth API only if the CLI
+    /// can't run (binary missing, PTY spawn failure, parse failure, etc).
     pub async fn fetch_usage() -> Result<SubscriptionUsageResult> {
-        // Derive subscription badge once — applies to all result paths (API + CLI).
-        let subscription_badge = claude_credentials::load_credentials()
-            .as_ref()
-            .and_then(Self::parse_subscription_badge);
-
-        let mut result = match Self::fetch_via_api().await {
-            Ok(r) if !r.needs_login => r,
-            Ok(api_result) => {
-                // needs_login from API — try CLI fallback before giving up
-                log::debug!("API probe requires login, trying CLI fallback...");
-                match Self::fetch_via_cli().await {
-                    Ok(cli_result) => cli_result,
-                    Err(e) => {
-                        log::debug!("CLI fallback also failed: {}", e);
-                        api_result
-                    }
-                }
+        // Primary: CLI probe. No Keychain access — `claude` itself reads the
+        // stored credentials.
+        match super::claude_cli_probe::ClaudeCliProbe::fetch_usage().await {
+            Ok(cli) => {
+                return Ok(SubscriptionUsageResult {
+                    needs_login: false,
+                    usage: Some(cli.usage),
+                    error: None,
+                    subscription_type: cli.subscription_badge,
+                });
             }
-            Err(api_err) => {
-                // API error — try CLI fallback
-                log::warn!("API probe failed: {}, trying CLI fallback...", api_err);
-                match Self::fetch_via_cli().await {
-                    Ok(cli_result) => cli_result,
-                    Err(cli_err) => {
-                        log::warn!("CLI fallback also failed: {}", cli_err);
-                        return Err(api_err);
-                    }
-                }
+            Err(cli_err) => {
+                log::warn!(
+                    "CLI usage probe failed, falling back to OAuth API: {}",
+                    cli_err
+                );
             }
-        };
-
-        // Ensure subscription badge is present on all paths
-        if result.subscription_type.is_none() {
-            result.subscription_type = subscription_badge;
         }
 
-        Ok(result)
+        // Fallback: API path. This DOES touch the Keychain (via
+        // load_credentials) because we need the OAuth access token.
+        Self::fetch_via_api().await
     }
 
     // ---------------------------------------------------------------
@@ -396,20 +385,6 @@ impl SubscriptionUsageService {
             usage: Some(Self::convert_response(api_response)),
             error: None,
             subscription_type: None, // filled in by caller
-        })
-    }
-
-    // ---------------------------------------------------------------
-    // CLI fallback — delegates to ClaudeCliProbe (PTY + vt100 renderer)
-    // ---------------------------------------------------------------
-
-    async fn fetch_via_cli() -> Result<SubscriptionUsageResult> {
-        let usage = super::claude_cli_probe::ClaudeCliProbe::fetch_usage().await?;
-        Ok(SubscriptionUsageResult {
-            needs_login: false,
-            usage: Some(usage),
-            error: None,
-            subscription_type: None,
         })
     }
 
