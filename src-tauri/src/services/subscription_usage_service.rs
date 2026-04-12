@@ -400,126 +400,17 @@ impl SubscriptionUsageService {
     }
 
     // ---------------------------------------------------------------
-    // CLI fallback
+    // CLI fallback — delegates to ClaudeCliProbe (PTY + vt100 renderer)
     // ---------------------------------------------------------------
 
     async fn fetch_via_cli() -> Result<SubscriptionUsageResult> {
-        let claude_path = which::which("claude")
-            .context("Claude CLI binary not found in PATH")?;
-
-        log::debug!("CLI fallback: using {}", claude_path.display());
-
-        // Strip CLAUDE_CODE_OAUTH_TOKEN from env to force stored credentials
-        // (setup-tokens only have inference scope, not usage scope)
-        let env_vars: Vec<(String, String)> = std::env::vars()
-            .filter(|(k, _)| k != "CLAUDE_CODE_OAUTH_TOKEN")
-            .collect();
-
-        let output = tokio::process::Command::new(&claude_path)
-            .args(["/usage", "--output", "json", "--allowed-tools", ""])
-            .env_clear()
-            .envs(env_vars)
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .output()
-            .await
-            .context("Failed to execute claude /usage")?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            anyhow::bail!("claude /usage failed (exit {}): {}", output.status, stderr);
-        }
-
-        let stdout = String::from_utf8_lossy(&output.stdout);
-
-        // Try parsing as JSON first (--output json may work)
-        if let Ok(api_resp) = serde_json::from_str::<ApiUsageResponse>(&stdout) {
-            return Ok(SubscriptionUsageResult {
-                needs_login: false,
-                usage: Some(Self::convert_response(api_resp)),
-                error: None,
-                subscription_type: None,
-            });
-        }
-
-        // Try parsing as text output (fallback)
-        match Self::parse_cli_text_output(&stdout) {
-            Some(usage) => Ok(SubscriptionUsageResult {
-                needs_login: false,
-                usage: Some(usage),
-                error: None,
-                subscription_type: None,
-            }),
-            None => {
-                log::warn!("CLI fallback: could not parse output: {}", &stdout[..stdout.len().min(500)]);
-                anyhow::bail!("Failed to parse claude /usage output")
-            }
-        }
-    }
-
-    /// Best-effort parser for `claude /usage` text output.
-    /// Looks for percentage patterns like "45.2% used" or "45%" and reset times.
-    fn parse_cli_text_output(text: &str) -> Option<SubscriptionUsageResponse> {
-        use crate::types::{ExtraUsage, UsageBucket};
-
-        // Strip ANSI escape codes
-        let clean = strip_ansi(text);
-        let lines: Vec<&str> = clean.lines().collect();
-
-        let mut five_hour: Option<UsageBucket> = None;
-        let mut seven_day: Option<UsageBucket> = None;
-        let mut seven_day_opus: Option<UsageBucket> = None;
-        let mut seven_day_sonnet: Option<UsageBucket> = None;
-        let mut extra_usage: Option<ExtraUsage> = None;
-
-        let mut i = 0;
-        while i < lines.len() {
-            let line = lines[i].trim().to_lowercase();
-
-            if line.contains("session") && line.contains("limit") || line.contains("5-hour") || line.contains("five") {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    five_hour = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if line.contains("opus") {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    seven_day_opus = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if line.contains("sonnet") {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    seven_day_sonnet = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if (line.contains("weekly") || line.contains("7-day") || line.contains("seven"))
-                && !line.contains("opus") && !line.contains("sonnet")
-            {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    seven_day = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if line.contains("extra") || line.contains("overage") || line.contains("pay") {
-                if let Some((util, _)) = find_usage_in_nearby_lines(&lines, i) {
-                    extra_usage = Some(ExtraUsage {
-                        is_enabled: true,
-                        utilization: Some(util),
-                        used_credits: None,
-                        monthly_limit: None,
-                    });
-                }
-            }
-
-            i += 1;
-        }
-
-        // Only return if we found at least one bucket
-        if five_hour.is_some() || seven_day.is_some() || seven_day_opus.is_some() || seven_day_sonnet.is_some() {
-            Some(SubscriptionUsageResponse {
-                five_hour,
-                seven_day,
-                seven_day_opus,
-                seven_day_sonnet,
-                extra_usage,
-            })
-        } else {
-            None
-        }
+        let usage = super::claude_cli_probe::ClaudeCliProbe::fetch_usage().await?;
+        Ok(SubscriptionUsageResult {
+            needs_login: false,
+            usage: Some(usage),
+            error: None,
+            subscription_type: None,
+        })
     }
 
     // ---------------------------------------------------------------
@@ -549,52 +440,3 @@ impl SubscriptionUsageService {
     }
 }
 
-// --- Helpers ---
-
-/// Strip ANSI escape codes from text.
-fn strip_ansi(text: &str) -> String {
-    let mut result = String::with_capacity(text.len());
-    let mut chars = text.chars().peekable();
-    while let Some(ch) = chars.next() {
-        if ch == '\x1b' {
-            // Skip until we find the terminating letter
-            if chars.peek() == Some(&'[') {
-                chars.next();
-                while let Some(&c) = chars.peek() {
-                    chars.next();
-                    if c.is_ascii_alphabetic() {
-                        break;
-                    }
-                }
-            }
-        } else {
-            result.push(ch);
-        }
-    }
-    result
-}
-
-/// Extract a percentage value from text (e.g. "45.2% used" → 45.2).
-fn extract_percentage(text: &str) -> Option<f64> {
-    let text = text.trim();
-    for word in text.split_whitespace() {
-        let word = word.trim_end_matches('%');
-        if let Ok(val) = word.parse::<f64>() {
-            if (0.0..=100.0).contains(&val) {
-                return Some(val);
-            }
-        }
-    }
-    None
-}
-
-/// Search nearby lines (current + next 5) for a percentage value.
-fn find_usage_in_nearby_lines(lines: &[&str], start: usize) -> Option<(f64, Option<String>)> {
-    let end = (start + 6).min(lines.len());
-    for line in &lines[start..end] {
-        if let Some(pct) = extract_percentage(line) {
-            return Some((pct, None));
-        }
-    }
-    None
-}
