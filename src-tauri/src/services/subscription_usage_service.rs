@@ -49,6 +49,25 @@ struct TokenRefreshResponse {
     expires_in: Option<i64>,
 }
 
+/// OAuth 2.0 error response body (RFC 6749 §5.2).
+#[derive(serde::Deserialize, Debug)]
+struct OAuthErrorBody {
+    error: Option<String>,
+    error_description: Option<String>,
+}
+
+/// Build a shared reqwest client with User-Agent and default timeout.
+///
+/// Setting a User-Agent is critical: Anthropic's WAF rejects requests with
+/// no UA as suspected bot traffic, returning 403 "Request not allowed".
+fn http_client() -> Result<reqwest::Client> {
+    reqwest::Client::builder()
+        .user_agent(concat!("Lumo/", env!("CARGO_PKG_VERSION")))
+        .timeout(std::time::Duration::from_secs(15))
+        .build()
+        .context("Failed to build HTTP client")
+}
+
 /// Internal error type to distinguish auth failures from other errors.
 enum AuthOrError {
     NeedsAuth,
@@ -142,7 +161,7 @@ impl SubscriptionUsageService {
         }
 
         // Fetch usage data
-        let client = reqwest::Client::new();
+        let client = http_client()?;
         match Self::call_usage_api(&client, &creds.access_token).await {
             Ok(mut result) => {
                 result.subscription_type = subscription_badge;
@@ -240,12 +259,11 @@ impl SubscriptionUsageService {
             "scope": SCOPES,
         });
 
-        let client = reqwest::Client::new();
+        let client = http_client()?;
         let response = client
             .post(REFRESH_URL)
-            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
             .json(&body)
-            .timeout(std::time::Duration::from_secs(15))
             .send()
             .await
             .context("Failed to connect to token refresh endpoint")?;
@@ -253,11 +271,34 @@ impl SubscriptionUsageService {
         let status = response.status();
         if !status.is_success() {
             let body_text = response.text().await.unwrap_or_default();
-            log::warn!(
-                "Token refresh failed with HTTP {}: {}",
-                status.as_u16(),
-                body_text
-            );
+            // Try to parse as OAuth error body per RFC 6749 §5.2
+            let oauth_err: Option<OAuthErrorBody> = serde_json::from_str(&body_text).ok();
+            match oauth_err.as_ref().and_then(|e| e.error.as_deref()) {
+                Some("invalid_grant") => {
+                    log::warn!(
+                        "Token refresh rejected (invalid_grant): refresh token is no longer valid — user must re-run `claude login`"
+                    );
+                }
+                Some(err_code) => {
+                    log::warn!(
+                        "Token refresh failed (HTTP {}, oauth error={}, description={}): {}",
+                        status.as_u16(),
+                        err_code,
+                        oauth_err
+                            .as_ref()
+                            .and_then(|e| e.error_description.as_deref())
+                            .unwrap_or("(none)"),
+                        body_text
+                    );
+                }
+                None => {
+                    log::warn!(
+                        "Token refresh failed with HTTP {}: {}",
+                        status.as_u16(),
+                        body_text
+                    );
+                }
+            }
             anyhow::bail!("Token refresh failed: HTTP {}", status.as_u16());
         }
 
@@ -300,7 +341,6 @@ impl SubscriptionUsageService {
             .header("Authorization", format!("Bearer {}", access_token))
             .header("anthropic-beta", "oauth-2025-04-20")
             .header("Accept", "application/json")
-            .timeout(std::time::Duration::from_secs(15))
             .send()
             .await
             .map_err(|e| AuthOrError::Other(e.into()))?;
