@@ -10,6 +10,7 @@ mod notification_settings_service;
 pub mod session_cache;
 pub mod session_watcher;
 mod stats_service;
+mod binary_locator;
 mod claude_cli_probe;
 mod claude_credentials;
 mod insights_service;

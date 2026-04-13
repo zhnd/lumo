@@ -36,8 +36,9 @@ impl ClaudeCliProbe {
     /// the usage buckets. Blocking I/O is offloaded via `spawn_blocking` so
     /// the async caller isn't held up by the PTY read loop.
     pub async fn fetch_usage() -> Result<CliProbeResult> {
-        let claude_path = which::which("claude")
-            .context("Claude CLI binary not found in PATH")?;
+        let claude_path = super::binary_locator::locate_binary("claude").context(
+            "Claude CLI binary not found (searched login shell and common install paths)",
+        )?;
         log::debug!("ClaudeCliProbe: using binary at {}", claude_path.display());
 
         let working_dir = probe_working_directory()?;
