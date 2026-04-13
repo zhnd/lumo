@@ -83,12 +83,15 @@ impl SubscriptionUsageService {
     /// can't run (binary missing, PTY spawn failure, parse failure, etc).
     pub async fn fetch_usage() -> Result<SubscriptionUsageResult> {
         // Primary: CLI probe. No Keychain access — `claude` itself reads the
-        // stored credentials.
+        // stored credentials. `cli.usage` is `None` for account types that
+        // don't expose subscription quotas (e.g. pay-per-use API billing),
+        // in which case we propagate the badge to the frontend which then
+        // renders a dedicated empty state instead of a gauge grid.
         match super::claude_cli_probe::ClaudeCliProbe::fetch_usage().await {
             Ok(cli) => {
                 return Ok(SubscriptionUsageResult {
                     needs_login: false,
-                    usage: Some(cli.usage),
+                    usage: cli.usage,
                     error: None,
                     subscription_type: cli.subscription_badge,
                 });
@@ -397,7 +400,10 @@ impl SubscriptionUsageService {
 
         let convert_bucket = |b: ApiUsageBucket| UsageBucket {
             utilization: b.utilization,
-            resets_at: b.resets_at,
+            // Format the ISO timestamp into a display string so the frontend
+            // doesn't need to parse dates — the CLI path already delivers
+            // display-ready text, and both paths must look the same.
+            resets_at: b.resets_at.as_deref().and_then(format_api_reset_time),
         };
 
         SubscriptionUsageResponse {
@@ -410,8 +416,127 @@ impl SubscriptionUsageService {
                 utilization: e.utilization,
                 used_credits: e.used_credits,
                 monthly_limit: e.monthly_limit,
+                // The OAuth API doesn't currently return a reset field for
+                // extra_usage; leave it None and the UI will hide the row.
+                resets_at: None,
             }),
         }
+    }
+}
+
+/// Format an ISO 8601 timestamp into a compact human-readable "Resets in ..."
+/// style string, matching the shape of the CLI probe output. Returns `None`
+/// if the timestamp is already in the past or can't be parsed.
+///
+/// Examples:
+/// - 45 minutes from now → `"in 45m"`
+/// - 2 hours 15 minutes from now → `"in 2h 15m"`
+/// - 3 days from now → `"in 3d"`
+/// - 30 days from now → `"Jan 15"` (or `"Jan 15, 2027"` if year differs)
+fn format_api_reset_time(iso: &str) -> Option<String> {
+    use chrono::{DateTime, Datelike, Local, Utc};
+
+    let parsed = DateTime::parse_from_rfc3339(iso).ok()?;
+    let now = Utc::now();
+    let target_utc = parsed.with_timezone(&Utc);
+    let delta = target_utc.signed_duration_since(now);
+
+    if delta.num_seconds() <= 0 {
+        return None;
+    }
+
+    let total_minutes = delta.num_minutes();
+    let total_hours = delta.num_hours();
+    let total_days = delta.num_days();
+
+    // < 1 hour → "in Xm"
+    if total_hours < 1 {
+        return Some(format!("in {}m", total_minutes.max(1)));
+    }
+
+    // < 24 hours → "in Xh" or "in Xh Ym"
+    if total_days < 1 {
+        let minutes_remainder = total_minutes - total_hours * 60;
+        if minutes_remainder == 0 {
+            return Some(format!("in {}h", total_hours));
+        }
+        return Some(format!("in {}h {}m", total_hours, minutes_remainder));
+    }
+
+    // < 7 days → "in Xd" or "in Xd Yh"
+    if total_days < 7 {
+        let hours_remainder = total_hours - total_days * 24;
+        if hours_remainder == 0 {
+            return Some(format!("in {}d", total_days));
+        }
+        return Some(format!("in {}d {}h", total_days, hours_remainder));
+    }
+
+    // >= 7 days → absolute date in local timezone, e.g. "Jan 15" or "Jan 15, 2027"
+    let local = target_utc.with_timezone(&Local);
+    let now_local = now.with_timezone(&Local);
+    if local.year() == now_local.year() {
+        Some(local.format("%b %-d").to_string())
+    } else {
+        Some(local.format("%b %-d, %Y").to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{Duration, Utc};
+
+    fn iso_offset(duration: Duration) -> String {
+        (Utc::now() + duration)
+            .to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
+    }
+
+    #[test]
+    fn format_api_reset_time_minutes() {
+        let s = format_api_reset_time(&iso_offset(Duration::minutes(15))).unwrap();
+        // Allow slight clock drift between iso_offset() and format_api_reset_time()
+        assert!(s == "in 15m" || s == "in 14m", "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_hours_exact() {
+        let s = format_api_reset_time(&iso_offset(Duration::hours(3))).unwrap();
+        // Depending on rounding, might be "in 3h" or "in 2h 59m"
+        assert!(s == "in 3h" || s == "in 2h 59m", "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_hours_and_minutes() {
+        let s = format_api_reset_time(&iso_offset(
+            Duration::hours(2) + Duration::minutes(15),
+        ))
+        .unwrap();
+        assert!(s.starts_with("in 2h 1"), "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_days() {
+        let s = format_api_reset_time(&iso_offset(Duration::days(3))).unwrap();
+        assert!(s == "in 3d" || s == "in 2d 23h", "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_far_future_uses_abs_date() {
+        let s = format_api_reset_time(&iso_offset(Duration::days(30))).unwrap();
+        // Should be an abbreviated month + day, NOT "in 30d"
+        assert!(!s.starts_with("in "), "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_past_returns_none() {
+        let s = format_api_reset_time(&iso_offset(Duration::seconds(-10)));
+        assert!(s.is_none());
+    }
+
+    #[test]
+    fn format_api_reset_time_invalid_returns_none() {
+        assert!(format_api_reset_time("not-a-date").is_none());
     }
 }
 

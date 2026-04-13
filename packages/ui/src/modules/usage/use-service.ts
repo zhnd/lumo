@@ -36,6 +36,9 @@ export function useService(): UseServiceReturn {
     status = "error";
   } else if (data?.usage) {
     status = "success";
+  } else if (data && data.subscriptionType === "API" && !data.usage) {
+    // Pay-per-use API billing account — no quotas to show.
+    status = "api_billing";
   }
 
   return {

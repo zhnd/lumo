@@ -4,8 +4,8 @@ import { Clock, Crown, RefreshCw } from "lucide-react";
 import { CardError } from "@/components/card-error";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
+  ApiBillingNotice,
   ExtraUsageCard,
   LoginPrompt,
   UsageBucketCard,
@@ -65,10 +65,21 @@ export function Usage() {
       </PageHeader>
 
       <div className="flex-1 overflow-y-auto bg-muted/40">
-        <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
+        <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
           {status === "loading" && <UsageSkeleton />}
 
           {status === "login" && <LoginPrompt />}
+
+          {status === "api_billing" && (
+            <>
+              {subscriptionType && (
+                <div className="mb-6">
+                  <SubscriptionBanner type={subscriptionType} />
+                </div>
+              )}
+              <ApiBillingNotice />
+            </>
+          )}
 
           {status === "error" && (
             <CardError
@@ -79,70 +90,45 @@ export function Usage() {
           )}
 
           {status === "success" && usage && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               {/* Subscription tier banner */}
               {subscriptionType && (
                 <SubscriptionBanner type={subscriptionType} />
               )}
 
-              {/* Session limit (5-hour) */}
-              {usage.fiveHour && (
-                <div className="space-y-5">
-                  <h2 className="text-base font-semibold">Session limit</h2>
+              {/* Fixed 2-column grid on anything from small screens up so the
+                  gauges always land in a 2x2 / 2x3 shape regardless of
+                  window width. On very narrow windows (< 640px) fall back
+                  to a single column so cards don't get squeezed. */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                {usage.fiveHour && (
                   <UsageBucketCard
                     label="Current session"
                     bucket={usage.fiveHour}
                   />
-                </div>
-              )}
-
-              {/* Weekly limits */}
-              {(usage.sevenDay ||
-                usage.sevenDayOpus ||
-                usage.sevenDaySonnet) && (
-                <>
-                  {usage.fiveHour && <Separator />}
-                  <div className="space-y-5">
-                    <h2 className="text-base font-semibold">Weekly limits</h2>
-                    {usage.sevenDay && (
-                      <UsageBucketCard
-                        label="All models"
-                        bucket={usage.sevenDay}
-                      />
-                    )}
-                    {usage.sevenDay &&
-                      (usage.sevenDayOpus || usage.sevenDaySonnet) && (
-                        <Separator />
-                      )}
-                    {usage.sevenDayOpus && (
-                      <UsageBucketCard
-                        label="Opus"
-                        bucket={usage.sevenDayOpus}
-                      />
-                    )}
-                    {usage.sevenDayOpus && usage.sevenDaySonnet && (
-                      <Separator />
-                    )}
-                    {usage.sevenDaySonnet && (
-                      <UsageBucketCard
-                        label="Sonnet"
-                        bucket={usage.sevenDaySonnet}
-                      />
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Extra usage */}
-              {usage.extraUsage?.isEnabled && (
-                <>
-                  <Separator />
-                  <div className="space-y-5">
-                    <h2 className="text-base font-semibold">Extra usage</h2>
-                    <ExtraUsageCard extra={usage.extraUsage} />
-                  </div>
-                </>
-              )}
+                )}
+                {usage.sevenDay && (
+                  <UsageBucketCard
+                    label="All models · weekly"
+                    bucket={usage.sevenDay}
+                  />
+                )}
+                {usage.sevenDayOpus && (
+                  <UsageBucketCard
+                    label="Opus · weekly"
+                    bucket={usage.sevenDayOpus}
+                  />
+                )}
+                {usage.sevenDaySonnet && (
+                  <UsageBucketCard
+                    label="Sonnet · weekly"
+                    bucket={usage.sevenDaySonnet}
+                  />
+                )}
+                {usage.extraUsage?.isEnabled && (
+                  <ExtraUsageCard extra={usage.extraUsage} />
+                )}
+              </div>
 
               {/* Last updated + refresh policy */}
               <div className="space-y-1 text-xs text-muted-foreground">
@@ -173,7 +159,7 @@ function SubscriptionBanner({ type }: { type: string }) {
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl bg-gradient-to-r p-4 ${config.color}`}
+      className={`flex items-center gap-3 rounded-xl bg-linear-to-r p-4 ${config.color}`}
     >
       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-background/80 shadow-sm">
         <Crown className="size-5 text-foreground" />
