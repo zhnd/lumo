@@ -77,44 +77,36 @@ enum AuthOrError {
 pub struct SubscriptionUsageService;
 
 impl SubscriptionUsageService {
+    /// Fetch subscription usage. Prefers the CLI path (`claude /usage` inside
+    /// a PTY) since it requires no direct Keychain access and matches what
+    /// ClaudeBar does by default. Falls back to the OAuth API only if the CLI
+    /// can't run (binary missing, PTY spawn failure, parse failure, etc).
     pub async fn fetch_usage() -> Result<SubscriptionUsageResult> {
-        // Derive subscription badge once — applies to all result paths (API + CLI).
-        let subscription_badge = claude_credentials::load_credentials()
-            .as_ref()
-            .and_then(Self::parse_subscription_badge);
-
-        let mut result = match Self::fetch_via_api().await {
-            Ok(r) if !r.needs_login => r,
-            Ok(api_result) => {
-                // needs_login from API — try CLI fallback before giving up
-                log::debug!("API probe requires login, trying CLI fallback...");
-                match Self::fetch_via_cli().await {
-                    Ok(cli_result) => cli_result,
-                    Err(e) => {
-                        log::debug!("CLI fallback also failed: {}", e);
-                        api_result
-                    }
-                }
+        // Primary: CLI probe. No Keychain access — `claude` itself reads the
+        // stored credentials. `cli.usage` is `None` for account types that
+        // don't expose subscription quotas (e.g. pay-per-use API billing),
+        // in which case we propagate the badge to the frontend which then
+        // renders a dedicated empty state instead of a gauge grid.
+        match super::claude_cli_probe::ClaudeCliProbe::fetch_usage().await {
+            Ok(cli) => {
+                return Ok(SubscriptionUsageResult {
+                    needs_login: false,
+                    usage: cli.usage,
+                    error: None,
+                    subscription_type: cli.subscription_badge,
+                });
             }
-            Err(api_err) => {
-                // API error — try CLI fallback
-                log::warn!("API probe failed: {}, trying CLI fallback...", api_err);
-                match Self::fetch_via_cli().await {
-                    Ok(cli_result) => cli_result,
-                    Err(cli_err) => {
-                        log::warn!("CLI fallback also failed: {}", cli_err);
-                        return Err(api_err);
-                    }
-                }
+            Err(cli_err) => {
+                log::warn!(
+                    "CLI usage probe failed, falling back to OAuth API: {}",
+                    cli_err
+                );
             }
-        };
-
-        // Ensure subscription badge is present on all paths
-        if result.subscription_type.is_none() {
-            result.subscription_type = subscription_badge;
         }
 
-        Ok(result)
+        // Fallback: API path. This DOES touch the Keychain (via
+        // load_credentials) because we need the OAuth access token.
+        Self::fetch_via_api().await
     }
 
     // ---------------------------------------------------------------
@@ -400,129 +392,6 @@ impl SubscriptionUsageService {
     }
 
     // ---------------------------------------------------------------
-    // CLI fallback
-    // ---------------------------------------------------------------
-
-    async fn fetch_via_cli() -> Result<SubscriptionUsageResult> {
-        let claude_path = which::which("claude")
-            .context("Claude CLI binary not found in PATH")?;
-
-        log::debug!("CLI fallback: using {}", claude_path.display());
-
-        // Strip CLAUDE_CODE_OAUTH_TOKEN from env to force stored credentials
-        // (setup-tokens only have inference scope, not usage scope)
-        let env_vars: Vec<(String, String)> = std::env::vars()
-            .filter(|(k, _)| k != "CLAUDE_CODE_OAUTH_TOKEN")
-            .collect();
-
-        let output = tokio::process::Command::new(&claude_path)
-            .args(["/usage", "--output", "json", "--allowed-tools", ""])
-            .env_clear()
-            .envs(env_vars)
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
-            .output()
-            .await
-            .context("Failed to execute claude /usage")?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            anyhow::bail!("claude /usage failed (exit {}): {}", output.status, stderr);
-        }
-
-        let stdout = String::from_utf8_lossy(&output.stdout);
-
-        // Try parsing as JSON first (--output json may work)
-        if let Ok(api_resp) = serde_json::from_str::<ApiUsageResponse>(&stdout) {
-            return Ok(SubscriptionUsageResult {
-                needs_login: false,
-                usage: Some(Self::convert_response(api_resp)),
-                error: None,
-                subscription_type: None,
-            });
-        }
-
-        // Try parsing as text output (fallback)
-        match Self::parse_cli_text_output(&stdout) {
-            Some(usage) => Ok(SubscriptionUsageResult {
-                needs_login: false,
-                usage: Some(usage),
-                error: None,
-                subscription_type: None,
-            }),
-            None => {
-                log::warn!("CLI fallback: could not parse output: {}", &stdout[..stdout.len().min(500)]);
-                anyhow::bail!("Failed to parse claude /usage output")
-            }
-        }
-    }
-
-    /// Best-effort parser for `claude /usage` text output.
-    /// Looks for percentage patterns like "45.2% used" or "45%" and reset times.
-    fn parse_cli_text_output(text: &str) -> Option<SubscriptionUsageResponse> {
-        use crate::types::{ExtraUsage, UsageBucket};
-
-        // Strip ANSI escape codes
-        let clean = strip_ansi(text);
-        let lines: Vec<&str> = clean.lines().collect();
-
-        let mut five_hour: Option<UsageBucket> = None;
-        let mut seven_day: Option<UsageBucket> = None;
-        let mut seven_day_opus: Option<UsageBucket> = None;
-        let mut seven_day_sonnet: Option<UsageBucket> = None;
-        let mut extra_usage: Option<ExtraUsage> = None;
-
-        let mut i = 0;
-        while i < lines.len() {
-            let line = lines[i].trim().to_lowercase();
-
-            if line.contains("session") && line.contains("limit") || line.contains("5-hour") || line.contains("five") {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    five_hour = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if line.contains("opus") {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    seven_day_opus = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if line.contains("sonnet") {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    seven_day_sonnet = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if (line.contains("weekly") || line.contains("7-day") || line.contains("seven"))
-                && !line.contains("opus") && !line.contains("sonnet")
-            {
-                if let Some((util, resets)) = find_usage_in_nearby_lines(&lines, i) {
-                    seven_day = Some(UsageBucket { utilization: Some(util), resets_at: resets });
-                }
-            } else if line.contains("extra") || line.contains("overage") || line.contains("pay") {
-                if let Some((util, _)) = find_usage_in_nearby_lines(&lines, i) {
-                    extra_usage = Some(ExtraUsage {
-                        is_enabled: true,
-                        utilization: Some(util),
-                        used_credits: None,
-                        monthly_limit: None,
-                    });
-                }
-            }
-
-            i += 1;
-        }
-
-        // Only return if we found at least one bucket
-        if five_hour.is_some() || seven_day.is_some() || seven_day_opus.is_some() || seven_day_sonnet.is_some() {
-            Some(SubscriptionUsageResponse {
-                five_hour,
-                seven_day,
-                seven_day_opus,
-                seven_day_sonnet,
-                extra_usage,
-            })
-        } else {
-            None
-        }
-    }
-
-    // ---------------------------------------------------------------
     // Response conversion
     // ---------------------------------------------------------------
 
@@ -531,7 +400,10 @@ impl SubscriptionUsageService {
 
         let convert_bucket = |b: ApiUsageBucket| UsageBucket {
             utilization: b.utilization,
-            resets_at: b.resets_at,
+            // Format the ISO timestamp into a display string so the frontend
+            // doesn't need to parse dates — the CLI path already delivers
+            // display-ready text, and both paths must look the same.
+            resets_at: b.resets_at.as_deref().and_then(format_api_reset_time),
         };
 
         SubscriptionUsageResponse {
@@ -544,57 +416,127 @@ impl SubscriptionUsageService {
                 utilization: e.utilization,
                 used_credits: e.used_credits,
                 monthly_limit: e.monthly_limit,
+                // The OAuth API doesn't currently return a reset field for
+                // extra_usage; leave it None and the UI will hide the row.
+                resets_at: None,
             }),
         }
     }
 }
 
-// --- Helpers ---
+/// Format an ISO 8601 timestamp into a compact human-readable "Resets in ..."
+/// style string, matching the shape of the CLI probe output. Returns `None`
+/// if the timestamp is already in the past or can't be parsed.
+///
+/// Examples:
+/// - 45 minutes from now → `"in 45m"`
+/// - 2 hours 15 minutes from now → `"in 2h 15m"`
+/// - 3 days from now → `"in 3d"`
+/// - 30 days from now → `"Jan 15"` (or `"Jan 15, 2027"` if year differs)
+fn format_api_reset_time(iso: &str) -> Option<String> {
+    use chrono::{DateTime, Datelike, Local, Utc};
 
-/// Strip ANSI escape codes from text.
-fn strip_ansi(text: &str) -> String {
-    let mut result = String::with_capacity(text.len());
-    let mut chars = text.chars().peekable();
-    while let Some(ch) = chars.next() {
-        if ch == '\x1b' {
-            // Skip until we find the terminating letter
-            if chars.peek() == Some(&'[') {
-                chars.next();
-                while let Some(&c) = chars.peek() {
-                    chars.next();
-                    if c.is_ascii_alphabetic() {
-                        break;
-                    }
-                }
-            }
-        } else {
-            result.push(ch);
-        }
+    let parsed = DateTime::parse_from_rfc3339(iso).ok()?;
+    let now = Utc::now();
+    let target_utc = parsed.with_timezone(&Utc);
+    let delta = target_utc.signed_duration_since(now);
+
+    if delta.num_seconds() <= 0 {
+        return None;
     }
-    result
+
+    let total_minutes = delta.num_minutes();
+    let total_hours = delta.num_hours();
+    let total_days = delta.num_days();
+
+    // < 1 hour → "in Xm"
+    if total_hours < 1 {
+        return Some(format!("in {}m", total_minutes.max(1)));
+    }
+
+    // < 24 hours → "in Xh" or "in Xh Ym"
+    if total_days < 1 {
+        let minutes_remainder = total_minutes - total_hours * 60;
+        if minutes_remainder == 0 {
+            return Some(format!("in {}h", total_hours));
+        }
+        return Some(format!("in {}h {}m", total_hours, minutes_remainder));
+    }
+
+    // < 7 days → "in Xd" or "in Xd Yh"
+    if total_days < 7 {
+        let hours_remainder = total_hours - total_days * 24;
+        if hours_remainder == 0 {
+            return Some(format!("in {}d", total_days));
+        }
+        return Some(format!("in {}d {}h", total_days, hours_remainder));
+    }
+
+    // >= 7 days → absolute date in local timezone, e.g. "Jan 15" or "Jan 15, 2027"
+    let local = target_utc.with_timezone(&Local);
+    let now_local = now.with_timezone(&Local);
+    if local.year() == now_local.year() {
+        Some(local.format("%b %-d").to_string())
+    } else {
+        Some(local.format("%b %-d, %Y").to_string())
+    }
 }
 
-/// Extract a percentage value from text (e.g. "45.2% used" → 45.2).
-fn extract_percentage(text: &str) -> Option<f64> {
-    let text = text.trim();
-    for word in text.split_whitespace() {
-        let word = word.trim_end_matches('%');
-        if let Ok(val) = word.parse::<f64>() {
-            if (0.0..=100.0).contains(&val) {
-                return Some(val);
-            }
-        }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::{Duration, Utc};
+
+    fn iso_offset(duration: Duration) -> String {
+        (Utc::now() + duration)
+            .to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
     }
-    None
+
+    #[test]
+    fn format_api_reset_time_minutes() {
+        let s = format_api_reset_time(&iso_offset(Duration::minutes(15))).unwrap();
+        // Allow slight clock drift between iso_offset() and format_api_reset_time()
+        assert!(s == "in 15m" || s == "in 14m", "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_hours_exact() {
+        let s = format_api_reset_time(&iso_offset(Duration::hours(3))).unwrap();
+        // Depending on rounding, might be "in 3h" or "in 2h 59m"
+        assert!(s == "in 3h" || s == "in 2h 59m", "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_hours_and_minutes() {
+        let s = format_api_reset_time(&iso_offset(
+            Duration::hours(2) + Duration::minutes(15),
+        ))
+        .unwrap();
+        assert!(s.starts_with("in 2h 1"), "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_days() {
+        let s = format_api_reset_time(&iso_offset(Duration::days(3))).unwrap();
+        assert!(s == "in 3d" || s == "in 2d 23h", "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_far_future_uses_abs_date() {
+        let s = format_api_reset_time(&iso_offset(Duration::days(30))).unwrap();
+        // Should be an abbreviated month + day, NOT "in 30d"
+        assert!(!s.starts_with("in "), "got: {}", s);
+    }
+
+    #[test]
+    fn format_api_reset_time_past_returns_none() {
+        let s = format_api_reset_time(&iso_offset(Duration::seconds(-10)));
+        assert!(s.is_none());
+    }
+
+    #[test]
+    fn format_api_reset_time_invalid_returns_none() {
+        assert!(format_api_reset_time("not-a-date").is_none());
+    }
 }
 
-/// Search nearby lines (current + next 5) for a percentage value.
-fn find_usage_in_nearby_lines(lines: &[&str], start: usize) -> Option<(f64, Option<String>)> {
-    let end = (start + 6).min(lines.len());
-    for line in &lines[start..end] {
-        if let Some(pct) = extract_percentage(line) {
-            return Some((pct, None));
-        }
-    }
-    None
-}

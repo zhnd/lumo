@@ -28,6 +28,8 @@ pub struct ExtraUsage {
     pub used_credits: Option<f64>,
     /// Monthly limit in minor units (cents)
     pub monthly_limit: Option<f64>,
+    /// Pre-formatted reset string (e.g. "Jan 1, 2026"). None if not available.
+    pub resets_at: Option<String>,
 }
 
 /// Full subscription usage response from the OAuth API
