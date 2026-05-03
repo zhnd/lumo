@@ -416,7 +416,7 @@ impl ClaudeSessionService {
             }
         }
 
-        files.sort_by(|a, b| b.mtime_ms.cmp(&a.mtime_ms));
+        files.sort_by_key(|file| std::cmp::Reverse(file.mtime_ms));
         Ok(files)
     }
 

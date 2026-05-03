@@ -272,7 +272,7 @@ impl SkillsService {
         Self::scan_skills_dir(&base_dir.join("skills"), scope, &mut skills);
         Self::scan_commands_dir(&base_dir.join("commands"), &mut skills);
 
-        skills.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        skills.sort_by_key(|skill| skill.name.to_lowercase());
         Ok(skills)
     }
 
@@ -624,7 +624,7 @@ Add your skill instructions here.
             });
         }
 
-        skills.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        skills.sort_by_key(|skill| skill.name.to_lowercase());
         Ok(skills)
     }
 
