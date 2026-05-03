@@ -7,6 +7,7 @@ use anyhow::{Context, Result};
 use std::fs;
 use std::path::PathBuf;
 
+use crate::services::claude_project_paths::ClaudeProjectPaths;
 use crate::services::SkillsService;
 use crate::types::ClaudeProjectSummary;
 
@@ -20,18 +21,6 @@ impl ProjectsService {
 
     fn get_projects_dir() -> Result<PathBuf> {
         Ok(Self::get_claude_dir()?.join("projects"))
-    }
-
-    /// Decode a folder name back to a project path.
-    /// e.g., "-Users-zhnd-dev-projects-lumo" -> "/Users/zhnd/dev/projects/lumo"
-    fn folder_name_to_project_path(folder_name: &str) -> String {
-        if let Some(stripped) = folder_name.strip_prefix('-') {
-            // Unix-style: leading dash → leading slash, remaining dashes → slashes
-            format!("/{}", stripped.replace('-', "/"))
-        } else {
-            // Windows-style or fallback
-            folder_name.replace('-', "/")
-        }
     }
 
     fn timestamp_to_rfc3339(ms: i64) -> Option<String> {
@@ -51,6 +40,7 @@ impl ProjectsService {
         }
 
         let mut projects = Vec::new();
+        let project_path_lookup = ClaudeProjectPaths::load_folder_path_lookup()?;
 
         for entry in fs::read_dir(&projects_dir)? {
             let entry = entry?;
@@ -64,7 +54,10 @@ impl ProjectsService {
                 None => continue,
             };
 
-            let project_path = Self::folder_name_to_project_path(&folder_name);
+            let project_path = ClaudeProjectPaths::folder_name_to_project_path(
+                &folder_name,
+                &project_path_lookup,
+            );
             let mut session_count = 0_i32;
             let mut latest_ms = 0_i64;
 
