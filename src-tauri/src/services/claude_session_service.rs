@@ -8,6 +8,7 @@ use std::fs;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
+use crate::services::claude_project_paths::ClaudeProjectPaths;
 use crate::types::{
     ClaudeContentBlock, ClaudeMessage, ClaudeSession, ClaudeSessionDetail,
     ClaudeSessionPage, ClaudeSessionStats, ClaudeToolUse, RawClaudeMessage,
@@ -52,24 +53,6 @@ impl ClaudeSessionService {
     /// Get the path to the projects directory
     fn get_projects_dir() -> Result<PathBuf> {
         Ok(Self::get_claude_dir()?.join("projects"))
-    }
-
-    /// Convert a project path to its .claude folder name format
-    /// e.g., "/Users/zhnd/dev/projects/lumo" -> "-Users-zhnd-dev-projects-lumo"
-    fn project_path_to_folder_name(project_path: &str) -> String {
-        project_path.replace('/', "-")
-    }
-
-    /// Decode a folder name back to a project path.
-    /// e.g., "-Users-zhnd-dev-projects-lumo" -> "/Users/zhnd/dev/projects/lumo"
-    fn folder_name_to_project_path(folder_name: &str) -> String {
-        if let Some(stripped) = folder_name.strip_prefix('-') {
-            // Unix-style: leading dash → leading slash, remaining dashes → slashes
-            format!("/{}", stripped.replace('-', "/"))
-        } else {
-            // Windows-style or fallback
-            folder_name.replace('-', "/")
-        }
     }
 
     fn timestamp_to_rfc3339(ms: i64) -> Option<String> {
@@ -342,7 +325,11 @@ impl ClaudeSessionService {
                     .parent()
                     .and_then(|parent| parent.file_name())
                     .and_then(|name| name.to_str())
-                    .map(Self::folder_name_to_project_path)
+                    .map(|folder_name| {
+                        let lookup = ClaudeProjectPaths::load_folder_path_lookup()
+                            .unwrap_or_else(|_| Default::default());
+                        ClaudeProjectPaths::folder_name_to_project_path(folder_name, &lookup)
+                    })
             })
             .unwrap_or_default();
 
@@ -397,11 +384,12 @@ impl ClaudeSessionService {
         if !projects_dir.exists() {
             return Ok(vec![]);
         }
+        let project_path_lookup = ClaudeProjectPaths::load_folder_path_lookup()?;
 
         let mut files = Vec::new();
 
         if let Some(project_path) = project_path {
-            let folder_name = Self::project_path_to_folder_name(project_path);
+            let folder_name = ClaudeProjectPaths::project_path_to_folder_name(project_path);
             let project_dir = projects_dir.join(folder_name);
             if !project_dir.exists() {
                 return Ok(vec![]);
@@ -420,7 +408,10 @@ impl ClaudeSessionService {
                     continue;
                 };
 
-                let project_path = Self::folder_name_to_project_path(folder_name);
+                let project_path = ClaudeProjectPaths::folder_name_to_project_path(
+                    folder_name,
+                    &project_path_lookup,
+                );
                 files.extend(Self::list_session_files_in_project_dir(&path, &project_path));
             }
         }
@@ -502,7 +493,9 @@ impl ClaudeSessionService {
 
         let parent = path.parent().context("Invalid session path")?;
         let folder_name = parent.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        let project_path_decoded = Self::folder_name_to_project_path(folder_name);
+        let project_path_lookup = ClaudeProjectPaths::load_folder_path_lookup()?;
+        let project_path_decoded =
+            ClaudeProjectPaths::folder_name_to_project_path(folder_name, &project_path_lookup);
 
         // Build session metadata from the file itself
         let session = if let Some(meta) = Self::extract_session_meta(&path) {

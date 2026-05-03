@@ -4,6 +4,7 @@
 
 mod analytics_service;
 mod claude_config_service;
+mod claude_project_paths;
 mod claude_session_service;
 pub mod notification_poller;
 mod notification_settings_service;
