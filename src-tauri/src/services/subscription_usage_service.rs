@@ -1,8 +1,9 @@
 //! Subscription usage service
 //!
-//! Fetches Claude Pro/Max subscription usage via:
-//! 1. OAuth API (primary) with automatic token refresh
-//! 2. CLI fallback (`claude /usage`) if API fails
+//! Fetches Claude Pro/Max subscription usage via the CLI (`claude /usage`).
+//! The OAuth API fallback path is retained in this file but disabled at
+//! runtime via `ENABLE_API_FALLBACK`. Flip that flag back to `true` to
+//! restore CLI-then-API behavior.
 
 use anyhow::{Context, Result};
 
@@ -13,6 +14,12 @@ const USAGE_URL: &str = "https://api.anthropic.com/api/oauth/usage";
 const REFRESH_URL: &str = "https://platform.claude.com/v1/oauth/token";
 const CLIENT_ID: &str = "9d1c250a-e61b-44d9-88ed-5944d1962f5e";
 const SCOPES: &str = "user:profile user:inference user:sessions:claude_code";
+
+/// Master switch for the OAuth API fallback path. When `false`, only the
+/// CLI probe is used and the API code below is left untouched but unreached.
+/// The branch is still compiled (referenced from `fetch_usage`), so the
+/// API helpers don't trigger dead-code warnings.
+const ENABLE_API_FALLBACK: bool = false;
 
 /// 5-minute buffer before expiry to trigger refresh (in milliseconds).
 const REFRESH_BUFFER_MS: f64 = 5.0 * 60.0 * 1000.0;
@@ -77,36 +84,39 @@ enum AuthOrError {
 pub struct SubscriptionUsageService;
 
 impl SubscriptionUsageService {
-    /// Fetch subscription usage. Prefers the CLI path (`claude /usage` inside
-    /// a PTY) since it requires no direct Keychain access and matches what
-    /// ClaudeBar does by default. Falls back to the OAuth API only if the CLI
-    /// can't run (binary missing, PTY spawn failure, parse failure, etc).
+    /// Fetch subscription usage. Uses the CLI path (`claude /usage` inside
+    /// a PTY) exclusively — no Keychain access, matches ClaudeBar's default.
+    /// The OAuth API fallback is retained in this file but gated behind
+    /// `ENABLE_API_FALLBACK` and currently off.
     pub async fn fetch_usage() -> Result<SubscriptionUsageResult> {
-        // Primary: CLI probe. No Keychain access — `claude` itself reads the
-        // stored credentials. `cli.usage` is `None` for account types that
-        // don't expose subscription quotas (e.g. pay-per-use API billing),
-        // in which case we propagate the badge to the frontend which then
-        // renders a dedicated empty state instead of a gauge grid.
         match super::claude_cli_probe::ClaudeCliProbe::fetch_usage().await {
-            Ok(cli) => {
-                return Ok(SubscriptionUsageResult {
-                    needs_login: false,
-                    usage: cli.usage,
-                    error: None,
-                    subscription_type: cli.subscription_badge,
-                });
-            }
+            Ok(cli) => Ok(SubscriptionUsageResult {
+                needs_login: false,
+                usage: cli.usage,
+                error: None,
+                subscription_type: cli.subscription_badge,
+            }),
             Err(cli_err) => {
-                log::warn!(
-                    "CLI usage probe failed, falling back to OAuth API: {}",
-                    cli_err
-                );
+                if ENABLE_API_FALLBACK {
+                    log::warn!(
+                        "CLI usage probe failed, falling back to OAuth API: {}",
+                        cli_err
+                    );
+                    Self::fetch_via_api().await
+                } else {
+                    log::warn!(
+                        "CLI usage probe failed (API fallback disabled): {}",
+                        cli_err
+                    );
+                    Ok(SubscriptionUsageResult {
+                        needs_login: false,
+                        usage: None,
+                        error: Some(format!("CLI usage probe failed: {}", cli_err)),
+                        subscription_type: None,
+                    })
+                }
             }
         }
-
-        // Fallback: API path. This DOES touch the Keychain (via
-        // load_credentials) because we need the OAuth access token.
-        Self::fetch_via_api().await
     }
 
     // ---------------------------------------------------------------
